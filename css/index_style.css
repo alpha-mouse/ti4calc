@@ -1,0 +1,14 @@
+#counters .counter {
+	flex-basis: auto;
+	flex-grow: 0;
+	width: auto;
+}
+
+#counters .counter input {
+	width: 3em;
+}
+
+#counters .unit-name {
+	flex-basis: 10em;
+	flex-grow: 0;
+}
