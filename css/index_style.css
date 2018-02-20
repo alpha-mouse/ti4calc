@@ -12,3 +12,15 @@
 	flex-basis: 10em;
 	flex-grow: 0;
 }
+
+/* stolen from http://stackoverflow.com/questions/3790935/can-i-hide-the-html5-number-inputs-spin-box*/
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+	/* display: none; <- Crashes Chrome on hover */
+	-webkit-appearance: none;
+	margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+}
+
+.hidden {
+	visibility: hidden;
+}

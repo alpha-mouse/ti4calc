@@ -50,26 +50,26 @@
 			<div class="counter input-group">
 				<div class="input-group-prepend">
 					<button type="button" class="btn btn-outline-secondary"
-							v-bind:title="updateable(attackerRace, key)">^
+							:class="{ hidden: !updateable(attackerRace, key)}">^
 					</button>
-					<button type="button" class="btn btn-outline-secondary">-</button>
+					<button type="button" class="btn btn-outline-secondary" @click="decrement(attackerUnits[key])">-</button>
 				</div>
-				<input v-model:value="attackerUnits[key].count" class="form-control">
+				<input v-model.number="attackerUnits[key].count" class="form-control" type="number" min="0">
 				<div class="input-group-append">
-					<button type="button" class="btn btn-outline-secondary">+</button>
+					<button type="button" class="btn btn-outline-secondary" @click="increment(attackerUnits[key])">+</button>
 				</div>
 			</div>
 			<div class="col unit-name">{{name}}</div>
 			<div class="counter input-group">
 				<div class="input-group-prepend">
 
-					<button type="button" class="btn btn-outline-secondary">-</button>
+					<button type="button" class="btn btn-outline-secondary" @click="decrement(defenderUnits[key])">-</button>
 				</div>
-				<input v-model:value="defenderUnits[key].count" class="form-control">
+				<input v-model.number="defenderUnits[key].count" class="form-control" type="number" min="0">
 				<div class="input-group-append">
-					<button type="button" class="btn btn-outline-secondary">+</button>
+					<button type="button" class="btn btn-outline-secondary" @click="increment(defenderUnits[key])">+</button>
 					<button type="button" class="btn btn-outline-secondary"
-							v-bind:title="updateable(defenderRace, key)">^
+							:class="{ hidden: !updateable(defenderRace, key)}">^
 					</button>
 				</div>
 			</div>

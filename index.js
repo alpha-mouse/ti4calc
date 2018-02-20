@@ -37,10 +37,16 @@ app = new Vue({
 	data: Object.assign({}, globals, input),
 //	computed: computed,
 	methods: {
+		increment: function (unitInput) {
+			unitInput.count++;
+		},
+		decrement: function (unitInput) {
+			unitInput.count = unitInput.count === 0 ? 0 : unitInput.count -1;
+		},
 		updateable: function(race, unitType) {
 			return !!(globals.StandardUpgrades.hasOwnProperty(unitType) ||
 				globals.RaceSpecificUpgrades[race] &&
 				globals.RaceSpecificUpgrades[race].hasOwnProperty(unitType));
-		}
+		},
 	}
 });
