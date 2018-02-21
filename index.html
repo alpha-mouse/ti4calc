@@ -34,12 +34,12 @@
 		<div class="col offset-2">Defender</div>
 	</div>
 	<div id="races" class="row justify-content-center">
-		<select v-model="attackerRace" class="col-auto">
+		<select v-model="options.attacker.race" class="col-auto">
 			<option v-for="(name, key) in Races" v-bind:value="key">
 				{{ name }}
 			</option>
 		</select>
-		<select v-model="defenderRace" class="col-auto offset-2">
+		<select v-model="options.defender.race" class="col-auto offset-2">
 			<option v-for="(name, key) in Races" v-bind:value="key">
 				{{ name }}
 			</option>
@@ -50,7 +50,7 @@
 			<div class="counter input-group">
 				<div class="input-group-prepend">
 					<button type="button" class="btn btn-outline-secondary"
-							:class="{ hidden: !updateable(attackerRace, key)}">^
+							:class="{ hidden: !updateable(options.attacker.race, key)}">^
 					</button>
 					<button type="button" class="btn btn-outline-secondary" @click="decrement(attackerUnits[key])">-</button>
 				</div>
@@ -62,16 +62,27 @@
 			<div class="col unit-name">{{name}}</div>
 			<div class="counter input-group">
 				<div class="input-group-prepend">
-
 					<button type="button" class="btn btn-outline-secondary" @click="decrement(defenderUnits[key])">-</button>
 				</div>
 				<input v-model.number="defenderUnits[key].count" class="form-control" type="number" min="0">
 				<div class="input-group-append">
 					<button type="button" class="btn btn-outline-secondary" @click="increment(defenderUnits[key])">+</button>
 					<button type="button" class="btn btn-outline-secondary"
-							:class="{ hidden: !updateable(defenderRace, key)}">^
+							:class="{ hidden: !updateable(options.defender.race, key)}">^
 					</button>
 				</div>
+			</div>
+		</div>
+	</div>
+	<div id="options">
+		<div class="row no-gutters justify-content-center" v-for="(option, key) in Options">
+			<div class="col form-check">
+				<input type="checkbox" class="form-check-input" v-bind:id="'attacker.' + key" v-model="options.attacker[key]">
+				<label class="form-check-label" v-bind:for="'attacker.' + key" v-bind:title="option.description">{{option.title}}</label>
+			</div>
+			<div class="col form-check">
+				<input type="checkbox" class="form-check-input" v-bind:id="'defender.' + key" v-model="options.defender[key]">
+				<label class="form-check-label" v-bind:for="'defender.' + key" v-bind:title="option.description">{{option.title}}</label>
 			</div>
 		</div>
 	</div>
