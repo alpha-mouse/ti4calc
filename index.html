@@ -80,7 +80,21 @@
 		</div>
 	</div>
 	<div id="options">
-		<div class="row no-gutters justify-content-center" v-for="(option, key) in Options">
+		<div class="row">Technologies</div>
+		<div class="row no-gutters justify-content-center" v-for="(option, key) in Technologies">
+			<div class="col form-check">
+				<input type="checkbox" class="form-check-input" v-bind:id="'attacker.' + key"
+					   v-model="options.attacker[key]">
+				<label class="form-check-label" v-bind:for="'attacker.' + key" v-bind:title="option.description">{{option.title}}</label>
+			</div>
+			<div class="col form-check">
+				<input type="checkbox" class="form-check-input" v-bind:id="'defender.' + key"
+					   v-model="options.defender[key]">
+				<label class="form-check-label" v-bind:for="'defender.' + key" v-bind:title="option.description">{{option.title}}</label>
+			</div>
+		</div>
+		<div class="row">ActionCards</div>
+		<div class="row no-gutters justify-content-center" v-for="(option, key) in ActionCards">
 			<div class="col form-check">
 				<input type="checkbox" class="form-check-input" v-bind:id="'attacker.' + key"
 					   v-model="options.attacker[key]">

@@ -20,8 +20,8 @@ globals.calculator = (function () {
 
 		options = options || { attacker: {}, defender: {} };
 
-		var attacker = _.filter(attackerFull, globals.unitBattleFilter(battleType));
-		var defender = _.filter(defenderFull, globals.unitBattleFilter(battleType));
+		var attacker = attackerFull.filter(globals.unitBattleFilter(battleType));
+		var defender = defenderFull.filter(globals.unitBattleFilter(battleType));
 
 		//use upper left as an origin
 		//initially all the probability mass is concentrated at both fleets being unharmed
@@ -32,7 +32,7 @@ globals.calculator = (function () {
 		//apply all pre-battle actions, like PDS fire and Barrage
 		prebattleActions.forEach(function (action) {
 			if (action.appliesTo === battleType)
-				problemArray = action.execute(problemArray, attackerFull, defenderFull, options);
+				problemArray = action.execute(problemArray, attackerFull, defenderFull);
 		});
 
 		// the most interesting part - actually compute outcome probabilities
@@ -247,8 +247,8 @@ globals.calculator = (function () {
 				appliesTo: globals.BattleType.Space,
 				execute: function (problemArray, attackerFull, defenderFull) {
 					problemArray.forEach(function (problem) {
-						var attackerTransitions = scaleTransitions(_.filter(attackerFull, hasSpaceCannon), problem.attacker.length + 1);
-						var defenderTransitions = scaleTransitions(_.filter(defenderFull, hasSpaceCannon), problem.defender.length + 1);
+						var attackerTransitions = scaleTransitions(attackerFull.filter(hasSpaceCannon), globals.ThrowTypes.SpaceCannon, problem.attacker.length + 1);
+						var defenderTransitions = scaleTransitions(defenderFull.filter(hasSpaceCannon), globals.ThrowTypes.SpaceCannon, problem.defender.length + 1);
 						applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
 					});
 					return problemArray;
@@ -278,6 +278,7 @@ globals.calculator = (function () {
 								return false;
 							});
 						}
+
 						var attackerTransitions;
 						var defenderTransitions;
 						if (problem.options.attacker.race === 'Mentak')
@@ -299,6 +300,40 @@ globals.calculator = (function () {
 				execute: function (problemArray) {
 					return problemArray;
 					//todo assault cannon
+
+					return problemArray.map(function (problem) {
+						if (!problem.options.attacker.assaultCannon && !problem.options.defender.assaultCannon)
+							return problem;
+
+						function createSpaceCannonTransitions(fleet) {
+							var result = [];
+							var nonFightersFound = 0;
+							for (var i = 0; i < fleet.length; i++) {
+								if (fleet[i].type !== globals.UnitType.Fighter)
+									nonFightersFound++;
+								if (nonFightersFound < 3)
+									result.push([1]);
+								else
+									result.push([0, 1]);
+							}
+							return result;
+						}
+
+
+						var attackerTransitions;
+						var defenderTransitions;
+						if (problem.options.attacker.assaultCannon)
+							attackerTransitions = createSpaceCannonTransitions(problem.attacker);
+						else
+							attackerTransitions = scaleTransitions([], problem.attacker.length + 1);
+						if (problem.options.defender.assaultCannon)
+							defenderTransitions = createSpaceCannonTransitions(problem.defender);
+						else
+							defenderTransitions = scaleTransitions([], problem.defender.length + 1);
+
+						//CALL inter-split
+						//applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
+					});
 				},
 			},
 			{
@@ -317,8 +352,20 @@ globals.calculator = (function () {
 				name: 'Bombardment',
 				appliesTo: globals.BattleType.Ground,
 				execute: function (problemArray, attackerFull, defenderFull) {
+					problemArray.forEach(function (problem) {
+						var bombardmentPossible = !defenderFull.some(unitIs(globals.UnitType.PDS)) // either there are no defending PDS
+							|| attackerFull.some(unitIs(globals.UnitType.WarSun)); // or there are but attacking WarSuns negate their Planetary Shield
+						if (!bombardmentPossible) return;
+
+						var attackerTransitions = scaleTransitions(attackerFull.filter(hasBombardment), globals.ThrowTypes.Bombardment, problem.attacker.length + 1);
+						var defenderTransitions = scaleTransitions([], problem.defender.length + 1);
+						applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
+					});
 					return problemArray;
-					//todo bombardment
+
+					function hasBombardment(unit) {
+						return unit.bombardmentDice !== 0;
+					}
 				},
 			},
 			{
@@ -327,7 +374,7 @@ globals.calculator = (function () {
 				execute: function (problemArray, attackerFull, defenderFull) {
 					problemArray.forEach(function (problem) {
 						var attackerTransitions = scaleTransitions([], problem.attacker.length + 1); // attacker does not fire
-						var defenderTransitions = scaleTransitions(_.filter(defenderFull, unitIs(globals.UnitType.PDS)), problem.defender.length + 1);
+						var defenderTransitions = scaleTransitions(defenderFull.filter(unitIs(globals.UnitType.PDS)), globals.ThrowTypes.SpaceCannon, problem.defender.length + 1);
 						applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
 					});
 					return problemArray;
@@ -335,8 +382,8 @@ globals.calculator = (function () {
 			},
 		];
 
-		function scaleTransitions(fleet, repeat, reroll) {
-			var fleetInflicted = computeFleetTransitions(fleet, globals.ThrowTypes.SpaceCannon, 0, reroll).pop();
+		function scaleTransitions(fleet, throwType, repeat, reroll) {
+			var fleetInflicted = computeFleetTransitions(fleet, throwType, 0, reroll).pop();
 			var result = new Array(repeat);
 			result.fill(fleetInflicted);
 			return result;

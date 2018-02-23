@@ -54,26 +54,31 @@ globals.Races = {
 	Hacan: 'Hacan',
 };
 
-globals.Options = {
-	moraleBoost: {
-		title: 'Morale Boost 1st round',
-		description: '+1 dice modifier to all units during the first battle round',
-	},
-	fireTeam: { title: 'Fire team 1st round', description: 'Reroll dice after first round of invasion combat' },
-	fighterPrototype: {
-		title: 'Fighter prototype',
-		description: '+2 dice modifier to Fighters during the first battle round',
-	},
-	bunker: { title: 'Bunker', description: '-4 dice modifier to Bombardment rolls' },
-	emergencyRepairs: { title: 'Emergency Repairs', description: 'Repair damaged units КОГДА БЛИН' },
-	riskDirectHit: {
-		title: 'Risk direct hit',
-		description: 'Damage units vulnerable to Direct Hit before killing off fodder',
-	},
+function Option(title, description) {
+	this.title = title;
+	this.description = description;
+}
 
-	shieldsHolding: { title: 'to hell with it', description: '' },
-	experimentalBattlestation: { title: 'to hell with it', description: '' },
-	courageous: { title: 'to hell with it', description: '' },
+globals.ActionCards = {
+	moraleBoost: new Option('Morale Boost 1st round', '+1 dice modifier to all units during the first battle round'),
+	fireTeam: new Option('Fire team 1st round', 'Reroll dice after first round of invasion combat'),
+	fighterPrototype: new Option('Fighter prototype', '+2 dice modifier to Fighters during the first battle round'),
+	bunker: new Option('Bunker', '-4 dice modifier to Bombardment rolls'),
+	emergencyRepairs: new Option('Emergency Repairs', 'Repair damaged units КОГДА БЛИН'),
+	riskDirectHit: new Option('Risk direct hit', 'Damage units vulnerable to Direct Hit before killing off fodder'),
+
+	shieldsHolding: new Option('to hell with it', ''),
+	experimentalBattlestation: new Option('to hell with it', ''),
+	courageous: new Option('to hell with it', ''),
+};
+
+globals.Technologies = {
+	antimassDeflectors: new Option('Antimass Deflectors', '-1 to opponents Space Cannon rolls'),
+	gravitonLaser: new Option('Graviton Laser System', 'Space Cannon hits should be applied to non-fighters if possible'),
+	plasmeScoring: new Option('Plasma Scoring', 'One additional die for one unit during Space Cannon or Bombardment'),
+	magenDefense: new Option('Magen Defense Grid', 'Opponent doesn\'t throw dice for one round if you have Planetary Shield'),
+	duraniumArmor: new Option('Duranium Armor', 'After each round repair 1 unit that wasn\'t damaged this round'),
+	assaultCannon: new Option('Assault Cannon', 'Opponent destroys 1 non-Fighter ship if you have at least 3 non-Fighters'),
 };
 
 globals.UnitInfo = (function () {

@@ -5,6 +5,14 @@ var input = {
 	options: {
 		attacker: {
 			race: 'Sardakk',
+
+			antimassDeflectors: false,
+			gravitonLaser: false,
+			plasmeScoring: false,
+			magenDefense: false,
+			duraniumArmor: false,
+			assaultCannon: false,
+
 			moraleBoost: false,
 			fireTeam: false,
 			fighterPrototype: false,
