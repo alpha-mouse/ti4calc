@@ -10,7 +10,8 @@
 	<link href="css/index_style.css" type="text/css" rel="stylesheet"/>
 	<link rel="shortcut icon" href="favicon.gif" type="image/x-icon"/>
 
-	<script type="text/javascript" src="js/vue.js"></script>
+	<script type="text/javascript" src="js/jquery-3.3.1.slim.min.js">/*RGraph needs jQuery. I don't*/</script>
+	<script type="text/javascript" src="js/vue.min.js"></script>
 	<script type="text/javascript" src="js/lodash.core.min.js"></script>
 	<script type="text/javascript" src="js/RGraph.min.js"></script>
 	<script type="text/javascript" src="structs.js"></script>
@@ -52,21 +53,25 @@
 					<button type="button" class="btn btn-outline-secondary"
 							:class="{ hidden: !updateable(options.attacker.race, key)}">^
 					</button>
-					<button type="button" class="btn btn-outline-secondary" @click="decrement(attackerUnits[key])">-</button>
+					<button type="button" class="btn btn-outline-secondary" @click="decrement(attackerUnits[key])">-
+					</button>
 				</div>
 				<input v-model.number="attackerUnits[key].count" class="form-control" type="number" min="0">
 				<div class="input-group-append">
-					<button type="button" class="btn btn-outline-secondary" @click="increment(attackerUnits[key])">+</button>
+					<button type="button" class="btn btn-outline-secondary" @click="increment(attackerUnits[key])">+
+					</button>
 				</div>
 			</div>
 			<div class="col unit-name">{{name}}</div>
 			<div class="counter input-group">
 				<div class="input-group-prepend">
-					<button type="button" class="btn btn-outline-secondary" @click="decrement(defenderUnits[key])">-</button>
+					<button type="button" class="btn btn-outline-secondary" @click="decrement(defenderUnits[key])">-
+					</button>
 				</div>
 				<input v-model.number="defenderUnits[key].count" class="form-control" type="number" min="0">
 				<div class="input-group-append">
-					<button type="button" class="btn btn-outline-secondary" @click="increment(defenderUnits[key])">+</button>
+					<button type="button" class="btn btn-outline-secondary" @click="increment(defenderUnits[key])">+
+					</button>
 					<button type="button" class="btn btn-outline-secondary"
 							:class="{ hidden: !updateable(options.defender.race, key)}">^
 					</button>
@@ -77,185 +82,22 @@
 	<div id="options">
 		<div class="row no-gutters justify-content-center" v-for="(option, key) in Options">
 			<div class="col form-check">
-				<input type="checkbox" class="form-check-input" v-bind:id="'attacker.' + key" v-model="options.attacker[key]">
+				<input type="checkbox" class="form-check-input" v-bind:id="'attacker.' + key"
+					   v-model="options.attacker[key]">
 				<label class="form-check-label" v-bind:for="'attacker.' + key" v-bind:title="option.description">{{option.title}}</label>
 			</div>
 			<div class="col form-check">
-				<input type="checkbox" class="form-check-input" v-bind:id="'defender.' + key" v-model="options.defender[key]">
+				<input type="checkbox" class="form-check-input" v-bind:id="'defender.' + key"
+					   v-model="options.defender[key]">
 				<label class="form-check-label" v-bind:for="'defender.' + key" v-bind:title="option.description">{{option.title}}</label>
 			</div>
 		</div>
 	</div>
+	<div id="result-area">
+		<canvas id="chart-area" width="600px" height="400px"></canvas>
+		<canvas id="chart-area-overlay" width="600px" height="400px"></canvas>
+	</div>
 </div>
-<!--<div id="input-area" class="container m-t-sm">
-    <div id="fleet-counters">
-        <div class='row'>
-            <div class='battle-side col-xs-3 col-sm-4'>Attacker</div>
-            <div id='battle-type-place' class="col-xs-6 col-sm-4">
-                <div class="btn-group">
-                    <button type="button" value="space" class="btn btn-default btn-outline btn-sm active" data-battle-type="space">Space Battle</button>
-                    <button type="button" value="ground" class="btn btn-default btn-outline btn-sm" data-battle-type="ground">Invasion Combat</button>
-                </div>
-            </div>
-            <div class='battle-side col-xs-3 col-sm-4'>Defender</div>
-        </div>
-        <div class='unit-selector-header row'>
-            <div class='damaged col-xs-1' title='Number of units already damaged before the battle'>Damaged</div>
-            <div class='counter-block col-xs-2'>Battle value</div>
-            <div class='counter-block col-xs-2'>Count</div>
-            <div class='unit-name col-xs-2'>Unit</div>
-            <div class='counter-block col-xs-2'>Count</div>
-            <div class='counter-block col-xs-2'>Battle value</div>
-            <div class='damaged col-xs-1' title='Number of units already damaged before the battle'>Damaged</div>
-        </div>
-    </div>
-    <div id="options">
-        <h4>
-            <input id="button-options-collapse" type="button" value="Options" data-toggle="collapse" data-target="#options-collapse" class="btn btn-default btn-outline btn-sm"
-                    onClick="$('#force-compute').toggle();$('#compute-on-the-fly-label').toggle();"/>
-            <input id="clear-counters-attacker" type="button" value="Clear Attacker" class="btn btn-default btn-outline btn-sm" dataBattleSide="attacker"/>
-            <input id="force-compute" type="button" value="Compute" disabled class="btn btn-default btn-outline btn-sm"/>
-            <label id="compute-on-the-fly-label"><input id="compute-on-the-fly" type="checkbox" checked="checked" /> <small>Compute on the fly</small></label>
-            <input id="button-help-collapse" type="button" value="Help" data-toggle="collapse" data-target="#help" class="btn btn-default btn-outline btn-sm"/>
-            <input id="clear-counters-defender" type="button" value="Clear Defender" class="btn btn-default btn-outline btn-sm" dataBattleSide="defender"/>
-        </h4>
-        <div id="options-collapse" class="collapse">
-            <div id="sides-options">
-                <div class="row" title="When unchecked, units do not sustain damage">
-                    <label class="col-xs-6 col-xs-offset-0 col-sm-4 col-sm-offset-1"><input type="checkbox" data-battle-side="attacker" data-option="allowDamage" checked="checked"/> Allow taking damage</label>
-                    <label class="col-xs-6 col-xs-offset-0 col-sm-4 col-sm-offset-3"><input type="checkbox" data-battle-side="defender" data-option="allowDamage" checked="checked"/> Allow taking damage</label>
-                </div>
-                <div class="row" title="+1 dice modifier to all units during the first battle round (i.e. -1 Battle value)">
-                    <label class="col-xs-6 col-xs-offset-0 col-sm-4 col-sm-offset-1"><input type="checkbox" data-battle-side="attacker" data-option="moraleBoost1"/> Morale Boost 1st round</label>
-                    <label class="col-xs-6 col-xs-offset-0 col-sm-4 col-sm-offset-3"><input type="checkbox" data-battle-side="defender" data-option="moraleBoost1"/> Morale Boost 1st round</label>
-                </div>
-                <div class="row" title="Fire up to 2 shots before battle with Cruisers then Destroyers">
-                    <label class="col-xs-6 col-xs-offset-0 col-sm-4 col-sm-offset-1"><input type="checkbox" data-battle-side="attacker" data-option="mentak"/> Mentak racial</label>
-                    <label class="col-xs-6 col-xs-offset-0 col-sm-4 col-sm-offset-3"><input type="checkbox" data-battle-side="defender" data-option="mentak"/> Mentak racial</label>
-                </div>
-                <div class="row" title="-1 dice modifier to opponent during the first battle round">
-                    <label class="col-xs-6 col-xs-offset-0 col-sm-4 col-sm-offset-1"><input type="checkbox" data-battle-side="attacker" data-option="xxcha" /> Xxcha racial</label>
-                    <label class="col-xs-6 col-xs-offset-0 col-sm-4 col-sm-offset-3"><input type="checkbox" data-battle-side="defender" data-option="xxcha" /> Xxcha racial</label>
-                </div>
-                <div class="row" title="Fire with Dreadnoughts before battle">
-                    <label class="col-xs-6 col-xs-offset-0 col-sm-4 col-sm-offset-1"><input type="checkbox" data-battle-side="attacker" data-option="assaultCannon" /> Assault Cannon</label>
-                    <label class="col-xs-6 col-xs-offset-0 col-sm-4 col-sm-offset-3"><input type="checkbox" data-battle-side="defender" data-option="assaultCannon" /> Assault Cannon</label>
-                </div>
-                <div class="row" title="One re-roll for each missed die on PDS fire">
-                    <label class="col-xs-6 col-xs-offset-0 col-sm-4 col-sm-offset-1"><input type="checkbox" data-battle-side="attacker" data-option="gravitonLaser" /> Graviton Laser System</label>
-                    <label class="col-xs-6 col-xs-offset-0 col-sm-4 col-sm-offset-3"><input type="checkbox" data-battle-side="defender" data-option="gravitonLaser" /> Graviton Laser System</label>
-                </div>
-                <div class="row" title="Dreadnoughts bombard over PDS. Fighters participate in Invasion">
-                    <label class="col-xs-6 col-xs-offset-0 col-sm-4 col-sm-offset-1"><input type="checkbox" data-battle-side="attacker" data-option="gravitonNegator" /> Graviton Negator</label>
-                </div>
-                <div class="row" title="+2 and additional die for Destroyers during Barrage">
-                    <label class="col-xs-6 col-xs-offset-0 col-sm-4 col-sm-offset-1"><input type="checkbox" data-battle-side="attacker" data-option="defenceTurret" /> Automated Defence Turret</label>
-                    <label class="col-xs-6 col-xs-offset-0 col-sm-4 col-sm-offset-3"><input type="checkbox" data-battle-side="defender" data-option="defenceTurret" /> Automated Defence Turret</label>
-                </div>
-                <div class="row" title="Repair one damaged ship after each round">
-                    <label class="col-xs-6 col-xs-offset-0 col-sm-4 col-sm-offset-1"><input type="checkbox" data-battle-side="attacker" data-option="duraniumArmor" /> Duranium Armor</label>
-                    <label class="col-xs-6 col-xs-offset-0 col-sm-4 col-sm-offset-3"><input type="checkbox" data-battle-side="defender" data-option="duraniumArmor" /> Duranium Armor</label>
-                </div>
-                <div class="row" title="Cruisers get sustain damage ability (Action Card from Shattered Empire)">
-                    <label class="col-xs-6 col-xs-offset-0 col-sm-4 col-sm-offset-1"><input type="checkbox" data-battle-side="attacker" data-option="enhancedArmor" /> Enhanced Armor</label>
-                    <label class="col-xs-6 col-xs-offset-0 col-sm-4 col-sm-offset-3"><input type="checkbox" data-battle-side="defender" data-option="enhancedArmor" /> Enhanced Armor</label>
-                </div>
-                <div class="row" title="Carriers get sustain damage ability (Federation of Sol racial technology)">
-                    <label class="col-xs-6 col-xs-offset-0 col-sm-4 col-sm-offset-1"><input type="checkbox" data-battle-side="attacker" data-option="advancedCarriers" /> Advanced Carriers (Sol)</label>
-                    <label class="col-xs-6 col-xs-offset-0 col-sm-4 col-sm-offset-3"><input type="checkbox" data-battle-side="defender" data-option="advancedCarriers" /> Advanced Carriers (Sol)</label>
-                </div>
-                <div class="row" title="Additional die on the selected ship">
-                    <label class="col-xs-6 col-xs-offset-0 col-sm-4 col-sm-offset-1">Admiral:
-                        <select data-battle-side="attacker" data-option="admiral" class="form-control">
-                            <option value="none">None</option>
-                            &lt;!&ndash;<option value="flagship">Flagship</option>&ndash;&gt;
-                            <option value="warsun">War Sun</option>
-                            <option value="dreadnought">Dreadnought</option>
-                            <option value="cruiser">Cruiser</option>
-                            <option value="destroyer">Destroyer</option>
-                            <option value="carrier">Carrier</option>
-                            <option value="fighter">Fighter</option>
-                        </select>
-                    </label>
-                    <label class="col-xs-6 col-xs-offset-0 col-sm-4 col-sm-offset-3">Admiral:
-                        <select data-battle-side="defender" data-option="admiral" class="form-control">
-                            <option value="none">None</option>
-                            &lt;!&ndash;<option value="flagship">Flagship</option>&ndash;&gt;
-                            <option value="warsun">War Sun</option>
-                            <option value="dreadnought">Dreadnought</option>
-                            <option value="cruiser">Cruiser</option>
-                            <option value="destroyer">Destroyer</option>
-                            <option value="carrier">Carrier</option>
-                            <option value="fighter">Fighter</option>
-                        </select>
-                    </label>
-                </div>
-            </div>
-            <div id="shared-options">
-                <select name="dreadDice" class="form-control" >
-                    <option value="oneDieDread">Standard Dreadnoughts</option>
-                    <option value="twoDiceDread">Two Dice Dreadnoughts</option>
-                </select>
-                <p>Chart size:
-                    <select id='canvas-size-selector' class="form-control">
-                        <option value="600x400">600*400</option>
-                        <option value="900x600">900*600</option>
-                        <option value="1200x800">1200*800</option>
-                        <option value="1600x1200">1600*1200</option>
-                    </select>
-                </p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="help" class="container collapse">
-    <h1>Twilight Imperium III Edition Battle Calculator</h1>
-    <p>Add some units to the battle by using 'Count' columns for Attacker and Defender.</p>
-    <p>Boost or degrade unit strength with 'Battle value' column. Lesser values correspond to better hit chances.</p>
-    <p>Read the chart. Huge red and blue percent figures tell the probabilities of either side winning the battle.</p>
-    <p>Characters below the horizontal axis designate units participating in the battle. Small case letters indicate the use of sustain damage abilities.</p>
-    <table id="letters-legend">
-        <tr><td class="letter">W</td><td>War Sun - can always bombard but cannot win Invasion Combat without Ground Forces/Mechs</td></tr>
-        <tr><td class="letter">D</td><td>Dreadnought - cannot bombard without Invasion Combat (includes Ground Forces/Mech)</td></tr>
-        <tr><td class="letter">C</td><td>Cruiser</td></tr>
-        <tr><td class="letter">+</td><td>Destroyer - anti-fighter barrage</td></tr>
-        <tr><td class="letter">V</td><td>Carrier</td></tr>
-        <tr><td class="letter">F</td><td>Fighter</td></tr>
-        <tr><td class="letter">G</td><td>Ground Force</td></tr>
-        <tr><td class="letter">M</td><td>Mech - immune to PDS/bombardment</td></tr>
-        <tr><td class="letter">=</td><td>Battle ending in draw</td></tr>
-    </table>
-    <p>Graph shows probabilities of battle outcomes. '=' represents a draw outcome.
-        Any other point represents an outcome in which units between this point and '=' sign survive.
-        Tooltips show probabilities that at least that many units will survive the battle.</p>
-    <p>Battle type – 'Invasion Combat' or 'Space Battle' – can be changed at the top of the page.</p>
-    <p>Options allow calculator to take into account technologies, Mentak racial ability, and using 'Morale Boost'
-        action card for the first round of the battle. Note that 'Automated Defence Turret' doesn't add +2 to Destroyers
-        attack rolls, just adds 1 additional die to Barrage rolls. All attack modifiers should be set manually.</p>
-    <p>Units are ordered in what I consider reasonable sequence of dying. I was lazy to implement manual ordering.</p>
-    <p>Pre-battle actions order is:</p>
-    <ol>
-        <li>Mentak racial ability</li>
-        <li>Assault Cannon</li>
-        <li>Anti-Fighter Barrage</li>
-    </ol>
-    <p>I've chosen it based on some whimsy speculations, and again, was lazy to implement manual reordering.</p>
-    <p>Code and some more info can be found on <a href="https://bitbucket.org/IvanBakhtin/ti3calculator">bitbucket</a>.</p>
-    <p>Thanks to:
-        <ul>
-            <li>Ling Weak – usability suggestions.</li>
-            <li>Edward Nickson (edward.nicksonATgmail.com) – Mechanized Units implementation, two-diced dreadnoughts, UI improvements, other suggestions.</li>
-            <li>L0ft3r​ – Advanced sustain damage handling, admirals, Xxcha racial ability, UI improvements.</li>
-        </ul>
-    </p>
-    <p>Any suggestions and bug reports are welcome at gmail: ivan.bachtin</p>
-</div>
-<div id="result-area" class="container"></div>
-
-<script type="text/javascript">
-    $(application.init);
-</script>-->
 <script type="text/javascript" src="index.js"></script>
 </body>
 </html>

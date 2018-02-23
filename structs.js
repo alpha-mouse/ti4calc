@@ -41,7 +41,7 @@ globals.DistributionBase.prototype.toString = function () {
 globals.DistributionBase.prototype.downTo = function (index) {
 	if (index === 0)
 		return this.at(index);
-	if (index < this.min() || index > this.max())
+	if (index < this.min || index > this.max)
 		return 0;
 	var result = 0;
 	if (index < 0)

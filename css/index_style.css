@@ -24,3 +24,13 @@ input::-webkit-inner-spin-button {
 .hidden {
 	visibility: hidden;
 }
+
+#chart-area {
+	position: absolute;
+	z-index: 1;
+}
+
+#chart-area-overlay {
+	position: absolute;
+	z-index: 0;
+}
