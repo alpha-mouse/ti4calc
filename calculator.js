@@ -141,15 +141,32 @@ globals.calculator = (function () {
 		var result = [[1]];
 		for (var a = 1; a <= fleet.length; ++a) {
 			var unit = fleet[a - 1];
-			var thisUnitTransitions = computeUnitTransitions(unit[throwType + 'Value'], unit[throwType + 'Dice'], modifier, reroll);
+			var thisUnitTransitions = computeUnitTransitions(unit, throwType, modifier, reroll);
 			result[a] = slideMultiply(thisUnitTransitions, result[a - 1]);
+		}
+		return result;
+	}
+
+	/** like computeFleetTransitions, but not all units are allowed to throw dice */
+	function computeSelectedUnitsTransitions(fleet, throwType, predicate) {
+		var result = [[1]];
+		var currentTransitions = [[1]];
+		for (var i = 0; i < fleet.length; i++) {
+			var unit = fleet[i];
+			if (predicate(unit)) {
+				var transitions = computeUnitTransitions(unit, throwType);
+				currentTransitions = slideMultiply(currentTransitions, transitions);
+			}
+			result.push(currentTransitions);
 		}
 		return result;
 	}
 
 	/** Compute probabilities of the unit inflicting 0, 1, etc. hits.
 	 * @param reroll is used for units that can reroll failed throws */
-	function computeUnitTransitions(battleValue, diceCount, modifier, reroll) {
+	function computeUnitTransitions(unit, throwType, modifier, reroll) {
+		var battleValue = unit[throwType + 'Value'];
+		var diceCount = unit[throwType + 'Dice'];
 		if (diceCount === 0) return [1];
 		modifier = modifier || 0;
 		var singleRoll = [];
@@ -245,8 +262,35 @@ globals.calculator = (function () {
 				name: 'Mentak racial',
 				appliesTo: globals.BattleType.Space,
 				execute: function (problemArray) {
+					problemArray.forEach(function (problem) {
+						if (problem.options.attacker.race !== 'Mentak' && problem.options.defender.race !== 'Mentak')
+							return;
+
+						function createMentakTransitions(fleet) {
+							var firedShips = 0;
+							return computeSelectedUnitsTransitions(fleet, globals.ThrowTypes.Battle, function (ship) {
+								if (2 <= firedShips) {
+									return false;
+								} else if (ship.type === globals.UnitType.Cruiser || ship.type === globals.UnitType.Destroyer) {
+									firedShips++;
+									return true;
+								}
+								return false;
+							});
+						}
+						var attackerTransitions;
+						var defenderTransitions;
+						if (problem.options.attacker.race === 'Mentak')
+							attackerTransitions = createMentakTransitions(problem.attacker);
+						else
+							attackerTransitions = scaleTransitions([], problem.attacker.length + 1);
+						if (problem.options.defender.race === 'Mentak')
+							defenderTransitions = createMentakTransitions(problem.defender);
+						else
+							defenderTransitions = scaleTransitions([], problem.defender.length + 1);
+						applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
+					});
 					return problemArray;
-					//todo Mentak racial
 				},
 			},
 			{
@@ -306,35 +350,3 @@ globals.calculator = (function () {
 	}
 
 })();
-
-function xxx() {
-	var calc = this;
-
-	//apply transition vectors to the distribution matrix just once
-	var applyTransitions = function (distr, attackerTransitions, defenderTransitions, attackerVulnerable, defenderVulnerable) {
-		attackerVulnerable = attackerVulnerable || { from: 0 };
-		defenderVulnerable = defenderVulnerable || { from: 0 };
-
-		var result = matrix.create(distr.rows, distr.columns, 0);
-
-		for (var a = 0; a < distr.rows; a++) {
-			for (var d = 0; d < distr.columns; d++) {
-
-				if (distr[a][d] === 0) continue;
-
-				var maxAttackerDamage = Math.max(0, a - attackerVulnerable.from);
-				var maxDefenderDamage = Math.max(0, d - defenderVulnerable.from);
-				var transitionMatrix = createTransitionMatrix(attackerTransitions[a], defenderTransitions[d], maxDefenderDamage, maxAttackerDamage);
-
-				for (var attackerInflicted = 0; attackerInflicted < attackerTransitions[a].length && attackerInflicted <= maxDefenderDamage; attackerInflicted++) {
-					for (var defenderInflicted = 0; defenderInflicted < defenderTransitions[d].length && defenderInflicted <= maxAttackerDamage; defenderInflicted++) {
-						result[a - defenderInflicted][d - attackerInflicted] += transitionMatrix.at(attackerInflicted, defenderInflicted) * distr[a][d];
-					}
-				}
-			}
-		}
-
-		return result;
-	};
-
-};
