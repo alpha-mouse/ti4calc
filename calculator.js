@@ -27,7 +27,7 @@ globals.calculator = (function () {
 		//initially all the probability mass is concentrated at both fleets being unharmed
 		var distribution = globals.createMatrix(attacker.length + 1, defender.length + 1, 0);
 		distribution[attacker.length][defender.length] = 1;
-		var problemArray = [{ distribution: distribution, attacker: attacker, defender: defender, options: options }];
+		var problemArray = [new globals.Problem(distribution, attacker, defender, options)];
 
 		//apply all pre-battle actions, like PDS fire and Barrage
 		prebattleActions.forEach(function (action) {
@@ -197,23 +197,48 @@ globals.calculator = (function () {
 		};
 	}
 
+	/** Apply transition vectors to the distribution matrix just once
+	 * attackerVulnerableFrom and defenderVulnerableFrom could be used*/
+	function applyTransitions(distribution, attackerTransitions, defenderTransitions, attackerVulnerableFrom, defenderVulnerableFrom) {
+		attackerVulnerableFrom = attackerVulnerableFrom || 0;
+		defenderVulnerableFrom = defenderVulnerableFrom || 0;
+
+		for (var a = 0; a < distribution.rows; a++) {
+			for (var d = 0; d < distribution.columns; d++) {
+
+				if (distribution[a][d] === 0) continue;
+
+				var maxAttackerDamage = Math.max(0, a - attackerVulnerableFrom);
+				var maxDefenderDamage = Math.max(0, d - defenderVulnerableFrom);
+				var transitionMatrix = orthogonalMultiply(attackerTransitions[a], defenderTransitions[d], maxDefenderDamage, maxAttackerDamage);
+
+				for (var attackerInflicted = 0; attackerInflicted < attackerTransitions[a].length && attackerInflicted <= maxDefenderDamage; attackerInflicted++) {
+					for (var defenderInflicted = 0; defenderInflicted < defenderTransitions[d].length && defenderInflicted <= maxAttackerDamage; defenderInflicted++) {
+						if (attackerInflicted === 0 && defenderInflicted === 0) continue;
+						distribution[a - defenderInflicted][d - attackerInflicted] += transitionMatrix.at(attackerInflicted, defenderInflicted) * distribution[a][d];
+					}
+				}
+				distribution[a][d] *= transitionMatrix.at(0, 0);
+			}
+		}
+	}
+
 	function initPrebattleActions() {
 		return [
 			{
-				name: 'Space Cannon -> ships',
+				name: 'Space Cannon -> Ships',
 				appliesTo: globals.BattleType.Space,
 				execute: function (problemArray, attackerFull, defenderFull) {
-					return problemArray;
-					return _.map(problemArray, function (problem) {
-						var attackerTransitions = scaleTransitions(_.filter(attackerFull, unitIs(calc.UnitType.PDS)), problem.attacker.length + 1, problem.options.attacker.gravitonLaser);
-						var defenderTransitions = scaleTransitions(_.filter(defenderFull, unitIs(calc.UnitType.PDS)), problem.defender.length + 1, problem.options.defender.gravitonLaser);
-						return {
-							distribution: applyTransitions(problem.distribution, attackerTransitions, defenderTransitions),
-							attacker: problem.attacker,
-							defender: problem.defender,
-							options: problem.options,
-						};
+					problemArray.forEach(function (problem) {
+						var attackerTransitions = scaleTransitions(_.filter(attackerFull, hasSpaceCannon), problem.attacker.length + 1);
+						var defenderTransitions = scaleTransitions(_.filter(defenderFull, hasSpaceCannon), problem.defender.length + 1);
+						applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
 					});
+					return problemArray;
+
+					function hasSpaceCannon(unit) {
+						return unit.spaceCannonDice !== 0;
+					}
 				},
 			},
 			{
@@ -245,30 +270,6 @@ globals.calculator = (function () {
 				},
 			},
 			{
-				name: 'Space Cannon -> Infantry',
-				appliesTo: globals.BattleType.Ground,
-				execute: function (problemArray, attackerFull, defenderFull) {
-
-					return problemArray;
-
-					var result = [];
-					problemArray.forEach(function (problem) {
-
-						var attackerTransitions = scaleTransitions([], problem.attacker.length + 1); // attacker does not fire
-						var defenderTransitions = scaleTransitions(_.filter(defenderFull, unitIs(calc.UnitType.PDS)), problem.defender.length + 1, problem.options.defender.gravitonLaser);
-
-						var attackerVulnerable = getVulnerableUnitsRange(problem.attacker, unitIs(calc.UnitType.Ground));
-						var defenderVulnerable = { from: problem.defender.length, to: problem.defender.length };
-
-						var subproblems = interSplit(problem, attackerVulnerable, defenderVulnerable, attackerTransitions, defenderTransitions);
-
-						result.push.apply(result, subproblems);
-					});
-
-					return result;
-				},
-			},
-			{
 				name: 'Bombardment',
 				appliesTo: globals.BattleType.Ground,
 				execute: function (problemArray, attackerFull, defenderFull) {
@@ -276,7 +277,32 @@ globals.calculator = (function () {
 					//todo bombardment
 				},
 			},
+			{
+				name: 'Space Cannon -> Infantry',
+				appliesTo: globals.BattleType.Ground,
+				execute: function (problemArray, attackerFull, defenderFull) {
+					problemArray.forEach(function (problem) {
+						var attackerTransitions = scaleTransitions([], problem.attacker.length + 1); // attacker does not fire
+						var defenderTransitions = scaleTransitions(_.filter(defenderFull, unitIs(globals.UnitType.PDS)), problem.defender.length + 1);
+						applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
+					});
+					return problemArray;
+				},
+			},
 		];
+
+		function scaleTransitions(fleet, repeat, reroll) {
+			var fleetInflicted = computeFleetTransitions(fleet, globals.ThrowTypes.SpaceCannon, 0, reroll).pop();
+			var result = new Array(repeat);
+			result.fill(fleetInflicted);
+			return result;
+		}
+
+		function unitIs(unitType) {
+			return function (unit) {
+				return unit.type === unitType;
+			};
+		}
 	}
 
 })();

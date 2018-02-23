@@ -10,7 +10,7 @@ globals.BattleType = {
 
 var UnitType = {
 	Flagship: 'Flagship',
-	WarSun: 'Warsun',
+	WarSun: 'WarSun',
 	Dreadnought: 'Dreadnought',
 	Cruiser: 'Cruiser',
 	Destroyer: 'Destroyer',
@@ -24,7 +24,7 @@ globals.UnitType = UnitType;
 
 globals.ShortUnitType = {
 	Flagship: 'X',
-	Warsun: 'W',
+	WarSun: 'W',
 	Dreadnought: 'D',
 	Cruiser: 'C',
 	Destroyer: '+',
@@ -128,7 +128,7 @@ globals.ThrowTypes = {
 };
 
 globals.StandardUnits = {
-	Warsun: new globals.UnitInfo(UnitType.Warsun, {
+	WarSun: new globals.UnitInfo(UnitType.WarSun, {
 		sustainDamageHits: 1,
 		battleValue: 3,
 		battleDice: 3,
@@ -166,7 +166,7 @@ globals.StandardUnits = {
 
 globals.RaceSpecificUnits = {
 	Sardakk: {
-		Flagship: new globals.UnitInfo({
+		Flagship: new globals.UnitInfo(UnitType.Flagship, {
 			sustainDamageHits: 1,
 			battleValue: 6, //todo special racial ability
 			battleDice: 2,
@@ -179,21 +179,21 @@ globals.RaceSpecificUnits = {
 		}),
 	},
 	JolNar: {
-		Flagship: new globals.UnitInfo({
+		Flagship: new globals.UnitInfo(UnitType.Flagship, {
 			sustainDamageHits: 1,
 			battleValue: 6, //todo special racial ability
 			battleDice: 2,
 		}),
 	},
 	Winnu: {
-		Flagship: new globals.UnitInfo({
+		Flagship: new globals.UnitInfo(UnitType.Flagship, {
 			sustainDamageHits: 1,
 			battleValue: 7, //todo special racial ability
 			battleDice: undefined,
 		}),
 	},
 	Xxcha: {
-		Flagship: new globals.UnitInfo({
+		Flagship: new globals.UnitInfo(UnitType.Flagship, {
 			sustainDamageHits: 1,
 			battleValue: 7,
 			battleDice: 2,
@@ -202,21 +202,21 @@ globals.RaceSpecificUnits = {
 		}),
 	},
 	Yin: {
-		Flagship: new globals.UnitInfo({
+		Flagship: new globals.UnitInfo(UnitType.Flagship, {
 			sustainDamageHits: 1,
 			battleValue: 9, //todo special racial ability
 			battleDice: 2,
 		}),
 	},
 	Yssaril: {
-		Flagship: new globals.UnitInfo({
+		Flagship: new globals.UnitInfo(UnitType.Flagship, {
 			sustainDamageHits: 1,
 			battleValue: 5,
 			battleDice: 2,
 		}),
 	},
 	Sol: {
-		Flagship: new globals.UnitInfo({
+		Flagship: new globals.UnitInfo(UnitType.Flagship, {
 			sustainDamageHits: 1,
 			battleValue: 5,
 			battleDice: 2,
@@ -226,28 +226,28 @@ globals.RaceSpecificUnits = {
 		}),
 	},
 	Creuss: {
-		Flagship: new globals.UnitInfo({
+		Flagship: new globals.UnitInfo(UnitType.Flagship, {
 			sustainDamageHits: 1,
 			battleValue: 5,
 			battleDice: 1,
 		}),
 	},
 	L1z1x: {
-		Flagship: new globals.UnitInfo({
+		Flagship: new globals.UnitInfo(UnitType.Flagship, {
 			sustainDamageHits: 1,
 			battleValue: 5, //todo special racial ability
 			battleDice: 2,
 		}),
 	},
 	Mentak: {
-		Flagship: new globals.UnitInfo({
+		Flagship: new globals.UnitInfo(UnitType.Flagship, {
 			sustainDamageHits: 1,
 			battleValue: 7, //todo special racial ability
 			battleDice: 2,
 		}),
 	},
 	Naalu: {
-		Flagship: new globals.UnitInfo({
+		Flagship: new globals.UnitInfo(UnitType.Flagship, {
 			sustainDamageHits: 1,
 			battleValue: 9, //todo special racial ability
 			battleDice: 2,
@@ -257,21 +257,21 @@ globals.RaceSpecificUnits = {
 		}),
 	},
 	Virus: {
-		Flagship: new globals.UnitInfo({
+		Flagship: new globals.UnitInfo(UnitType.Flagship, {
 			sustainDamageHits: 1,
 			battleValue: 9, //todo special racial ability
 			battleDice: 2,
 		}),
 	},
 	Arborec: {
-		Flagship: new globals.UnitInfo({
+		Flagship: new globals.UnitInfo(UnitType.Flagship, {
 			sustainDamageHits: 1,
 			battleValue: 7,
 			battleDice: 2,
 		}),
 	},
 	Letnev: {
-		Flagship: new globals.UnitInfo({
+		Flagship: new globals.UnitInfo(UnitType.Flagship, {
 			sustainDamageHits: 1,
 			battleValue: 5, //todo special racial ability
 			battleDice: 2,
@@ -280,7 +280,7 @@ globals.RaceSpecificUnits = {
 		}),
 	},
 	Saar: {
-		Flagship: new globals.UnitInfo({
+		Flagship: new globals.UnitInfo(UnitType.Flagship, {
 			sustainDamageHits: 1,
 			battleValue: 5,
 			battleDice: 2,
@@ -289,14 +289,14 @@ globals.RaceSpecificUnits = {
 		}),
 	},
 	Muaat: {
-		Flagship: new globals.UnitInfo({
+		Flagship: new globals.UnitInfo(UnitType.Flagship, {
 			sustainDamageHits: 1,
 			battleValue: 5,
 			battleDice: 2,
 		}),
 	},
 	Hacan: {
-		Flagship: new globals.UnitInfo({
+		Flagship: new globals.UnitInfo(UnitType.Flagship, {
 			sustainDamageHits: 1,
 			battleValue: 7, //todo special racial ability
 			battleDice: 2,
@@ -382,6 +382,7 @@ globals.expandFleet = function (race, counters) {
 globals.belongsToBattle = function (unit, battleType) {
 
 	var ships = [
+		UnitType.Flagship,
 		UnitType.WarSun,
 		UnitType.Dreadnought,
 		UnitType.Cruiser,

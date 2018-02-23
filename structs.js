@@ -1,4 +1,4 @@
-if (typeof globals === "undefined")
+if (typeof globals === 'undefined')
 	globals = {};
 
 globals.createMatrix = function (rows, columns, init) {
@@ -14,6 +14,17 @@ globals.createMatrix = function (rows, columns, init) {
 };
 
 
+globals.Problem = function (distribution, attacker, defender, options) {
+	this.distribution = distribution;
+	this.attacker = attacker;
+	this.defender = defender;
+	this.options = options || { attacker: {}, defender: {} };
+};
+
+globals.Problem.prototype.cloneWithDistribution = function (distribution) {
+	return new globals.Problem(distribution, this.attacker, this.defender, this.options);
+};
+
 
 globals.DistributionBase = function (min, max) {
 	this.min = min;
@@ -26,14 +37,14 @@ globals.DistributionBase.prototype.at = function (index) {
 
 globals.DistributionBase.prototype.toString = function () {
 	if (this.min === undefined || this.max === undefined) {
-		return "no stats";
+		return 'no stats';
 	} else {
-		var result = "Min: " + this.min + ", Max: " + this.max + ". ";
+		var result = 'Min: ' + this.min + ', Max: ' + this.max + '. ';
 
-		result += "[";
+		result += '[';
 		for (var i = this.min; i <= this.max; ++i)
-			result += this.at(i) + " ";
-		result += "]";
+			result += this.at(i) + ' ';
+		result += ']';
 		return result;
 	}
 };
