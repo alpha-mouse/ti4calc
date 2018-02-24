@@ -34,3 +34,18 @@ input::-webkit-inner-spin-button {
 	position: absolute;
 	z-index: 0;
 }
+
+.help::after {
+	content: "?";
+}
+
+.help {
+	background: lightblue;
+	border-radius: 20px;
+	width: 20px;
+	display: inline-block;
+	text-align: center;
+	border: 1px solid cornflowerblue;
+	font-weight: bold;
+	color: white;
+}

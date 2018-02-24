@@ -53,6 +53,7 @@
 			<div class="counter input-group">
 				<div class="input-group-prepend btn-group-toggle">
 					<label class="btn btn-outline-secondary"
+						   title="Unit upgrade"
 						   :class="{ active: attackerUnits[key].upgraded,
 									 hidden: !upgradeable(options.attacker.race, key) }">
 						<input type="checkbox" autocomplete="off" v-model="attackerUnits[key].upgraded">^
@@ -77,6 +78,7 @@
 					<button type="button" class="btn btn-outline-secondary" @click="increment(defenderUnits[key])">+
 					</button>
 					<label class="btn btn-outline-secondary"
+						   title="Unit upgrade"
 						   :class="{ active: defenderUnits[key].upgraded,
 									 hidden: !upgradeable(options.defender.race, key) }">
 						<input type="checkbox" autocomplete="off" v-model="defenderUnits[key].upgraded">^
@@ -92,11 +94,13 @@
 				<input type="checkbox" class="form-check-input" v-bind:id="'attacker.' + key"
 					   v-model="options.attacker[key]">
 				<label class="form-check-label" v-bind:for="'attacker.' + key" v-bind:title="option.description">{{option.title}}</label>
+				<span class="help" v-bind:title="option.description"></span>
 			</div>
 			<div class="col form-check">
 				<input type="checkbox" class="form-check-input" v-bind:id="'defender.' + key"
 					   v-model="options.defender[key]">
 				<label class="form-check-label" v-bind:for="'defender.' + key" v-bind:title="option.description">{{option.title}}</label>
+				<span class="help" v-bind:title="option.description"></span>
 			</div>
 		</div>
 		<div class="row">ActionCards</div>
@@ -105,11 +109,13 @@
 				<input type="checkbox" class="form-check-input" v-bind:id="'attacker.' + key"
 					   v-model="options.attacker[key]">
 				<label class="form-check-label" v-bind:for="'attacker.' + key" v-bind:title="option.description">{{option.title}}</label>
+				<span class="help" v-bind:title="option.description"></span>
 			</div>
 			<div class="col form-check">
 				<input type="checkbox" class="form-check-input" v-bind:id="'defender.' + key"
 					   v-model="options.defender[key]">
 				<label class="form-check-label" v-bind:for="'defender.' + key" v-bind:title="option.description">{{option.title}}</label>
+				<span class="help" v-bind:title="option.description"></span>
 			</div>
 		</div>
 	</div>
@@ -119,5 +125,13 @@
 	</div>
 </div>
 <script type="text/javascript" src="index.js"></script>
+<script type="text/javascript">
+	var list = document.getElementsByClassName('help');
+	for (var i = 0; i < list.length; i++) {
+		list[i].onclick = function () {
+			alert(this.getAttribute('title'));
+		};
+	}
+</script>
 </body>
 </html>
