@@ -48,15 +48,10 @@ app = new Vue({
 		decrement: function (unitInput) {
 			unitInput.count = unitInput.count === 0 ? 0 : unitInput.count - 1;
 		},
-		updateable: function (race, unitType) {
-			return !!(globals.StandardUpgrades.hasOwnProperty(unitType) ||
-			globals.RaceSpecificUpgrades[race] &&
-			globals.RaceSpecificUpgrades[race].hasOwnProperty(unitType));
-		},
 		recompute: function () {
-			var attacker = globals.expandFleet(input.options.attacker.race, input.attackerUnits);
-			var defender = globals.expandFleet(input.options.defender.race, input.defenderUnits);
-			var computed = globals.calculator.computeProbabilities(attacker, defender, input.battleType, input.options);
+			var attacker = globals.expandFleet(this.options.attacker.race, this.attackerUnits);
+			var defender = globals.expandFleet(this.options.defender.race, this.defenderUnits);
+			var computed = globals.calculator.computeProbabilities(attacker, defender, this.battleType, this.options);
 			this.displayDistribution(computed);
 			//console.log(computed.distribution.toString());
 		},
@@ -105,19 +100,19 @@ app = new Vue({
 
 				function getLabel(i, attacker, defender) {
 					if (i === 0)
-						return "=";
+						return '=';
 					if (i < 0) {
 						i = -i;
 						if (i <= attacker.length)
 							return attacker[i - 1];
 						else
-							return "";
+							return '';
 					}
 					else {
 						if (i <= defender.length)
 							return defender[i - 1];
 						else
-							return "";
+							return '';
 					}
 				}
 			}
@@ -146,9 +141,24 @@ app = new Vue({
 		},
 	},
 	watch: {
+		'options.attacker.race': resetUpdates('attacker'),
+		'options.defender.race': resetUpdates('defender'),
 		battleType: recomputeHandler,
 		attackerUnits: recomputeHandler,
 		defenderUnits: recomputeHandler,
 		options: recomputeHandler,
 	},
 });
+
+/** When the race changed from the race having an upgrade for the unit (eg Sol Carrier)
+ * to the race not having such upgrade, input flag for the unit upgrade should be set to false */
+function resetUpdates(battleSide) {
+	return function (newRace, oldRace) {
+		for (var unitType in globals.UnitType) {
+			if (globals.upgradeable(oldRace, unitType) &&
+				!globals.upgradeable(newRace, unitType)) {
+				this[battleSide + 'Units'][unitType].upgraded = false;
+			}
+		}
+	};
+}

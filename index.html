@@ -25,11 +25,13 @@
 	<div class="row">
 		<div class="col">Attacker</div>
 		<div class="col btn-group btn-group-toggle">
-			<label class="btn btn-outline-secondary active">
-				<input type="radio" name="battleType" id="option1" checked>Space Battle
+			<label class="btn btn-outline-secondary" :class="{ active: battleType === BattleType.Space }">
+				<input type="radio" name="battleType" id="option1"
+					   v-bind:value="BattleType.Space" v-model="battleType">Space Battle
 			</label>
-			<label class="btn btn-outline-secondary">
-				<input type="radio" name="battleType" id="option2">Invasion Combat
+			<label class="btn btn-outline-secondary" :class="{ active: battleType === BattleType.Ground }">
+				<input type="radio" name="battleType" id="option2"
+					   v-bind:value="BattleType.Ground" v-model="battleType">Invasion Combat
 			</label>
 		</div>
 		<div class="col offset-2">Defender</div>
@@ -49,10 +51,12 @@
 	<div id="counters">
 		<div class="row no-gutters justify-content-center" v-for="(name, key) in UnitType">
 			<div class="counter input-group">
-				<div class="input-group-prepend">
-					<button type="button" class="btn btn-outline-secondary"
-							:class="{ hidden: !updateable(options.attacker.race, key)}">^
-					</button>
+				<div class="input-group-prepend btn-group-toggle">
+					<label class="btn btn-outline-secondary"
+						   :class="{ active: attackerUnits[key].upgraded,
+									 hidden: !upgradeable(options.attacker.race, key) }">
+						<input type="checkbox" autocomplete="off" v-model="attackerUnits[key].upgraded">^
+					</label>
 					<button type="button" class="btn btn-outline-secondary" @click="decrement(attackerUnits[key])">-
 					</button>
 				</div>
@@ -69,12 +73,14 @@
 					</button>
 				</div>
 				<input v-model.number="defenderUnits[key].count" class="form-control" type="number" min="0">
-				<div class="input-group-append">
+				<div class="input-group-append btn-group-toggle">
 					<button type="button" class="btn btn-outline-secondary" @click="increment(defenderUnits[key])">+
 					</button>
-					<button type="button" class="btn btn-outline-secondary"
-							:class="{ hidden: !updateable(options.defender.race, key)}">^
-					</button>
+					<label class="btn btn-outline-secondary"
+						   :class="{ active: defenderUnits[key].upgraded,
+									 hidden: !upgradeable(options.defender.race, key) }">
+						<input type="checkbox" autocomplete="off" v-model="defenderUnits[key].upgraded">^
+					</label>
 				</div>
 			</div>
 		</div>

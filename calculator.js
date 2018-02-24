@@ -284,11 +284,11 @@ globals.calculator = (function () {
 						if (problem.options.attacker.race === 'Mentak')
 							attackerTransitions = createMentakTransitions(problem.attacker);
 						else
-							attackerTransitions = scaleTransitions([], problem.attacker.length + 1);
+							attackerTransitions = scaleTransitions([], null, problem.attacker.length + 1);
 						if (problem.options.defender.race === 'Mentak')
 							defenderTransitions = createMentakTransitions(problem.defender);
 						else
-							defenderTransitions = scaleTransitions([], problem.defender.length + 1);
+							defenderTransitions = scaleTransitions([], null, problem.defender.length + 1);
 						applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
 					});
 					return problemArray;
@@ -325,11 +325,11 @@ globals.calculator = (function () {
 						if (problem.options.attacker.assaultCannon)
 							attackerTransitions = createSpaceCannonTransitions(problem.attacker);
 						else
-							attackerTransitions = scaleTransitions([], problem.attacker.length + 1);
+							attackerTransitions = scaleTransitions([], null, problem.attacker.length + 1);
 						if (problem.options.defender.assaultCannon)
 							defenderTransitions = createSpaceCannonTransitions(problem.defender);
 						else
-							defenderTransitions = scaleTransitions([], problem.defender.length + 1);
+							defenderTransitions = scaleTransitions([], null, problem.defender.length + 1);
 
 						//CALL inter-split
 						//applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
@@ -358,7 +358,7 @@ globals.calculator = (function () {
 						if (!bombardmentPossible) return;
 
 						var attackerTransitions = scaleTransitions(attackerFull.filter(hasBombardment), globals.ThrowTypes.Bombardment, problem.attacker.length + 1);
-						var defenderTransitions = scaleTransitions([], problem.defender.length + 1);
+						var defenderTransitions = scaleTransitions([], null, problem.defender.length + 1);
 						applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
 					});
 					return problemArray;
@@ -373,7 +373,7 @@ globals.calculator = (function () {
 				appliesTo: globals.BattleType.Ground,
 				execute: function (problemArray, attackerFull, defenderFull) {
 					problemArray.forEach(function (problem) {
-						var attackerTransitions = scaleTransitions([], problem.attacker.length + 1); // attacker does not fire
+						var attackerTransitions = scaleTransitions([], null, problem.attacker.length + 1); // attacker does not fire
 						var defenderTransitions = scaleTransitions(defenderFull.filter(unitIs(globals.UnitType.PDS)), globals.ThrowTypes.SpaceCannon, problem.defender.length + 1);
 						applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
 					});

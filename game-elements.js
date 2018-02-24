@@ -408,6 +408,13 @@ globals.unitBattleFilter = function (battleType) {
 	};
 };
 
+/** Check whether the race has an upgrade for the unit */
+globals.upgradeable = function (race, unitType) {
+	return !!(globals.StandardUpgrades.hasOwnProperty(unitType) ||
+	globals.RaceSpecificUpgrades[race] &&
+	globals.RaceSpecificUpgrades[race].hasOwnProperty(unitType));
+};
+
 //todo check all racial abilities
 //todo Sardakk Valkyrie tech
 //todo Sardakk Tekklar promisory
