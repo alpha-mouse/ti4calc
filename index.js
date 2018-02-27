@@ -29,7 +29,7 @@
 		},
 	};
 
-	input.options.defender = _.clone(input.options.attacker);
+	input.options.defender = Object.assign({}, input.options.attacker);
 
 	for (var unitType in globals.UnitType) {
 		input.attackerUnits[unitType] = { count: 0, upgraded: false };
@@ -93,7 +93,7 @@
 						.Set('chart.filled', true)
 						.Set('chart.tickmarks', 'circle')
 						.Set('chart.numxticks', 0)
-						.Set('chart.ymax', _.max(data) * 1.08)
+						.Set('chart.ymax', Math.max.apply(null, data) * 1.08)
 						.Set('chart.colors', ['rgba(200,200,256,0.7)']);
 					if (to - from < 20)
 						line.Set('chart.labels.ingraph', dataLabels);

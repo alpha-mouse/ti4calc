@@ -1,6 +1,4 @@
 (function () {
-	if (typeof require === 'function' && typeof _ === 'undefined')
-		var _ = require('lodash');
 	if (typeof globals === 'undefined')
 		globals = {};
 	if (typeof require === 'function')

@@ -4,9 +4,6 @@ else
 	var calculatorPackage = exports;
 var calc = calculatorPackage.calculator;
 
-if (typeof require === "function" && typeof _ === "undefined")
-	var _ = require("underscore");
-
 var createEmpiricalProbabilities = function () {
 	var min, max;
 
@@ -57,8 +54,8 @@ var Imitator = function () {
 
 	this.imitateBattle = function (attackerFull, defenderFull, battleType, options) {
 		options = options || {attacker:{},defender:{}};
-		var attacker = _.filter(attackerFull, function (unit) { return calc.belongsToBattle(unit, battleType, options.attacker.gravitonNegator); });
-		var defender = _.filter(defenderFull, function (unit) { return calc.belongsToBattle(unit, battleType); });
+		var attacker = attackerFull.filter(function (unit) { return calc.belongsToBattle(unit, battleType, options.attacker.gravitonNegator); });
+		var defender = defenderFull.filter(function (unit) { return calc.belongsToBattle(unit, battleType); });
 
 		for (var i = 0; i < prebattleActions.length; i++) {
 			var action = prebattleActions[i];
@@ -108,11 +105,11 @@ var Imitator = function () {
 	this.estimateProbabilities = function (attacker, defender, battleType, options) {
 		options = options || {attacker:{},defender:{}};
 		var result = createEmpiricalProbabilities();
-		var finalAttacker = _
-			.filter(attacker, function (unit) { return calc.belongsToBattle(unit, battleType, options.attacker.gravitonNegator); })
+		var finalAttacker = attacker
+			.filter(function (unit) { return calc.belongsToBattle(unit, battleType, options.attacker.gravitonNegator); })
 			.map(function(unit){return [unit.shortType()];});
-		var finalDefender = _
-			.filter(defender, function (unit) { return calc.belongsToBattle(unit, battleType); })
+		var finalDefender = defender
+			.filter(function (unit) { return calc.belongsToBattle(unit, battleType); })
 			.map(function(unit){return [unit.shortType()];});
 		for (var i = 0; i < im.imitationIterations; ++i) {
 			var tmpAttacker = attacker.map(function (unit) { return unit.clone(); });
@@ -194,21 +191,22 @@ var Imitator = function () {
 	};
 
 	var undamageUnit = function (fleet) {
-		var damageable = _.filter(fleet, function (unit) {
+		var damageable = fleet.filter(function (unit) {
 			return unit.isDamageable && !unit.isDamageGhost;
 		});
-		var damageGhosts = _.filter(fleet, function (unit) {
+		var damageGhosts = fleet.filter(function (unit) {
 			return unit.isDamageGhost;
 		});
 		if (damageable.length > damageGhosts.length) {
 			// This means that some units are damaged and can be repaired.
 			// Which units exactly can be repaired is a separate question
+			#error rewrite
 			var damageableTypes = _.countBy(damageable, function (unit) {return unit.type});
 			var ghostTypes = _.countBy(damageGhosts, function (unit) {return unit.type});
 			for (var type in damageableTypes)
 				if (damageableTypes.hasOwnProperty(type) &&
 					damageableTypes[type] > (ghostTypes[type] || 0)) {
-					var repairedGhost = _.find(damageable, function (unit) { return unit.type === type; }).toDamageGhost();
+					var repairedGhost = damageable.find(function (unit) { return unit.type === type; }).toDamageGhost();
 					// nooow its damage ghost should be put into proper place among other damage ghosts
 					damageGhosts.push(repairedGhost);
 					var sorted = calc.defaultSort(damageGhosts);
@@ -223,8 +221,8 @@ var Imitator = function () {
 			name: "pds -> ships",
 			appliesTo: calc.BattleType.Space,
 			execute: function (attacker, defender, attackerFull, defenderFull, options) {
-				var attackerInflicted = rollDice(_.filter(attackerFull, unitIs(calc.UnitType.PDS)), 0, options.attacker.gravitonLaser);
-				var defenderInflicted = rollDice(_.filter(defenderFull, unitIs(calc.UnitType.PDS)), 0, options.defender.gravitonLaser);
+				var attackerInflicted = rollDice(attackerFull.filter(unitIs(calc.UnitType.PDS)), 0, options.attacker.gravitonLaser);
+				var defenderInflicted = rollDice(defenderFull.filter(unitIs(calc.UnitType.PDS)), 0, options.defender.gravitonLaser);
 				applyDamage(attacker, defenderInflicted);
 				applyDamage(defender, attackerInflicted);
 			}
@@ -235,9 +233,9 @@ var Imitator = function () {
 			execute: function (attacker, defender, attackerFull, defenderFull, options) {
 
 				var getInflicted = function(fleet){
-					var firing = _.filter(fleet, unitIs(calc.UnitType.Cruiser));
+					var firing = fleet.filter(unitIs(calc.UnitType.Cruiser));
 					if (firing.length < 2)
-						firing = firing.concat(_.filter(fleet, unitIs(calc.UnitType.Destroyer)));
+						firing = firing.concat(fleet.filter(unitIs(calc.UnitType.Destroyer)));
 					if (firing.length > 2)
 						firing = firing.slice(0,2);
 					return rollDice(firing);
@@ -257,8 +255,8 @@ var Imitator = function () {
 			appliesTo: calc.BattleType.Space,
 			execute: function (attacker, defender, attackerFull, defenderFull, options) {
 
-				var attackerInflicted = options.attacker.assaultCannon ? rollDice(_.filter(attacker, unitIs(calc.UnitType.Dreadnought))) : 0;
-				var defenderInflicted = options.defender.assaultCannon ? rollDice(_.filter(defender, unitIs(calc.UnitType.Dreadnought))) : 0;
+				var attackerInflicted = options.attacker.assaultCannon ? rollDice(attacker.filter(unitIs(calc.UnitType.Dreadnought))) : 0;
+				var defenderInflicted = options.defender.assaultCannon ? rollDice(defender.filter(unitIs(calc.UnitType.Dreadnought))) : 0;
 				applyDamage(attacker, defenderInflicted);
 				applyDamage(defender, attackerInflicted);
 			}
@@ -267,13 +265,13 @@ var Imitator = function () {
 			name: "anti-fighter barrage",
 			appliesTo: calc.BattleType.Space,
 			execute: function (attacker, defender, attackerFull, defenderFull, options) {
-				var attackerDestroyers = _.filter(attacker, unitIs(calc.UnitType.Destroyer));
+				var attackerDestroyers = attacker.filter(unitIs(calc.UnitType.Destroyer));
 				if (options.attacker.defenceTurret) {
-					attackerDestroyers = _.map(attackerDestroyers, applyPlus2);
+					attackerDestroyers = attackerDestroyers.map(applyPlus2);
 				}
-				var defenderDestroyers = _.filter(defender, unitIs(calc.UnitType.Destroyer));
+				var defenderDestroyers = defender.filter(unitIs(calc.UnitType.Destroyer));
 				if (options.defender.defenceTurret) {
-					defenderDestroyers = _.map(defenderDestroyers, applyPlus2);
+					defenderDestroyers = defenderDestroyers.map(applyPlus2);
 				}
 				//each destroyer rolls two dice (three with Defence Turret tech). NB! rollDice returns random results
 				var attackerInflicted = rollDice(attackerDestroyers) + rollDice(attackerDestroyers) + (options.attacker.defenceTurret ? rollDice(attackerDestroyers): 0);
@@ -300,7 +298,7 @@ var Imitator = function () {
 			name: "pds -> ground forces",
 			appliesTo: calc.BattleType.Ground,
 			execute: function (attacker, defender, attackerFull, defenderFull, options) {
-				var defenderInflicted = rollDice(_.filter(defenderFull, unitIs(calc.UnitType.PDS)), 0, options.defender.gravitonLaser);
+				var defenderInflicted = rollDice(defenderFull.filter(unitIs(calc.UnitType.PDS)), 0, options.defender.gravitonLaser);
 
 				for (var i = attacker.length - 1; 0 <= i && 0 < defenderInflicted; i--) {
 					if (attacker[i].type === calc.UnitType.Ground) {
@@ -314,7 +312,7 @@ var Imitator = function () {
 			name: "WarSun bombardment",
 			appliesTo: calc.BattleType.Ground,
 			execute: function (attacker, defender, attackerFull, defenderFull) {
-				var attackerInflicted = rollDice(_.filter(attackerFull, unitIs(calc.UnitType.WarSun)));
+				var attackerInflicted = rollDice(attackerFull.filter(unitIs(calc.UnitType.WarSun)));
 
 				for (var i = defender.length - 1; 0 <= i && 0 < attackerInflicted; i--) {
 					if (defender[i].type === calc.UnitType.Ground) {
@@ -329,12 +327,12 @@ var Imitator = function () {
 			appliesTo: calc.BattleType.Ground,
 			execute: function (attacker, defender, attackerFull, defenderFull, options) {
 
-				if (!_.any(attackerFull, unitIs(calc.UnitType.Dreadnought))) return; //if no dreadnaughts no bombardment
-				if (!_.any(attackerFull, unitIs(calc.UnitType.Ground)) && !_.any(attackerFull, unitIs(calc.UnitType.Mech))) return  //if no ground forces & no mechs no bombardment
-				if (!_.any(defenderFull, unitIs(calc.UnitType.Ground))) return; //if no defending ground forces no bombardment as mechs immune
-				if (_.any(defenderFull, unitIs(calc.UnitType.PDS)) && !options.attacker.gravitonNegator) return; //dreadnoughts do not bombard over PDS. unless Graviton Negator
+				if (!attackerFull.some(unitIs(calc.UnitType.Dreadnought))) return; //if no dreadnaughts no bombardment
+				if (!attackerFull.some(unitIs(calc.UnitType.Ground)) && !_.any(attackerFull, unitIs(calc.UnitType.Mech))) return  //if no ground forces & no mechs no bombardment
+				if (!defenderFull.some(unitIs(calc.UnitType.Ground))) return; //if no defending ground forces no bombardment as mechs immune
+				if (defenderFull.some(unitIs(calc.UnitType.PDS)) && !options.attacker.gravitonNegator) return; //dreadnoughts do not bombard over PDS. unless Graviton Negator
 
-				var attackerInflicted = rollDice(_.filter(attackerFull, unitIs(calc.UnitType.Dreadnought)));
+				var attackerInflicted = rollDice(attackerFull.filter(unitIs(calc.UnitType.Dreadnought)));
 
 				for (var i = defender.length - 1; 0 <= i && 0 < attackerInflicted; i--) {
 					if (defender[i].type === calc.UnitType.Ground) {

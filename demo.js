@@ -1,6 +1,5 @@
 ﻿var calc = require("./calculator").calculator;
 var im = require("./imitator").imitator;
-var _ = require("underscore");
 ////var f = new calc.Fleet(4);
 ////im.imitateBattle(f,f);
 //console.log(calc);
