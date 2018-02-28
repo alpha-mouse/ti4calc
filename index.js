@@ -51,6 +51,11 @@
 			decrement: function (unitInput) {
 				unitInput.count = unitInput.count === 0 ? 0 : unitInput.count - 1;
 			},
+			displayName: function (unitType) {
+				if (unitType === UnitType.WarSun) return 'War Sun';
+				else if (unitType === UnitType.Ground) return 'Ground Force';
+				else return unitType;
+			},
 			recompute: function () {
 				var attacker = expandFleet(this.options.attacker.race, this.attackerUnits);
 				var defender = expandFleet(this.options.defender.race, this.defenderUnits);

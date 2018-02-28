@@ -15,8 +15,8 @@
 		Destroyer: 'Destroyer',
 		Carrier: 'Carrier',
 		Fighter: 'Fighter',
+		Ground: 'Ground',
 		PDS: 'PDS',
-		Infantry: 'Infantry',
 	};
 
 	root.UnitType = UnitType;
@@ -29,8 +29,8 @@
 		Destroyer: '+',
 		Carrier: 'V',
 		Fighter: 'F',
+		Ground: 'G',
 		PDS: 'P',
-		Infantry: 'I',
 	};
 
 	root.Races = {
@@ -163,7 +163,7 @@
 			spaceCannonValue: 6,
 			spaceCannonDice: 1,
 		}),
-		Infantry: new root.UnitInfo(UnitType.Infantry, {
+		Ground: new root.UnitInfo(UnitType.Ground, {
 			battleValue: 8,
 		}),
 	};
@@ -225,7 +225,7 @@
 				battleValue: 5,
 				battleDice: 2,
 			}),
-			Infantry: new root.UnitInfo(UnitType.Infantry, {
+			Ground: new root.UnitInfo(UnitType.Ground, {
 				battleValue: 7,
 			}),
 		},
@@ -324,14 +324,14 @@
 			spaceCannonValue: 5,
 			spaceCannonDice: 1,
 		}),
-		Infantry: new root.UnitInfo(UnitType.Infantry, {
+		Ground: new root.UnitInfo(UnitType.Ground, {
 			battleValue: 7,
 		}),
 	};
 
 	root.RaceSpecificUpgrades = {
 		Sol: {
-			Infantry: new root.UnitInfo(UnitType.Infantry, {
+			Ground: new root.UnitInfo(UnitType.Ground, {
 				battleValue: 6,
 			}),
 			Carrier: new root.UnitInfo(UnitType.Carrier, {
@@ -382,7 +382,8 @@
 		return result.concat(damageGhosts);
 	};
 
-	/** Check whether the unit can receive hits in the specific battle type. E.g. Infantry doesn't receive hits in Space Battle */
+	/** Check whether the unit can receive hits in the specific battle type.
+	 * E.g. Ground Forces don't receive hits in Space Battle */
 	root.belongsToBattle = function (unit, battleType) {
 
 		var ships = [
@@ -398,7 +399,7 @@
 		if (battleType === root.BattleType.Space)
 			return ships.indexOf(unit.type) >= 0;
 		else //battleType === root.BattleType.Ground
-			return unit.type === UnitType.Infantry;
+			return unit.type === UnitType.Ground;
 	};
 
 	root.unitBattleFilter = function (battleType) {

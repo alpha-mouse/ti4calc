@@ -371,7 +371,7 @@
 					},
 				},
 				{
-					name: 'Space Cannon -> Infantry',
+					name: 'Space Cannon -> Ground Forces',
 					appliesTo: game.BattleType.Ground,
 					execute: function (problemArray, attackerFull, defenderFull) {
 						problemArray.forEach(function (problem) {
