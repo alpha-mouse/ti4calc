@@ -23,7 +23,7 @@
 
 	globals.UnitType = UnitType;
 
-	globals.ShortUnitType = {
+	var shortUnitType = {
 		Flagship: 'X',
 		WarSun: 'W',
 		Dreadnought: 'D',
@@ -105,7 +105,7 @@
 				isDamageGhost: false,
 			}, stats);
 
-			var shortType = globals.ShortUnitType[this.type];
+			var shortType = shortUnitType[this.type];
 			this.shortType = this.isDamageGhost ? shortType.toLowerCase() : shortType;
 		}
 

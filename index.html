@@ -57,24 +57,28 @@
 									 hidden: !upgradeable(options.attacker.race, key) }">
 						<input type="checkbox" autocomplete="off" v-model="attackerUnits[key].upgraded">^
 					</label>
-					<button type="button" class="btn btn-outline-secondary" @click="decrement(attackerUnits[key])">-
+					<button type="button" class="btn btn-outline-secondary" title="Remove unit"
+							@click="decrement(attackerUnits[key])">-
 					</button>
 				</div>
 				<input v-model.number="attackerUnits[key].count" class="form-control" type="number" min="0">
 				<div class="input-group-append">
-					<button type="button" class="btn btn-outline-secondary" @click="increment(attackerUnits[key])">+
+					<button type="button" class="btn btn-outline-secondary" title="Add unit"
+							@click="increment(attackerUnits[key])">+
 					</button>
 				</div>
 			</div>
 			<div class="col unit-name">{{name}}</div>
 			<div class="counter input-group">
 				<div class="input-group-prepend">
-					<button type="button" class="btn btn-outline-secondary" @click="decrement(defenderUnits[key])">-
+					<button type="button" class="btn btn-outline-secondary" title="Remove unit"
+							@click="decrement(defenderUnits[key])">-
 					</button>
 				</div>
 				<input v-model.number="defenderUnits[key].count" class="form-control" type="number" min="0">
 				<div class="input-group-append btn-group-toggle">
-					<button type="button" class="btn btn-outline-secondary" @click="increment(defenderUnits[key])">+
+					<button type="button" class="btn btn-outline-secondary" title="Add unit"
+							@click="increment(defenderUnits[key])">+
 					</button>
 					<label class="btn btn-outline-secondary"
 						   title="Unit upgrade"
@@ -117,6 +121,75 @@
 				<span class="help" v-bind:title="option.description"></span>
 			</div>
 		</div>
+	</div>
+	<div id="help">
+		<h1>Twilight Imperium IV Edition Battle Calculator</h1>
+		<p>Add and remove units to the battle by using '+' and '-' buttons.</p>
+		<p>Toggle unit upgrade by '^' button.</p>
+		<p>Switch battle type between Space Combat and Invasion.</p>
+		<p>Read the chart. Huge red and blue percent figures tell the probabilities of either side winning the
+			battle.</p>
+		<p>Characters below the horizontal axis designate units participating in the battle. Small case letters indicate
+			the use of sustain damage abilities.</p>
+		<table id="letters-legend">
+			<tr>
+				<td class="letter">X</td>
+				<td>Flagship - characteristics depend on selected race</td>
+			</tr>
+			<tr>
+				<td class="letter">W</td>
+				<td>War Sun</td>
+			</tr>
+			<tr>
+				<td class="letter">D</td>
+				<td>Dreadnought</td>
+			</tr>
+			<tr>
+				<td class="letter">C</td>
+				<td>Cruiser</td>
+			</tr>
+			<tr>
+				<td class="letter">+</td>
+				<td>Destroyer</td>
+			</tr>
+			<tr>
+				<td class="letter">V</td>
+				<td>Carrier</td>
+			</tr>
+			<tr>
+				<td class="letter">F</td>
+				<td>Fighter</td>
+			</tr>
+			<tr>
+				<td class="letter">G</td>
+				<td>Ground Force</td>
+			</tr>
+			<tr>
+				<td class="letter">=</td>
+				<td>Battle ends in a draw</td>
+			</tr>
+		</table>
+		<p>Graph shows probabilities of battle outcomes. '=' represents a draw outcome.
+			Any other point represents an outcome in which units between this point and '=' sign survive.
+			Tooltips show probabilities that at least that many units will survive the battle.</p>
+		<p>Options allow calculator to take into account some Technologies, Action Cards, and Promissory Notes.</p>
+		<p>Units are ordered in what I consider reasonable sequence of dying. I was lazy to implement manual
+			ordering.</p>
+		<p>Game aspects <strong>not</strong>> taken into account by this calculator:</p>
+		<ul>
+			<li>Nekro Virus gaining technology during a battle thereby changing participating units' battle value,</li>
+			<li>Units being already damaged before the battle,</li>
+		</ul>
+		</p>
+		<p>Code and some more info can be found on <a
+				href="https://bitbucket.org/IvanBakhtin/ti3calculator">bitbucket</a>.</p>
+		<p>Thanks to:
+		<ul>
+			<li>Ling Weak, Edward Nickson, and L0ft3r​ – for various improvements to the calculator for the third
+				edition of the game. This calculator is heavily based on that one.</li>
+		</ul>
+		</p>
+		<p>Any suggestions and bug reports are welcome at ivan.bachtin@gmail.com</p>
 	</div>
 	<div id="result-area">
 		<canvas id="chart-area" width="600px" height="400px"></canvas>
