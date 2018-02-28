@@ -1,7 +1,7 @@
 (function () {
 
 	var input = {
-		battleType: globals.BattleType.Space,
+		battleType: BattleType.Space,
 		attackerUnits: {},
 		defenderUnits: {},
 		options: {
@@ -31,7 +31,7 @@
 
 	input.options.defender = Object.assign({}, input.options.attacker);
 
-	for (var unitType in globals.UnitType) {
+	for (var unitType in UnitType) {
 		input.attackerUnits[unitType] = { count: 0, upgraded: false };
 		input.defenderUnits[unitType] = { count: 0, upgraded: false };
 	}
@@ -43,7 +43,7 @@
 
 	app = new Vue({
 		el: '#root',
-		data: Object.assign({}, globals, input),
+		data: Object.assign({}, input),
 		methods: {
 			increment: function (unitInput) {
 				unitInput.count++;
@@ -52,9 +52,9 @@
 				unitInput.count = unitInput.count === 0 ? 0 : unitInput.count - 1;
 			},
 			recompute: function () {
-				var attacker = globals.expandFleet(this.options.attacker.race, this.attackerUnits);
-				var defender = globals.expandFleet(this.options.defender.race, this.defenderUnits);
-				var computed = globals.calculator.computeProbabilities(attacker, defender, this.battleType, this.options);
+				var attacker = expandFleet(this.options.attacker.race, this.attackerUnits);
+				var defender = expandFleet(this.options.defender.race, this.defenderUnits);
+				var computed = calculator.computeProbabilities(attacker, defender, this.battleType, this.options);
 				this.displayDistribution(computed);
 				//console.log(computed.distribution.toString());
 			},
@@ -157,9 +157,9 @@
 	 * to the race not having such upgrade, input flag for the unit upgrade should be set to false */
 	function resetUpdates(battleSide) {
 		return function (newRace, oldRace) {
-			for (var unitType in globals.UnitType) {
-				if (globals.upgradeable(oldRace, unitType) &&
-					!globals.upgradeable(newRace, unitType)) {
+			for (var unitType in UnitType) {
+				if (upgradeable(oldRace, unitType) &&
+					!upgradeable(newRace, unitType)) {
 					this[battleSide + 'Units'][unitType].upgraded = false;
 				}
 			}

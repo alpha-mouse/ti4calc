@@ -1,8 +1,6 @@
-(function () {
-	if (typeof globals === 'undefined')
-		globals = {};
+(function (root) {
 
-	globals.createMatrix = function (rows, columns, init) {
+	root.createMatrix = function (rows, columns, init) {
 		var result = new Array(rows);
 		for (var i = 0; i < rows; i++) {
 			result[i] = new Array(columns);
@@ -15,7 +13,7 @@
 	};
 
 
-	globals.Problem = function (distribution, attacker, defender, options) {
+	root.Problem = function (distribution, attacker, defender, options) {
 		this.distribution = distribution;
 		this.attacker = attacker;
 		this.defender = defender;
@@ -23,16 +21,16 @@
 	};
 
 
-	globals.DistributionBase = function (min, max) {
+	root.DistributionBase = function (min, max) {
 		this.min = min;
 		this.max = max;
 	};
 
-	globals.DistributionBase.prototype.at = function (index) {
+	root.DistributionBase.prototype.at = function (index) {
 		return this[index] || 0;
 	};
 
-	globals.DistributionBase.prototype.toString = function () {
+	root.DistributionBase.prototype.toString = function () {
 		if (this.min === undefined || this.max === undefined) {
 			return 'no stats';
 		} else {
@@ -46,7 +44,7 @@
 		}
 	};
 
-	globals.DistributionBase.prototype.downTo = function (index) {
+	root.DistributionBase.prototype.downTo = function (index) {
 		if (index === 0)
 			return this.at(index);
 		if (index < this.min || index > this.max)
@@ -61,13 +59,13 @@
 		return result;
 	};
 
-	globals.EmpiricalDistribution = function () {
+	root.EmpiricalDistribution = function () {
 	};
 
-	globals.EmpiricalDistribution.prototype = Object.create(globals.DistributionBase.prototype);
+	root.EmpiricalDistribution.prototype = Object.create(root.DistributionBase.prototype);
 
 	/** Increment count at index */
-	globals.EmpiricalDistribution.prototype.increment = function (index) {
+	root.EmpiricalDistribution.prototype.increment = function (index) {
 		this[index] = this.at(index) + 1;
 		if (this.min === undefined)
 			this.min = index;
@@ -81,7 +79,7 @@
 	};
 
 	/** Convert counts to probabilities */
-	globals.EmpiricalDistribution.prototype.normalize = function () {
+	root.EmpiricalDistribution.prototype.normalize = function () {
 		var sum = 0;
 		for (var i = this.min; i <= this.max; ++i)
 			sum += this.at(i);
@@ -89,4 +87,4 @@
 			for (var i = this.min; i <= this.max; ++i)
 				this[i] = this.at(i) / sum;
 	};
-})();
+})(typeof exports === 'undefined' ? window : exports);

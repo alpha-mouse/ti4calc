@@ -1,11 +1,15 @@
-(function () {
+(function (root) {
 
+	var structs, game;
 	if (typeof require === 'function') {
-		require('./structs');
-		require('./game-elements');
+		structs = require('./structs');
+		game = require('./game-elements');
+	} else {
+		structs = window;
+		game = window;
 	}
 
-	globals.calculator = (function () {
+	root.calculator = (function () {
 
 		var prebattleActions = initPrebattleActions();
 
@@ -18,14 +22,14 @@
 
 			options = options || { attacker: {}, defender: {} };
 
-			var attacker = attackerFull.filter(globals.unitBattleFilter(battleType));
-			var defender = defenderFull.filter(globals.unitBattleFilter(battleType));
+			var attacker = attackerFull.filter(game.unitBattleFilter(battleType));
+			var defender = defenderFull.filter(game.unitBattleFilter(battleType));
 
 			//use upper left as an origin
 			//initially all the probability mass is concentrated at both fleets being unharmed
-			var distribution = globals.createMatrix(attacker.length + 1, defender.length + 1, 0);
+			var distribution = structs.createMatrix(attacker.length + 1, defender.length + 1, 0);
 			distribution[attacker.length][defender.length] = 1;
-			var problemArray = [new globals.Problem(distribution, attacker, defender, options)];
+			var problemArray = [new structs.Problem(distribution, attacker, defender, options)];
 
 			//apply all pre-battle actions, like PDS fire and Barrage
 			prebattleActions.forEach(function (action) {
@@ -38,7 +42,7 @@
 				solveProblem(problemArray[i]);
 
 			// format output
-			var finalDistribution = new globals.DistributionBase(-attacker.length, defender.length);
+			var finalDistribution = new structs.DistributionBase(-attacker.length, defender.length);
 			var finalAttacker = attacker.map(function (unit) {
 				return [unit.shortType];
 			});
@@ -99,8 +103,8 @@
 		function propagateProbabilityUpLeft(problem) {
 			var distr = problem.distribution;
 			// evaluate probabilities of transitions for each fleet
-			var attackerTransitions = computeFleetTransitions(problem.attacker, globals.ThrowTypes.Battle);
-			var defenderTransitions = computeFleetTransitions(problem.defender, globals.ThrowTypes.Battle);
+			var attackerTransitions = computeFleetTransitions(problem.attacker, game.ThrowTypes.Battle);
+			var defenderTransitions = computeFleetTransitions(problem.defender, game.ThrowTypes.Battle);
 			//do propagation
 			for (var a = distr.rows - 1; 0 < a; a--) {
 				for (var d = distr.columns - 1; 0 < d; d--) {
@@ -133,7 +137,7 @@
 		/** Compute transition arrays for all left-subsets of the fleet
 		 * result[4] === [X,Y,Z,..] means that probabilities of the first 4 units in the fleet
 		 * inflicting 0, 1, 2 etc damage points are X, Y, Z, etc respectively
-		 * @param throwType globals.ThrowTypes */
+		 * @param throwType game.ThrowTypes */
 		function computeFleetTransitions(fleet, throwType, modifier, reroll) {
 			modifier = modifier || 0;
 			var result = [[1]];
@@ -168,7 +172,7 @@
 			if (diceCount === 0) return [1];
 			modifier = modifier || 0;
 			var singleRoll = [];
-			singleRoll[0] = Math.max(Math.min((battleValue - 1 - modifier) / globals.dieSides, 1), 0);
+			singleRoll[0] = Math.max(Math.min((battleValue - 1 - modifier) / game.dieSides, 1), 0);
 			if (reroll)
 				singleRoll[0] = singleRoll[0] * singleRoll[0];
 			singleRoll[1] = 1 - singleRoll[0];
@@ -242,11 +246,11 @@
 			return [
 				{
 					name: 'Space Cannon -> Ships',
-					appliesTo: globals.BattleType.Space,
+					appliesTo: game.BattleType.Space,
 					execute: function (problemArray, attackerFull, defenderFull) {
 						problemArray.forEach(function (problem) {
-							var attackerTransitions = scaleTransitions(attackerFull.filter(hasSpaceCannon), globals.ThrowTypes.SpaceCannon, problem.attacker.length + 1);
-							var defenderTransitions = scaleTransitions(defenderFull.filter(hasSpaceCannon), globals.ThrowTypes.SpaceCannon, problem.defender.length + 1);
+							var attackerTransitions = scaleTransitions(attackerFull.filter(hasSpaceCannon), game.ThrowTypes.SpaceCannon, problem.attacker.length + 1);
+							var defenderTransitions = scaleTransitions(defenderFull.filter(hasSpaceCannon), game.ThrowTypes.SpaceCannon, problem.defender.length + 1);
 							applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
 						});
 						return problemArray;
@@ -258,7 +262,7 @@
 				},
 				{
 					name: 'Mentak racial',
-					appliesTo: globals.BattleType.Space,
+					appliesTo: game.BattleType.Space,
 					execute: function (problemArray) {
 						problemArray.forEach(function (problem) {
 							if (problem.options.attacker.race !== 'Mentak' && problem.options.defender.race !== 'Mentak')
@@ -266,10 +270,10 @@
 
 							function createMentakTransitions(fleet) {
 								var firedShips = 0;
-								return computeSelectedUnitsTransitions(fleet, globals.ThrowTypes.Battle, function (ship) {
+								return computeSelectedUnitsTransitions(fleet, game.ThrowTypes.Battle, function (ship) {
 									if (2 <= firedShips) {
 										return false;
-									} else if (ship.type === globals.UnitType.Cruiser || ship.type === globals.UnitType.Destroyer) {
+									} else if (ship.type === game.UnitType.Cruiser || ship.type === game.UnitType.Destroyer) {
 										firedShips++;
 										return true;
 									}
@@ -294,7 +298,7 @@
 				},
 				{
 					name: 'Assault Cannon',
-					appliesTo: globals.BattleType.Space,
+					appliesTo: game.BattleType.Space,
 					execute: function (problemArray) {
 						return problemArray;
 						//todo assault cannon
@@ -307,7 +311,7 @@
 								var result = [];
 								var nonFightersFound = 0;
 								for (var i = 0; i < fleet.length; i++) {
-									if (fleet[i].type !== globals.UnitType.Fighter)
+									if (fleet[i].type !== game.UnitType.Fighter)
 										nonFightersFound++;
 									if (nonFightersFound < 3)
 										result.push([1]);
@@ -336,7 +340,7 @@
 				},
 				{
 					name: 'Anti-Fighter Barrage',
-					appliesTo: globals.BattleType.Space,
+					appliesTo: game.BattleType.Space,
 					execute: function (problemArray) {
 						return problemArray;
 						//todo barrage
@@ -348,14 +352,14 @@
 				},
 				{
 					name: 'Bombardment',
-					appliesTo: globals.BattleType.Ground,
+					appliesTo: game.BattleType.Ground,
 					execute: function (problemArray, attackerFull, defenderFull) {
 						problemArray.forEach(function (problem) {
-							var bombardmentPossible = !defenderFull.some(unitIs(globals.UnitType.PDS)) // either there are no defending PDS
-								|| attackerFull.some(unitIs(globals.UnitType.WarSun)); // or there are but attacking WarSuns negate their Planetary Shield
+							var bombardmentPossible = !defenderFull.some(unitIs(game.UnitType.PDS)) // either there are no defending PDS
+								|| attackerFull.some(unitIs(game.UnitType.WarSun)); // or there are but attacking WarSuns negate their Planetary Shield
 							if (!bombardmentPossible) return;
 
-							var attackerTransitions = scaleTransitions(attackerFull.filter(hasBombardment), globals.ThrowTypes.Bombardment, problem.attacker.length + 1);
+							var attackerTransitions = scaleTransitions(attackerFull.filter(hasBombardment), game.ThrowTypes.Bombardment, problem.attacker.length + 1);
 							var defenderTransitions = scaleTransitions([], null, problem.defender.length + 1);
 							applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
 						});
@@ -368,11 +372,11 @@
 				},
 				{
 					name: 'Space Cannon -> Infantry',
-					appliesTo: globals.BattleType.Ground,
+					appliesTo: game.BattleType.Ground,
 					execute: function (problemArray, attackerFull, defenderFull) {
 						problemArray.forEach(function (problem) {
 							var attackerTransitions = scaleTransitions([], null, problem.attacker.length + 1); // attacker does not fire
-							var defenderTransitions = scaleTransitions(defenderFull.filter(unitIs(globals.UnitType.PDS)), globals.ThrowTypes.SpaceCannon, problem.defender.length + 1);
+							var defenderTransitions = scaleTransitions(defenderFull.filter(unitIs(game.UnitType.PDS)), game.ThrowTypes.SpaceCannon, problem.defender.length + 1);
 							applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
 						});
 						return problemArray;
@@ -395,4 +399,4 @@
 		}
 
 	})();
-})();
+})(typeof exports === 'undefined' ? window : exports);

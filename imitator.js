@@ -1,11 +1,15 @@
-(function () {
+(function (root) {
+
+	var structs, game;
 	if (typeof require === 'function') {
-		require('./structs');
-		require('./game-elements');
-		require('./calculator');
+		structs = require('./structs');
+		game = require('./game-elements');
+	} else {
+		structs = window;
+		game = window;
 	}
 
-	globals.imitator = (function () {
+	root.imitator = (function () {
 
 		var prebattleActions = initPrebattleActions();
 		var imitationIterations = 10000;
@@ -18,14 +22,14 @@
 
 			options = options || { attacker: {}, defender: {} };
 
-			var result = new globals.EmpiricalDistribution();
+			var result = new structs.EmpiricalDistribution();
 			var finalAttacker = attacker
-				.filter(globals.unitBattleFilter(battleType))
+				.filter(game.unitBattleFilter(battleType))
 				.map(function (unit) {
 					return [unit.shortType];
 				});
 			var finalDefender = defender
-				.filter(globals.unitBattleFilter(battleType))
+				.filter(game.unitBattleFilter(battleType))
 				.map(function (unit) {
 					return [unit.shortType];
 				});
@@ -77,8 +81,8 @@
 		}
 
 		function imitateBattle(attackerFull, defenderFull, battleType, options) {
-			var attacker = attackerFull.filter(globals.unitBattleFilter(battleType));
-			var defender = defenderFull.filter(globals.unitBattleFilter(battleType));
+			var attacker = attackerFull.filter(game.unitBattleFilter(battleType));
+			var defender = defenderFull.filter(game.unitBattleFilter(battleType));
 
 			for (var i = 0; i < prebattleActions.length; i++) {
 				var action = prebattleActions[i];
@@ -91,8 +95,8 @@
 				round++;
 				if (round === 1) {
 				}
-				var attackerInflicted = rollDice(attacker, globals.ThrowTypes.Battle);
-				var defenderInflicted = rollDice(defender, globals.ThrowTypes.Battle);
+				var attackerInflicted = rollDice(attacker, game.ThrowTypes.Battle);
+				var defenderInflicted = rollDice(defender, game.ThrowTypes.Battle);
 
 				applyDamage(attacker, defenderInflicted);
 				applyDamage(defender, attackerInflicted);
@@ -127,7 +131,7 @@
 		}
 
 		function rollDie() {
-			return Math.floor(Math.random() * globals.dieSides + 1);
+			return Math.floor(Math.random() * game.dieSides + 1);
 		}
 
 		function hasUnits(fleet) {
@@ -170,10 +174,10 @@
 			return [
 				{
 					name: 'Space Cannon -> Ships',
-					appliesTo: globals.BattleType.Space,
+					appliesTo: game.BattleType.Space,
 					execute: function (attacker, defender, attackerFull, defenderFull, options) {
-						var attackerInflicted = rollDice(attackerFull.filter(hasSpaceCannon), globals.ThrowTypes.SpaceCannon);
-						var defenderInflicted = rollDice(defenderFull.filter(hasSpaceCannon), globals.ThrowTypes.SpaceCannon);
+						var attackerInflicted = rollDice(attackerFull.filter(hasSpaceCannon), game.ThrowTypes.SpaceCannon);
+						var defenderInflicted = rollDice(defenderFull.filter(hasSpaceCannon), game.ThrowTypes.SpaceCannon);
 						applyDamage(attacker, defenderInflicted);
 						applyDamage(defender, attackerInflicted);
 
@@ -184,16 +188,16 @@
 				},
 				{
 					name: 'Mentak racial',
-					appliesTo: globals.BattleType.Space,
+					appliesTo: game.BattleType.Space,
 					execute: function (attacker, defender, attackerFull, defenderFull, options) {
 
 						function getInflicted(fleet) {
-							var firing = fleet.filter(unitIs(globals.UnitType.Cruiser));
+							var firing = fleet.filter(unitIs(game.UnitType.Cruiser));
 							if (firing.length < 2)
-								firing = firing.concat(fleet.filter(unitIs(globals.UnitType.Destroyer)));
+								firing = firing.concat(fleet.filter(unitIs(game.UnitType.Destroyer)));
 							if (firing.length > 2)
 								firing = firing.slice(0, 2);
-							return rollDice(firing, globals.ThrowTypes.Battle);
+							return rollDice(firing, game.ThrowTypes.Battle);
 						}
 
 						var attackerInflicted = 0;
@@ -208,7 +212,7 @@
 				},
 				{
 					name: 'Assault Cannon',
-					appliesTo: globals.BattleType.Space,
+					appliesTo: game.BattleType.Space,
 					execute: function (attacker, defender, attackerFull, defenderFull, options) {
 						// todo implement Assault Cannon
 
@@ -220,7 +224,7 @@
 				},
 				{
 					name: 'Anti-Fighter Barrage',
-					appliesTo: globals.BattleType.Space,
+					appliesTo: game.BattleType.Space,
 					execute: function (attacker, defender, attackerFull, defenderFull, options) {
 						// todo implement barrage
 						return;
@@ -255,13 +259,13 @@
 				},
 				{
 					name: 'Bombardment',
-					appliesTo: globals.BattleType.Ground,
+					appliesTo: game.BattleType.Ground,
 					execute: function (attacker, defender, attackerFull, defenderFull) {
-						var bombardmentPossible = !defenderFull.some(unitIs(globals.UnitType.PDS)) // either there are no defending PDS
-							|| attackerFull.some(unitIs(globals.UnitType.WarSun)); // or there are but attacking WarSuns negate their Planetary Shield
+						var bombardmentPossible = !defenderFull.some(unitIs(game.UnitType.PDS)) // either there are no defending PDS
+							|| attackerFull.some(unitIs(game.UnitType.WarSun)); // or there are but attacking WarSuns negate their Planetary Shield
 						if (!bombardmentPossible) return;
 
-						var attackerInflicted = rollDice(attackerFull.filter(hasBombardment), globals.ThrowTypes.Bombardment);
+						var attackerInflicted = rollDice(attackerFull.filter(hasBombardment), game.ThrowTypes.Bombardment);
 
 						for (var i = defender.length - 1; 0 <= i && 0 < attackerInflicted; i--) {
 							defender.splice(i, 1);
@@ -275,12 +279,12 @@
 				},
 				{
 					name: 'Space Cannon -> Ground Forces',
-					appliesTo: globals.BattleType.Ground,
+					appliesTo: game.BattleType.Ground,
 					execute: function (attacker, defender, attackerFull, defenderFull, options) {
-						var defenderInflicted = rollDice(defenderFull.filter(unitIs(globals.UnitType.PDS)), globals.ThrowTypes.SpaceCannon);
+						var defenderInflicted = rollDice(defenderFull.filter(unitIs(game.UnitType.PDS)), game.ThrowTypes.SpaceCannon);
 
 						for (var i = attacker.length - 1; 0 <= i && 0 < defenderInflicted; i--) {
-							if (attacker[i].type === globals.UnitType.Ground) {
+							if (attacker[i].type === game.UnitType.Ground) {
 								attacker.splice(i, 1);
 								defenderInflicted--;
 							}
@@ -296,4 +300,4 @@
 			}
 		}
 	})();
-})();
+})(typeof exports === 'undefined' ? window : exports);

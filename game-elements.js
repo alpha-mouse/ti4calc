@@ -1,10 +1,8 @@
-(function () {
-	if (typeof globals === 'undefined')
-		globals = {};
+(function (root) {
 
-	globals.dieSides = 10;
+	root.dieSides = 10;
 
-	globals.BattleType = {
+	root.BattleType = {
 		Space: 'Space',
 		Ground: 'Ground',
 	};
@@ -21,7 +19,7 @@
 		Infantry: 'Infantry',
 	};
 
-	globals.UnitType = UnitType;
+	root.UnitType = UnitType;
 
 	var shortUnitType = {
 		Flagship: 'X',
@@ -35,7 +33,7 @@
 		Infantry: 'I',
 	};
 
-	globals.Races = {
+	root.Races = {
 		Sardakk: 'Sardakk N\'orr',
 		JolNar: 'Jol-Nar',
 		Winnu: 'Winnu',
@@ -60,7 +58,7 @@
 		this.description = description;
 	}
 
-	globals.ActionCards = {
+	root.ActionCards = {
 		moraleBoost: new Option('Morale Boost 1st round', '+1 dice modifier to all units during the first battle round'),
 		fireTeam: new Option('Fire team 1st round', 'Reroll dice after first round of invasion combat'),
 		fighterPrototype: new Option('Fighter prototype', '+2 dice modifier to Fighters during the first battle round'),
@@ -73,7 +71,7 @@
 		courageous: new Option('to hell with it', ''),
 	};
 
-	globals.Technologies = {
+	root.Technologies = {
 		antimassDeflectors: new Option('Antimass Deflectors', '-1 to opponents Space Cannon rolls'),
 		gravitonLaser: new Option('Graviton Laser System', 'Space Cannon hits should be applied to non-fighters if possible'),
 		plasmeScoring: new Option('Plasma Scoring', 'One additional die for one unit during Space Cannon or Bombardment'),
@@ -82,7 +80,7 @@
 		assaultCannon: new Option('Assault Cannon', 'Opponent destroys 1 non-Fighter ship if you have at least 3 non-Fighters'),
 	};
 
-	globals.UnitInfo = (function () {
+	root.UnitInfo = (function () {
 
 		function UnitInfo(type, stats) {
 
@@ -126,58 +124,58 @@
 	})();
 
 	/** These correspond to fields of UnitInfo, like 'battleValue', 'bombardmentValue' etc. */
-	globals.ThrowTypes = {
+	root.ThrowTypes = {
 		Battle: 'battle',
 		Bombardment: 'bombardment',
 		SpaceCannon: 'spaceCannon',
 		Barrage: 'barrage',
 	};
 
-	globals.StandardUnits = {
-		WarSun: new globals.UnitInfo(UnitType.WarSun, {
+	root.StandardUnits = {
+		WarSun: new root.UnitInfo(UnitType.WarSun, {
 			sustainDamageHits: 1,
 			battleValue: 3,
 			battleDice: 3,
 			bombardmentValue: 3,
 			bombardmentDice: 3,
 		}),
-		Dreadnought: new globals.UnitInfo(UnitType.Dreadnought, {
+		Dreadnought: new root.UnitInfo(UnitType.Dreadnought, {
 			sustainDamageHits: 1,
 			battleValue: 5,
 			bombardmentValue: 5,
 			bombardmentDice: 1,
 		}),
-		Cruiser: new globals.UnitInfo(UnitType.Cruiser, {
+		Cruiser: new root.UnitInfo(UnitType.Cruiser, {
 			battleValue: 7,
 		}),
-		Destroyer: new globals.UnitInfo(UnitType.Destroyer, {
+		Destroyer: new root.UnitInfo(UnitType.Destroyer, {
 			battleValue: 9,
 			barrageValue: 9,
 			barrageDice: 2,
 		}),
-		Carrier: new globals.UnitInfo(UnitType.Carrier, {
+		Carrier: new root.UnitInfo(UnitType.Carrier, {
 			battleValue: 9,
 		}),
-		Fighter: new globals.UnitInfo(UnitType.Fighter, {
+		Fighter: new root.UnitInfo(UnitType.Fighter, {
 			battleValue: 9,
 		}),
-		PDS: new globals.UnitInfo(UnitType.PDS, {
+		PDS: new root.UnitInfo(UnitType.PDS, {
 			spaceCannonValue: 6,
 			spaceCannonDice: 1,
 		}),
-		Infantry: new globals.UnitInfo(UnitType.Infantry, {
+		Infantry: new root.UnitInfo(UnitType.Infantry, {
 			battleValue: 8,
 		}),
 	};
 
-	globals.RaceSpecificUnits = {
+	root.RaceSpecificUnits = {
 		Sardakk: {
-			Flagship: new globals.UnitInfo(UnitType.Flagship, {
+			Flagship: new root.UnitInfo(UnitType.Flagship, {
 				sustainDamageHits: 1,
 				battleValue: 6, //todo special racial ability
 				battleDice: 2,
 			}),
-			Dreadnought: new globals.UnitInfo(UnitType.Dreadnought, {
+			Dreadnought: new root.UnitInfo(UnitType.Dreadnought, {
 				sustainDamageHits: 1,
 				battleValue: 5,
 				bombardmentValue: 4,
@@ -185,21 +183,21 @@
 			}),
 		},
 		JolNar: {
-			Flagship: new globals.UnitInfo(UnitType.Flagship, {
+			Flagship: new root.UnitInfo(UnitType.Flagship, {
 				sustainDamageHits: 1,
 				battleValue: 6, //todo special racial ability
 				battleDice: 2,
 			}),
 		},
 		Winnu: {
-			Flagship: new globals.UnitInfo(UnitType.Flagship, {
+			Flagship: new root.UnitInfo(UnitType.Flagship, {
 				sustainDamageHits: 1,
 				battleValue: 7, //todo special racial ability
 				battleDice: undefined,
 			}),
 		},
 		Xxcha: {
-			Flagship: new globals.UnitInfo(UnitType.Flagship, {
+			Flagship: new root.UnitInfo(UnitType.Flagship, {
 				sustainDamageHits: 1,
 				battleValue: 7,
 				battleDice: 2,
@@ -208,76 +206,76 @@
 			}),
 		},
 		Yin: {
-			Flagship: new globals.UnitInfo(UnitType.Flagship, {
+			Flagship: new root.UnitInfo(UnitType.Flagship, {
 				sustainDamageHits: 1,
 				battleValue: 9, //todo special racial ability
 				battleDice: 2,
 			}),
 		},
 		Yssaril: {
-			Flagship: new globals.UnitInfo(UnitType.Flagship, {
+			Flagship: new root.UnitInfo(UnitType.Flagship, {
 				sustainDamageHits: 1,
 				battleValue: 5,
 				battleDice: 2,
 			}),
 		},
 		Sol: {
-			Flagship: new globals.UnitInfo(UnitType.Flagship, {
+			Flagship: new root.UnitInfo(UnitType.Flagship, {
 				sustainDamageHits: 1,
 				battleValue: 5,
 				battleDice: 2,
 			}),
-			Infantry: new globals.UnitInfo(UnitType.Infantry, {
+			Infantry: new root.UnitInfo(UnitType.Infantry, {
 				battleValue: 7,
 			}),
 		},
 		Creuss: {
-			Flagship: new globals.UnitInfo(UnitType.Flagship, {
+			Flagship: new root.UnitInfo(UnitType.Flagship, {
 				sustainDamageHits: 1,
 				battleValue: 5,
 				battleDice: 1,
 			}),
 		},
 		L1z1x: {
-			Flagship: new globals.UnitInfo(UnitType.Flagship, {
+			Flagship: new root.UnitInfo(UnitType.Flagship, {
 				sustainDamageHits: 1,
 				battleValue: 5, //todo special racial ability
 				battleDice: 2,
 			}),
 		},
 		Mentak: {
-			Flagship: new globals.UnitInfo(UnitType.Flagship, {
+			Flagship: new root.UnitInfo(UnitType.Flagship, {
 				sustainDamageHits: 1,
 				battleValue: 7, //todo special racial ability
 				battleDice: 2,
 			}),
 		},
 		Naalu: {
-			Flagship: new globals.UnitInfo(UnitType.Flagship, {
+			Flagship: new root.UnitInfo(UnitType.Flagship, {
 				sustainDamageHits: 1,
 				battleValue: 9, //todo special racial ability
 				battleDice: 2,
 			}),
-			Fighter: new globals.UnitInfo(UnitType.Fighter, {
+			Fighter: new root.UnitInfo(UnitType.Fighter, {
 				battleValue: 8,
 			}),
 		},
 		Virus: {
-			Flagship: new globals.UnitInfo(UnitType.Flagship, {
+			Flagship: new root.UnitInfo(UnitType.Flagship, {
 				sustainDamageHits: 1,
 				battleValue: 9, //todo special racial ability
 				battleDice: 2,
 			}),
 		},
 		Arborec: {
-			Flagship: new globals.UnitInfo(UnitType.Flagship, {
+			Flagship: new root.UnitInfo(UnitType.Flagship, {
 				sustainDamageHits: 1,
 				battleValue: 7,
 				battleDice: 2,
 			}),
 		},
 		Letnev: {
-			Flagship: new globals.UnitInfo(UnitType.Flagship, {
+			Flagship: new root.UnitInfo(UnitType.Flagship, {
 				sustainDamageHits: 1,
 				battleValue: 5, //todo special racial ability
 				battleDice: 2,
@@ -286,7 +284,7 @@
 			}),
 		},
 		Saar: {
-			Flagship: new globals.UnitInfo(UnitType.Flagship, {
+			Flagship: new root.UnitInfo(UnitType.Flagship, {
 				sustainDamageHits: 1,
 				battleValue: 5,
 				battleDice: 2,
@@ -295,14 +293,14 @@
 			}),
 		},
 		Muaat: {
-			Flagship: new globals.UnitInfo(UnitType.Flagship, {
+			Flagship: new root.UnitInfo(UnitType.Flagship, {
 				sustainDamageHits: 1,
 				battleValue: 5,
 				battleDice: 2,
 			}),
 		},
 		Hacan: {
-			Flagship: new globals.UnitInfo(UnitType.Flagship, {
+			Flagship: new root.UnitInfo(UnitType.Flagship, {
 				sustainDamageHits: 1,
 				battleValue: 7, //todo special racial ability
 				battleDice: 2,
@@ -310,39 +308,39 @@
 		},
 	};
 
-	globals.StandardUpgrades = {
-		Cruiser: new globals.UnitInfo(UnitType.Cruiser, {
+	root.StandardUpgrades = {
+		Cruiser: new root.UnitInfo(UnitType.Cruiser, {
 			battleValue: 6,
 		}),
-		Destroyer: new globals.UnitInfo(UnitType.Destroyer, {
+		Destroyer: new root.UnitInfo(UnitType.Destroyer, {
 			battleValue: 8,
 			barrageValue: 6,
 			barrageDice: 3,
 		}),
-		Fighter: new globals.UnitInfo(UnitType.Fighter, {
+		Fighter: new root.UnitInfo(UnitType.Fighter, {
 			battleValue: 8,
 		}),
-		PDS: new globals.UnitInfo(UnitType.PDS, {
+		PDS: new root.UnitInfo(UnitType.PDS, {
 			spaceCannonValue: 5,
 			spaceCannonDice: 1,
 		}),
-		Infantry: new globals.UnitInfo(UnitType.Infantry, {
+		Infantry: new root.UnitInfo(UnitType.Infantry, {
 			battleValue: 7,
 		}),
 	};
 
-	globals.RaceSpecificUpgrades = {
+	root.RaceSpecificUpgrades = {
 		Sol: {
-			Infantry: new globals.UnitInfo(UnitType.Infantry, {
+			Infantry: new root.UnitInfo(UnitType.Infantry, {
 				battleValue: 6,
 			}),
-			Carrier: new globals.UnitInfo(UnitType.Carrier, {
+			Carrier: new root.UnitInfo(UnitType.Carrier, {
 				sustainDamageHits: 1,
 				battleValue: 9,
 			}),
 		},
 		L1z1x: {
-			Dreadnought: new globals.UnitInfo(UnitType.Dreadnought, {
+			Dreadnought: new root.UnitInfo(UnitType.Dreadnought, {
 				sustainDamageHits: 1,
 				battleValue: 4,
 				bombardmentValue: 4,
@@ -350,7 +348,7 @@
 			}),
 		},
 		Naalu: {
-			Fighter: new globals.UnitInfo(UnitType.Fighter, {
+			Fighter: new root.UnitInfo(UnitType.Fighter, {
 				battleValue: 7,
 			}),
 		},
@@ -365,10 +363,10 @@
  *       ..
  *     }
 	 */
-	globals.expandFleet = function (race, counters) {
+	root.expandFleet = function (race, counters) {
 
-		var standardUnits = Object.assign({}, globals.StandardUnits, globals.RaceSpecificUnits[race]);
-		var upgradedUnits = Object.assign({}, globals.StandardUpgrades, globals.RaceSpecificUpgrades[race]);
+		var standardUnits = Object.assign({}, root.StandardUnits, root.RaceSpecificUnits[race]);
+		var upgradedUnits = Object.assign({}, root.StandardUpgrades, root.RaceSpecificUpgrades[race]);
 		var result = [];
 		var damageGhosts = [];
 		for (var unitType in UnitType) {
@@ -385,7 +383,7 @@
 	};
 
 	/** Check whether the unit can receive hits in the specific battle type. E.g. Infantry doesn't receive hits in Space Battle */
-	globals.belongsToBattle = function (unit, battleType) {
+	root.belongsToBattle = function (unit, battleType) {
 
 		var ships = [
 			UnitType.Flagship,
@@ -397,23 +395,23 @@
 			UnitType.Fighter,
 		];
 
-		if (battleType === globals.BattleType.Space)
+		if (battleType === root.BattleType.Space)
 			return ships.indexOf(unit.type) >= 0;
-		else //battleType === globals.BattleType.Ground
+		else //battleType === root.BattleType.Ground
 			return unit.type === UnitType.Infantry;
 	};
 
-	globals.unitBattleFilter = function (battleType) {
+	root.unitBattleFilter = function (battleType) {
 		return function (unit) {
-			return globals.belongsToBattle(unit, battleType);
+			return root.belongsToBattle(unit, battleType);
 		};
 	};
 
 	/** Check whether the race has an upgrade for the unit */
-	globals.upgradeable = function (race, unitType) {
-		return !!(globals.StandardUpgrades.hasOwnProperty(unitType) ||
-		globals.RaceSpecificUpgrades[race] &&
-		globals.RaceSpecificUpgrades[race].hasOwnProperty(unitType));
+	root.upgradeable = function (race, unitType) {
+		return !!(root.StandardUpgrades.hasOwnProperty(unitType) ||
+		root.RaceSpecificUpgrades[race] &&
+		root.RaceSpecificUpgrades[race].hasOwnProperty(unitType));
 	};
 
 //todo check all racial abilities
@@ -431,4 +429,4 @@
 
 //todo Letnev racial
 //todo generic tech
-})();
+})(typeof exports === 'undefined' ? window : exports);
