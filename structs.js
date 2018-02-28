@@ -22,10 +22,6 @@
 		this.options = options || { attacker: {}, defender: {} };
 	};
 
-	globals.Problem.prototype.cloneWithDistribution = function (distribution) {
-		return new globals.Problem(distribution, this.attacker, this.defender, this.options);
-	};
-
 
 	globals.DistributionBase = function (min, max) {
 		this.min = min;
@@ -63,5 +59,34 @@
 			for (var i = index; i <= this.max; i++)
 				result += this.at(i);
 		return result;
+	};
+
+
+	globals.EmpiricalDistribution = function () {
+
+	};
+
+	/** Increment count at index */
+	globals.EmpiricalDistribution.prototype.increment = function (index) {
+		this[index] = this.at(index) + 1;
+		if (this.min === undefined)
+			this.min = index;
+		else if (index < this.min)
+			this.min = index;
+
+		if (this.max === undefined)
+			this.max = index;
+		else if (this.max < index)
+			this.max = index;
+	};
+
+	/** Convert counts to probabilities */
+	globals.EmpiricalDistribution.prototype.normalize = function () {
+		var sum = 0;
+		for (var i = this.min; i <= this.max; ++i)
+			sum += this.at(i);
+		if (sum !== 0)
+			for (var i = this.min; i <= this.max; ++i)
+				this[i] = this.at(i) / sum;
 	};
 })();

@@ -1,10 +1,9 @@
 (function () {
-	if (typeof globals === 'undefined')
-		globals = {};
-	if (typeof require === 'function')
-		var createMatrix = require('./structs').createMatrix;
-	else
-		var createMatrix = globals.createMatrix;
+
+	if (typeof require === 'function') {
+		require('./structs');
+		require('./game-elements');
+	}
 
 	globals.calculator = (function () {
 
