@@ -5,7 +5,7 @@
 		require('./calculator');
 	}
 
-	exports.imitator = (function () {
+	globals.imitator = (function () {
 
 		var prebattleActions = initPrebattleActions();
 		var imitationIterations = 10000;
@@ -22,12 +22,12 @@
 			var finalAttacker = attacker
 				.filter(globals.unitBattleFilter(battleType))
 				.map(function (unit) {
-					return [unit.shortType()];
+					return [unit.shortType];
 				});
 			var finalDefender = defender
 				.filter(globals.unitBattleFilter(battleType))
 				.map(function (unit) {
-					return [unit.shortType()];
+					return [unit.shortType];
 				});
 			for (var i = 0; i < imitationIterations; ++i) {
 				var tmpAttacker = attacker.map(function (unit) {
@@ -44,16 +44,16 @@
 					for (var a = 0; a < survivors.attacker.length; a++) {
 						if (!finalAttacker[a])
 							finalAttacker[a] = [];
-						if (finalAttacker[a].indexOf(survivors.attacker[a].shortType()) < 0)
-							finalAttacker[a].push(survivors.attacker[a].shortType());
+						if (finalAttacker[a].indexOf(survivors.attacker[a].shortType) < 0)
+							finalAttacker[a].push(survivors.attacker[a].shortType);
 					}
 				} else if (survivors.defender.length !== 0) {
 					result.increment(survivors.defender.length);
 					for (var d = 0; d < survivors.defender.length; d++) {
 						if (!finalDefender[d])
 							finalDefender[d] = [];
-						if (finalDefender[d].indexOf(survivors.defender[d].shortType()) < 0)
-							finalDefender[d].push(survivors.defender[d].shortType());
+						if (finalDefender[d].indexOf(survivors.defender[d].shortType) < 0)
+							finalDefender[d].push(survivors.defender[d].shortType);
 					}
 				} else
 					result.increment(0);
@@ -135,6 +135,7 @@
 		}
 
 		function undamageUnit(fleet) {
+			//todo implement
 			var damageable = fleet.filter(function (unit) {
 				return unit.isDamageable && !unit.isDamageGhost;
 			});
@@ -144,8 +145,6 @@
 			if (damageable.length > damageGhosts.length) {
 				// This means that some units are damaged and can be repaired.
 				// Which units exactly can be repaired is a separate question
-			#error;
-				rewrite;
 				var damageableTypes = _.countBy(damageable, function (unit) {
 					return unit.type;
 				});
@@ -271,26 +270,6 @@
 
 						function hasBombardment(unit) {
 							return unit.bombardmentDice !== 0;
-						}
-					},
-				},
-				{
-					name: 'Dreadnought bombardment',
-					appliesTo: calc.BattleType.Ground,
-					execute: function (attacker, defender, attackerFull, defenderFull, options) {
-
-						if (!attackerFull.some(unitIs(calc.UnitType.Dreadnought))) return; //if no dreadnaughts no bombardment
-						if (!attackerFull.some(unitIs(calc.UnitType.Ground)) && !_.any(attackerFull, unitIs(calc.UnitType.Mech))) return;  //if no ground forces & no mechs no bombardment
-						if (!defenderFull.some(unitIs(calc.UnitType.Ground))) return; //if no defending ground forces no bombardment as mechs immune
-						if (defenderFull.some(unitIs(calc.UnitType.PDS)) && !options.attacker.gravitonNegator) return; //dreadnoughts do not bombard over PDS. unless Graviton Negator
-
-						var attackerInflicted = rollDice(attackerFull.filter(unitIs(calc.UnitType.Dreadnought)));
-
-						for (var i = defender.length - 1; 0 <= i && 0 < attackerInflicted; i--) {
-							if (defender[i].type === calc.UnitType.Ground) {
-								defender.splice(i, 1);
-								attackerInflicted--;
-							}
 						}
 					},
 				},

@@ -61,10 +61,10 @@
 		return result;
 	};
 
-
 	globals.EmpiricalDistribution = function () {
-
 	};
+
+	globals.EmpiricalDistribution.prototype = Object.create(globals.DistributionBase.prototype);
 
 	/** Increment count at index */
 	globals.EmpiricalDistribution.prototype.increment = function (index) {
