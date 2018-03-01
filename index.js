@@ -68,7 +68,15 @@
 			recompute: function () {
 				var attacker = expandFleet(this.options.attacker.race, this.attackerUnits);
 				var defender = expandFleet(this.options.defender.race, this.defenderUnits);
-				var computed = calculator.computeProbabilities(attacker, defender, this.battleType, this.options);
+				var computed;
+
+				// unfortunately Duranium Armor cannot be handled by the calculator
+				var duraniumArmor = this.options.attacker.duraniumArmor || this.options.defender.duraniumArmor;
+				if (duraniumArmor)
+					computed = imitator.estimateProbabilities(attacker, defender, this.battleType, this.options);
+				else
+					computed = calculator.computeProbabilities(attacker, defender, this.battleType, this.options);
+
 				this.displayDistribution(computed);
 				//console.log(computed.distribution.toString());
 			},
