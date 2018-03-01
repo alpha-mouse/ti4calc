@@ -53,10 +53,14 @@
 		Hacan: 'Hacan',
 	};
 
-	function Option(title, description) {
+	function Option(title, description, limitedTo) {
 		this.title = title;
 		this.description = description;
+		this.limitedTo = limitedTo;
 	}
+	Option.prototype.availableFor = function (battleSide) {
+		return this.limitedTo === undefined || this.limitedTo === battleSide;
+	};
 
 	root.ActionCards = {
 		moraleBoost: new Option('Morale Boost 1st round', '+1 dice modifier to all units during the first battle round'),
@@ -75,7 +79,7 @@
 		antimassDeflectors: new Option('Antimass Deflectors', '-1 to opponents Space Cannon rolls'),
 		gravitonLaser: new Option('Graviton Laser System', 'Space Cannon hits should be applied to non-fighters if possible'),
 		plasmaScoring: new Option('Plasma Scoring', 'One additional die for one unit during Space Cannon or Bombardment'),
-		magenDefense: new Option('Magen Defense Grid', 'Opponent doesn\'t throw dice for one round if you have Planetary Shield'),
+		magenDefense: new Option('Magen Defense Grid', 'Opponent doesn\'t throw dice for one round if you have Planetary Shield', 'defender'),
 		duraniumArmor: new Option('Duranium Armor', 'After each round repair 1 unit that wasn\'t damaged this round'),
 		assaultCannon: new Option('Assault Cannon', 'Opponent destroys 1 non-Fighter ship if you have at least 3 non-Fighters'),
 	};
@@ -124,7 +128,7 @@
 	})();
 
 	/** These correspond to fields of UnitInfo, like 'battleValue', 'bombardmentValue' etc. */
-	root.ThrowTypes = {
+	root.ThrowType = {
 		Battle: 'battle',
 		Bombardment: 'bombardment',
 		SpaceCannon: 'spaceCannon',

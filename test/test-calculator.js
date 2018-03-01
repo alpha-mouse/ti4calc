@@ -264,7 +264,6 @@ exports.spaceUpgrades = function (test) {
 	fleet2[game.UnitType.PDS] = { count: 4, upgraded: true };
 
 	testBattle(test, fleet1, fleet2, game.BattleType.Space);
-
 };
 
 exports.spaceLong = function (test) {
@@ -281,7 +280,6 @@ exports.spaceLong = function (test) {
 	fleet2[game.UnitType.Fighter] = { count: 20 };
 
 	testBattle(test, fleet1, fleet2, game.BattleType.Space);
-
 };
 
 exports.spacePerformance = function (test) {
@@ -732,6 +730,68 @@ exports.plasmaScoringSpaceCannonGround = function (test) {
 
 };
 
+exports.magenDefenseGround = function (test) {
+
+	var fleet1 = {};
+	var fleet2 = {};
+	fleet1[game.UnitType.Ground] = { count: 5 };
+
+	fleet2[game.UnitType.Ground] = { count: 5 };
+	fleet2[game.UnitType.PDS] = { count: 1 };
+
+	var options = {
+		attacker: { },
+		defender: { magenDefense: 1 },
+	};
+
+	testBattle(test, fleet1, fleet2, game.BattleType.Ground, options);
+};
+
+exports.magenDefenseGroundWithoutPds = function (test) {
+
+	var fleet1 = {};
+	var fleet2 = {};
+	fleet1[game.UnitType.Ground] = { count: 5 };
+
+	fleet2[game.UnitType.Ground] = { count: 5 };
+
+	var expanded1 = game.expandFleet(defaultRace, fleet1);
+	var expanded2 = game.expandFleet(defaultRace, fleet2);
+
+	var options = {
+		attacker: { },
+		defender: { },
+	};
+
+	var noMagenDefense = calc.computeProbabilities(expanded1, expanded2, game.BattleType.Ground, options).distribution;
+	//console.log(noMagenDefense.toString());
+
+	options.defender.magenDefense = true;
+	var withMagenDefense = calc.computeProbabilities(expanded1, expanded2, game.BattleType.Ground, options).distribution;
+	//console.log(withMagenDefense.toString());
+	test.ok(distributionsEqual(noMagenDefense, withMagenDefense, accuracy), 'Magen Defense activated without PDS');
+
+	test.done();
+};
+
+exports.magenDefenseWarSunGround = function (test) {
+
+	var fleet1 = {};
+	var fleet2 = {};
+	fleet1[game.UnitType.WarSun] = { count: 1 };
+	fleet1[game.UnitType.Ground] = { count: 5 };
+
+	fleet2[game.UnitType.Ground] = { count: 5 };
+	fleet2[game.UnitType.PDS] = { count: 1 };
+
+	var options = {
+		attacker: { },
+		defender: { magenDefense: 1 },
+	};
+
+	testBattle(test, fleet1, fleet2, game.BattleType.Ground, options);
+};
+
 
 /** used to group tests for easier selective running */
 function group(exports, testGroup) {
@@ -746,5 +806,6 @@ function group(exports, testGroup) {
 	return result;
 }
 
-exports.plasmaScoring = group(exports, 'plasmaScoring');
+//exports.plasmaScoring = group(exports, 'plasmaScoring');
+exports.magenDefense = group(exports, 'magenDefense');
 //exports.ground = group(exports, 'ground');

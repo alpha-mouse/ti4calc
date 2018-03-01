@@ -95,8 +95,16 @@
 				round++;
 				if (round === 1) {
 				}
-				var attackerInflicted = rollDice(attacker, game.ThrowTypes.Battle);
-				var defenderInflicted = rollDice(defender, game.ThrowTypes.Battle);
+				var attackerInflicted = rollDice(attacker, game.ThrowType.Battle);
+				var defenderInflicted = rollDice(defender, game.ThrowType.Battle);
+				if (round === 1 &&
+					battleType === game.BattleType.Ground &&
+					options.defender.magenDefense &&
+					defenderFull.some(unitIs(game.UnitType.PDS)) &&
+					!attackerFull.some(unitIs(game.UnitType.WarSun))
+				) {
+					attackerInflicted = 0;
+				}
 
 				applyDamage(attacker, defenderInflicted);
 				applyDamage(defender, attackerInflicted);
@@ -184,15 +192,15 @@
 					appliesTo: game.BattleType.Space,
 					execute: function (attacker, defender, attackerFull, defenderFull, options) {
 						var attackerModifier = options.defender.antimassDeflectors ? -1 : 0;
-						var attackerInflicted = rollDice(attackerFull.filter(hasSpaceCannon), game.ThrowTypes.SpaceCannon, attackerModifier);
+						var attackerInflicted = rollDice(attackerFull.filter(hasSpaceCannon), game.ThrowType.SpaceCannon, attackerModifier);
 						if (options.attacker.plasmaScoring) {
-							attackerInflicted += fromPlasmaScoring(attackerFull, game.ThrowTypes.SpaceCannon, attackerModifier);
+							attackerInflicted += fromPlasmaScoring(attackerFull, game.ThrowType.SpaceCannon, attackerModifier);
 						}
 
 						var defenderModifier = options.attacker.antimassDeflectors ? -1 : 0;
-						var defenderInflicted = rollDice(defenderFull.filter(hasSpaceCannon), game.ThrowTypes.SpaceCannon, defenderModifier);
+						var defenderInflicted = rollDice(defenderFull.filter(hasSpaceCannon), game.ThrowType.SpaceCannon, defenderModifier);
 						if (options.defender.plasmaScoring) {
-							defenderInflicted += fromPlasmaScoring(defenderFull, game.ThrowTypes.SpaceCannon, defenderModifier);
+							defenderInflicted += fromPlasmaScoring(defenderFull, game.ThrowType.SpaceCannon, defenderModifier);
 						}
 
 						applyDamage(attacker, defenderInflicted, gravitonLaserUnitHittable(options.defender));
@@ -220,7 +228,7 @@
 								firing = firing.concat(fleet.filter(unitIs(game.UnitType.Destroyer)));
 							if (firing.length > 2)
 								firing = firing.slice(0, 2);
-							return rollDice(firing, game.ThrowTypes.Battle);
+							return rollDice(firing, game.ThrowType.Battle);
 						}
 
 						var attackerInflicted = 0;
@@ -251,8 +259,8 @@
 					execute: function (attacker, defender) {
 						var attackerBarrageUnits = attacker.filter(hasBarrage);
 						var defenderBarrageUnits = defender.filter(hasBarrage);
-						var attackerInflicted = rollDice(attackerBarrageUnits, game.ThrowTypes.Barrage);
-						var defenderInflicted = rollDice(defenderBarrageUnits, game.ThrowTypes.Barrage);
+						var attackerInflicted = rollDice(attackerBarrageUnits, game.ThrowType.Barrage);
+						var defenderInflicted = rollDice(defenderBarrageUnits, game.ThrowType.Barrage);
 						applyDamage(attacker, defenderInflicted, unitIs(game.UnitType.Fighter));
 						applyDamage(defender, attackerInflicted, unitIs(game.UnitType.Fighter));
 
@@ -269,9 +277,9 @@
 							|| attackerFull.some(unitIs(game.UnitType.WarSun)); // or there are but attacking WarSuns negate their Planetary Shield
 						if (!bombardmentPossible) return;
 
-						var attackerInflicted = rollDice(attackerFull.filter(hasBombardment), game.ThrowTypes.Bombardment);
+						var attackerInflicted = rollDice(attackerFull.filter(hasBombardment), game.ThrowType.Bombardment);
 						if (options.attacker.plasmaScoring) {
-							attackerInflicted += fromPlasmaScoring(attackerFull, game.ThrowTypes.Bombardment);
+							attackerInflicted += fromPlasmaScoring(attackerFull, game.ThrowType.Bombardment);
 						}
 
 						for (var i = defender.length - 1; 0 <= i && 0 < attackerInflicted; i--) {
@@ -289,22 +297,16 @@
 					appliesTo: game.BattleType.Ground,
 					execute: function (attacker, defender, attackerFull, defenderFull, options) {
 						var defenderModifier = options.attacker.antimassDeflectors ? -1 : 0;
-						var defenderInflicted = rollDice(defenderFull.filter(unitIs(game.UnitType.PDS)), game.ThrowTypes.SpaceCannon, defenderModifier);
+						var defenderInflicted = rollDice(defenderFull.filter(unitIs(game.UnitType.PDS)), game.ThrowType.SpaceCannon, defenderModifier);
 
 						if (options.defender.plasmaScoring) {
-							defenderInflicted += fromPlasmaScoring(defenderFull.filter(unitIs(game.UnitType.PDS)), game.ThrowTypes.SpaceCannon);
+							defenderInflicted += fromPlasmaScoring(defenderFull.filter(unitIs(game.UnitType.PDS)), game.ThrowType.SpaceCannon);
 						}
 
 						applyDamage(attacker, defenderInflicted, unitIs(game.UnitType.Ground));
 					},
 				},
 			];
-
-			function unitIs(unitType) {
-				return function (unit) {
-					return unit.type === unitType;
-				};
-			}
 
 			function getUnitWithLowest(fleet, property) {
 				var result = null;
@@ -327,6 +329,12 @@
 				}
 				return 0;
 			}
+		}
+
+		function unitIs(unitType) {
+			return function (unit) {
+				return unit.type === unitType;
+			};
 		}
 	})();
 })(typeof exports === 'undefined' ? window : exports);

@@ -130,7 +130,7 @@
 	<div id="options" :class="{ collapsed: !showOptions }">
 		<div class="heading"><strong>Technologies</strong></div>
 		<div class="o-grid center-grid" v-for="(option, key) in Technologies">
-			<div class="o-grid__cell">
+			<div class="o-grid__cell" :class="{ hidden: !option.availableFor('attacker') }">
 				<label class="" v-bind:for="'attacker.' + key"
 					   v-bind:title="option.description">{{option.title}}</label>
 				<input type="checkbox" class="" v-bind:id="'attacker.' + key"
@@ -139,7 +139,7 @@
 			<div class="o-grid__cell">
 				<button type="button" class="help" v-bind:title="option.description"></button>
 			</div>
-			<div class="o-grid__cell">
+			<div class="o-grid__cell" :class="{ hidden: !option.availableFor('defender') }">
 				<input type="checkbox" class="" v-bind:id="'defender.' + key"
 					   v-model="options.defender[key]">
 				<label class="" v-bind:for="'defender.' + key"
@@ -148,7 +148,7 @@
 		</div>
 		<div class="heading"><strong>Action Cards</strong></div>
 		<div class="o-grid center-grid" v-for="(option, key) in ActionCards">
-			<div class="o-grid__cell">
+			<div class="o-grid__cell" :class="{ hidden: !option.availableFor('attacker') }">
 				<label class="" v-bind:for="'attacker.' + key"
 					   v-bind:title="option.description">{{option.title}}</label>
 				<input type="checkbox" class="" v-bind:id="'attacker.' + key"
@@ -157,7 +157,7 @@
 			<div class="o-grid__cell">
 				<button type="button" class="help" v-bind:title="option.description"></button>
 			</div>
-			<div class="o-grid__cell">
+			<div class="o-grid__cell" :class="{ hidden: !option.availableFor('defender') }">
 				<input type="checkbox" class="" v-bind:id="'defender.' + key"
 					   v-model="options.defender[key]">
 				<label class="" v-bind:for="'defender.' + key"

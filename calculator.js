@@ -39,7 +39,7 @@
 
 			// the most interesting part - actually compute outcome probabilities
 			for (var i = 0; i < problemArray.length; ++i)
-				solveProblem(problemArray[i]);
+				solveProblem(problemArray[i], battleType, attackerFull, defenderFull);
 
 			// format output
 			var finalDistribution = new structs.DistributionBase(-attacker.length, defender.length);
@@ -81,14 +81,12 @@
 		}
 
 		/** Do full probability mass redistribution according to transition vectors */
-		function solveProblem(problem) {
+		function solveProblem(problem, battleType, attackerFull, defenderFull) {
 			/*var attackerBoost = 0;
 			 var defenderBoost = 0;
 
 			 attackerBoost += problem.options.attacker.moraleBoost1 ? 1 : 0;
 			 defenderBoost += problem.options.defender.moraleBoost1 ? 1 : 0;
-			 attackerBoost -= problem.options.defender.xxcha ? 1 : 0;
-			 defenderBoost -= problem.options.attacker.xxcha ? 1 : 0;
 
 			 if (attackerBoost !== 0 || defenderBoost !== 0) {
 			 //need to make one round of propagation with altered probabilities
@@ -97,14 +95,24 @@
 			 problem.distribution = applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
 			 }*/
 
+			if (battleType === game.BattleType.Ground &&
+				problem.options.defender.magenDefense &&
+				defenderFull.some(unitIs(game.UnitType.PDS)) &&
+				!attackerFull.some(unitIs(game.UnitType.WarSun))) {
+				//need to make one round of propagation with attacker not firing
+				var attackerTransitions = scaleTransitions([], null, problem.attacker.length + 1); // attacker does not fire
+				var defenderTransitions = computeFleetTransitions(problem.defender, game.ThrowType.Battle);
+				applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
+			}
+
 			propagateProbabilityUpLeft(problem);
 		}
 
 		function propagateProbabilityUpLeft(problem) {
 			var distr = problem.distribution;
 			// evaluate probabilities of transitions for each fleet
-			var attackerTransitions = computeFleetTransitions(problem.attacker, game.ThrowTypes.Battle);
-			var defenderTransitions = computeFleetTransitions(problem.defender, game.ThrowTypes.Battle);
+			var attackerTransitions = computeFleetTransitions(problem.attacker, game.ThrowType.Battle);
+			var defenderTransitions = computeFleetTransitions(problem.defender, game.ThrowType.Battle);
 			//do propagation
 			for (var a = distr.rows - 1; 0 < a; a--) {
 				for (var d = distr.columns - 1; 0 < d; d--) {
@@ -137,7 +145,7 @@
 		/** Compute transition arrays for all left-subsets of the fleet
 		 * result[4] === [X,Y,Z,..] means that probabilities of the first 4 units in the fleet
 		 * inflicting 0, 1, 2 etc damage points are X, Y, Z, etc respectively
-		 * @param throwType game.ThrowTypes */
+		 * @param throwType game.ThrowType */
 		function computeFleetTransitions(fleet, throwType, modifier, reroll) {
 			modifier = modifier || 0;
 			var result = [[1]];
@@ -253,17 +261,17 @@
 							var spaceCannonAttacker = attackerFull.filter(hasSpaceCannon);
 							var attackerTransitions;
 							if (options.attacker.plasmaScoring)
-								attackerTransitions = scaleTransitionsWithPlasmaScoring(spaceCannonAttacker, game.ThrowTypes.SpaceCannon, problem.attacker.length + 1, attackerModifier);
+								attackerTransitions = scaleTransitionsWithPlasmaScoring(spaceCannonAttacker, game.ThrowType.SpaceCannon, problem.attacker.length + 1, attackerModifier);
 							else
-								attackerTransitions = scaleTransitions(spaceCannonAttacker, game.ThrowTypes.SpaceCannon, problem.attacker.length + 1, attackerModifier);
+								attackerTransitions = scaleTransitions(spaceCannonAttacker, game.ThrowType.SpaceCannon, problem.attacker.length + 1, attackerModifier);
 
 							var defenderModifier = options.attacker.antimassDeflectors ? -1 : 0;
 							var spaceCannonDefender = defenderFull.filter(hasSpaceCannon);
 							var defenderTransitions;
 							if (options.defender.plasmaScoring)
-								defenderTransitions = scaleTransitionsWithPlasmaScoring(spaceCannonDefender, game.ThrowTypes.SpaceCannon, problem.defender.length + 1, defenderModifier);
+								defenderTransitions = scaleTransitionsWithPlasmaScoring(spaceCannonDefender, game.ThrowType.SpaceCannon, problem.defender.length + 1, defenderModifier);
 							else
-								defenderTransitions = scaleTransitions(spaceCannonDefender, game.ThrowTypes.SpaceCannon, problem.defender.length + 1, defenderModifier);
+								defenderTransitions = scaleTransitions(spaceCannonDefender, game.ThrowType.SpaceCannon, problem.defender.length + 1, defenderModifier);
 
 							applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
 						});
@@ -284,7 +292,7 @@
 
 							function createMentakTransitions(fleet) {
 								var firedShips = 0;
-								return computeSelectedUnitsTransitions(fleet, game.ThrowTypes.Battle, function (ship) {
+								return computeSelectedUnitsTransitions(fleet, game.ThrowType.Battle, function (ship) {
 									if (2 <= firedShips) {
 										return false;
 									} else if (ship.type === game.UnitType.Cruiser || ship.type === game.UnitType.Destroyer) {
@@ -364,8 +372,8 @@
 						var result = [];
 						problemArray.forEach(function (problem) {
 
-							var attackerTransitions = computeSelectedUnitsTransitions(problem.attacker, game.ThrowTypes.Barrage, hasBarrage);
-							var defenderTransitions = computeSelectedUnitsTransitions(problem.defender, game.ThrowTypes.Barrage, hasBarrage);
+							var attackerTransitions = computeSelectedUnitsTransitions(problem.attacker, game.ThrowType.Barrage, hasBarrage);
+							var defenderTransitions = computeSelectedUnitsTransitions(problem.defender, game.ThrowType.Barrage, hasBarrage);
 
 							var attackerVulnerable = getVulnerableUnitsRange(problem.attacker, unitIs(game.UnitType.Fighter));
 							var defenderVulnerable = getVulnerableUnitsRange(problem.defender, unitIs(game.UnitType.Fighter));
@@ -394,9 +402,9 @@
 							var bombardmentAttacker = attackerFull.filter(hasBombardment);
 							var attackerTransitions;
 							if (options.attacker.plasmaScoring)
-								attackerTransitions = scaleTransitionsWithPlasmaScoring(bombardmentAttacker, game.ThrowTypes.Bombardment, problem.attacker.length + 1);
+								attackerTransitions = scaleTransitionsWithPlasmaScoring(bombardmentAttacker, game.ThrowType.Bombardment, problem.attacker.length + 1);
 							else
-								attackerTransitions = scaleTransitions(bombardmentAttacker, game.ThrowTypes.Bombardment, problem.attacker.length + 1);
+								attackerTransitions = scaleTransitions(bombardmentAttacker, game.ThrowType.Bombardment, problem.attacker.length + 1);
 
 							var defenderTransitions = scaleTransitions([], null, problem.defender.length + 1);
 							applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
@@ -418,9 +426,9 @@
 							var pdsDefender = defenderFull.filter(unitIs(game.UnitType.PDS));
 							var defenderTransitions;
 							if (options.defender.plasmaScoring)
-								defenderTransitions = scaleTransitionsWithPlasmaScoring(pdsDefender, game.ThrowTypes.SpaceCannon, problem.defender.length + 1, defenderModifier);
+								defenderTransitions = scaleTransitionsWithPlasmaScoring(pdsDefender, game.ThrowType.SpaceCannon, problem.defender.length + 1, defenderModifier);
 							else
-								defenderTransitions = scaleTransitions(pdsDefender, game.ThrowTypes.SpaceCannon, problem.defender.length + 1, defenderModifier);
+								defenderTransitions = scaleTransitions(pdsDefender, game.ThrowType.SpaceCannon, problem.defender.length + 1, defenderModifier);
 
 							applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
 						});
@@ -428,19 +436,6 @@
 					},
 				},
 			];
-
-			function scaleTransitions(fleet, throwType, repeat, modifier, reroll) {
-				var fleetInflicted = computeFleetTransitions(fleet, throwType, modifier, reroll).pop();
-				var result = new Array(repeat);
-				result.fill(fleetInflicted);
-				return result;
-			}
-
-			function unitIs(unitType) {
-				return function (unit) {
-					return unit.type === unitType;
-				};
-			}
 
 			function getVulnerableUnitsRange(fleet, predicate) {
 				var from = undefined;
@@ -637,6 +632,19 @@
 				}
 				return result;
 			}
+		}
+
+		function scaleTransitions(fleet, throwType, repeat, modifier, reroll) {
+			var fleetInflicted = computeFleetTransitions(fleet, throwType, modifier, reroll).pop();
+			var result = new Array(repeat);
+			result.fill(fleetInflicted);
+			return result;
+		}
+
+		function unitIs(unitType) {
+			return function (unit) {
+				return unit.type === unitType;
+			};
 		}
 
 	})();
