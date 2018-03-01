@@ -225,35 +225,26 @@
 				{
 					name: 'Anti-Fighter Barrage',
 					appliesTo: game.BattleType.Space,
-					execute: function (attacker, defender, attackerFull, defenderFull, options) {
-						// todo implement barrage
-						return;
-						var attackerDestroyers = attacker.filter(unitIs(calc.UnitType.Destroyer));
-						if (options.attacker.defenceTurret) {
-							attackerDestroyers = attackerDestroyers.map(applyPlus2);
-						}
-						var defenderDestroyers = defender.filter(unitIs(calc.UnitType.Destroyer));
-						if (options.defender.defenceTurret) {
-							defenderDestroyers = defenderDestroyers.map(applyPlus2);
-						}
-						//each destroyer rolls two dice (three with Defence Turret tech). NB! rollDice returns random results
-						var attackerInflicted = rollDice(attackerDestroyers) + rollDice(attackerDestroyers) + (options.attacker.defenceTurret ? rollDice(attackerDestroyers) : 0);
-						var defenderInflicted = rollDice(defenderDestroyers) + rollDice(defenderDestroyers) + (options.defender.defenceTurret ? rollDice(defenderDestroyers) : 0);
+					execute: function (attacker, defender) {
+						var attackerBarrageUnits = attacker.filter(hasBarrage);
+						var defenderBarrageUnits = defender.filter(hasBarrage);
+						var attackerInflicted = rollDice(attackerBarrageUnits, game.ThrowTypes.Barrage);
+						var defenderInflicted = rollDice(defenderBarrageUnits, game.ThrowTypes.Barrage);
 						for (var i = attacker.length - 1; 0 <= i && 0 < defenderInflicted; i--) {
-							if (attacker[i].type === calc.UnitType.Fighter) {
+							if (attacker[i].type === game.UnitType.Fighter) {
 								attacker.splice(i, 1);
 								defenderInflicted--;
 							}
 						}
 						for (var i = defender.length - 1; 0 <= i && 0 < attackerInflicted; i--) {
-							if (defender[i].type === calc.UnitType.Fighter) {
+							if (defender[i].type === game.UnitType.Fighter) {
 								defender.splice(i, 1);
 								attackerInflicted--;
 							}
 						}
 
-						function applyPlus2(destroyer) {
-							return destroyer.applyModifier(2);
+						function hasBarrage(unit) {
+							return unit.barrageDice !== 0;
 						}
 					},
 				},

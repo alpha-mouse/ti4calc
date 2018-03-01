@@ -342,12 +342,30 @@
 					name: 'Anti-Fighter Barrage',
 					appliesTo: game.BattleType.Space,
 					execute: function (problemArray) {
-						return problemArray;
-						//todo barrage
 
 						//Barrage prevents main optimisation trick from being used, namely strict ordering of units deaths.
 						//With barrage Fighters die earlier than Warsun and Dreadnoughts are damaged.
 						//So what we get is a huge collection of separate problems to solve.
+
+						var result = [];
+						problemArray.forEach(function (problem) {
+
+							var attackerTransitions = computeSelectedUnitsTransitions(problem.attacker, game.ThrowTypes.Barrage, hasBarrage);
+							var defenderTransitions = computeSelectedUnitsTransitions(problem.defender, game.ThrowTypes.Barrage, hasBarrage);
+
+							var attackerVulnerable = getVulnerableUnitsRange(problem.attacker, unitIs(game.UnitType.Fighter));
+							var defenderVulnerable = getVulnerableUnitsRange(problem.defender, unitIs(game.UnitType.Fighter));
+
+							var subproblems = interSplit(problem, attackerVulnerable, defenderVulnerable, attackerTransitions, defenderTransitions);
+
+							result.push.apply(result, subproblems);
+						});
+
+						return result;
+
+						function hasBarrage(unit) {
+							return unit.barrageDice !== 0;
+						}
 					},
 				},
 				{
@@ -395,6 +413,176 @@
 				return function (unit) {
 					return unit.type === unitType;
 				};
+			}
+
+			function getVulnerableUnitsRange(fleet, predicate) {
+				var from = undefined;
+				for (var i = 0; i < fleet.length; i++) {
+					if (from === undefined) {
+						if (predicate(fleet[i])) {
+							from = i;
+						}
+					} else {
+						if (!predicate(fleet[i])) {
+							break;
+						}
+					}
+				}
+				if (from === undefined) {
+					from = i;
+				}
+				return { from: from, to: i };
+			}
+
+			/** Split problem into several subproblems in cases where main optimisation trick (strict ordering of units deaths) cannot be used.
+			 * For example with barrage Fighters die earlier than Warsun and Dreadnoughts are damaged.
+			 * Or during bombardment Ground Forces die before Mechanised Units are damaged.
+			 * So what we get is a huge collection of separate problems to solve.
+			 * Potentially up to F_a+F_d+F_a*F_d, where F_a and F_d are numbers of attacking and defending Fighters, Ground Forces or
+			 * whichever units that could die before the last one in order.
+			 * This method is conceptually similar to applyTransitions in that it applies transitions once. And different
+			 * in that this application could lead to problem splitting into several subproblems.
+			 * parameter: *Vulnerable {from, to}: range of units that are vulnerable to computed pre-battle action. In case of barrage
+			 *   from - index of first Fighter, to - index of first non-Fighter after Fighters. These indices are relative to problem.(attacker|defender)
+			 *   which means that for problem.distribution they are shifted by 1 to the left, as zeroth row and column correspond to no units, not zeroth unit
+			 * parameter: *Transitions: transitions inflicted by pre-battle-action-specific subset of units within whole range of units. In case of barrage - by destroyers.
+			 * returns: array of problems.
+			 */
+			function interSplit(problem, attackerVulnerable, defenderVulnerable, attackerTransitions, defenderTransitions) {
+				var result = [];
+
+				var dieableAttackers = attackerVulnerable.to - attackerVulnerable.from;
+				var dieableDefenders = defenderVulnerable.to - defenderVulnerable.from;
+
+				// maaaybe no intersplitting is needed at all?..
+				if ((attackerTransitions[attackerTransitions.length - 1].length === 1 &&
+					defenderTransitions[defenderTransitions.length - 1].length === 1) ||
+					(dieableAttackers === 0 && dieableDefenders === 0)) {
+					// so lucky
+					result.push(problem);
+					return result;
+				}
+
+				// ..fat chance
+				// do simple round of transitions for the part of distribution matrix that doesn't require splitting
+				var nonSplittableSubmatrix = extractMinor(problem.distribution, attackerVulnerable.to + 1, defenderVulnerable.to + 1);
+				applyTransitions(nonSplittableSubmatrix, attackerTransitions, defenderTransitions, attackerVulnerable.from, defenderVulnerable.from);
+				result.push(new structs.Problem(nonSplittableSubmatrix, problem.attacker.slice(0, attackerVulnerable.to), problem.defender.slice(0, defenderVulnerable.to), problem.options));
+
+				var memoize = { attacker: {}, defender: {} }; // forget about this variable
+
+				// Check if splitting makes sense for the attacker.
+				// If all units at the end of the list are vulnerable then no splitting is needed
+				if (attackerVulnerable.to + 1 < problem.distribution.rows) {
+					// try out all possible counts of vulnerable attacker units deaths
+					for (var vulA = attackerVulnerable.from; vulA <= attackerVulnerable.to; vulA++) { // "vul" stands for "vulnerable"
+						var attackersDied = attackerVulnerable.to - vulA;
+						var splitDistribution = structs.createMatrix(problem.distribution.rows - attackersDied, defenderVulnerable.to + 1, 0);
+						var subproblemProbabilityMass = 0;
+						for (var d = 0; d <= defenderVulnerable.to; d++) {
+							if (attackersDied < defenderTransitions[d].length) {
+								for (var a = attackerVulnerable.to + 1; a < problem.distribution.rows; a++) {
+									var maxDefenderDamage = Math.max(0, d - defenderVulnerable.from);
+									var transitionMatrix = orthogonalMultiply(attackerTransitions[a], defenderTransitions[d], maxDefenderDamage, dieableAttackers);
+									for (var attackerInflicted = 0; attackerInflicted < attackerTransitions[a].length && attackerInflicted <= maxDefenderDamage; attackerInflicted++) {
+										subproblemProbabilityMass += (
+											splitDistribution[a - attackersDied][d - attackerInflicted] += problem.distribution[a][d] * transitionMatrix.at(attackerInflicted, attackersDied)
+										);
+									}
+								}
+							}
+						}
+						if (subproblemProbabilityMass !== 0) {
+							result.push(new structs.Problem(splitDistribution, splitAttacker(attackersDied), problem.defender, problem.options));
+						}
+					}
+				}
+				// Check if splitting makes sense for defender.
+				if (defenderVulnerable.to + 1 < problem.distribution.columns) {
+					// try out all possible counts of vulnerable defender units deaths
+					for (var vulD = defenderVulnerable.from; vulD <= defenderVulnerable.to; vulD++) { // "vul" stands for "vulnerable"
+						var defendersDied = defenderVulnerable.to - vulD;
+						var splitDistribution = structs.createMatrix(attackerVulnerable.to + 1, problem.distribution.columns - defendersDied, 0);
+						var subproblemProbabilityMass = 0;
+						for (var a = 0; a <= attackerVulnerable.to; a++) {
+							if (defendersDied < attackerTransitions[a].length) {
+								for (var d = defenderVulnerable.to + 1; d < problem.distribution.columns; d++) {
+									var maxAttackerDamage = Math.max(0, a - attackerVulnerable.from);
+									var transitionMatrix = orthogonalMultiply(attackerTransitions[a], defenderTransitions[d], dieableDefenders, maxAttackerDamage);
+									for (var defenderInflicted = 0; defenderInflicted < defenderTransitions[d].length && defenderInflicted <= maxAttackerDamage; defenderInflicted++) {
+										subproblemProbabilityMass += (
+											splitDistribution[a - defenderInflicted][d - defendersDied] += problem.distribution[a][d] * transitionMatrix.at(defendersDied, defenderInflicted)
+										);
+									}
+								}
+							}
+						}
+						if (subproblemProbabilityMass !== 0) {
+							result.push(new structs.Problem(splitDistribution, problem.attacker, splitDefender(defendersDied), problem.options));
+						}
+					}
+				}
+
+				// And now shit just gets squared. Problem splitting along both attacker and defender dimensions
+				// .. but first, maybe all of this might be avoided?
+				if (attackerVulnerable.to + 1 === problem.distribution.rows || defenderVulnerable.to + 1 === problem.distribution.columns)
+					return result;
+
+				// ..no, seems like we are doomed
+				for (var vulA = attackerVulnerable.from; vulA <= attackerVulnerable.to; vulA++) {
+					for (var vulD = defenderVulnerable.from; vulD <= defenderVulnerable.to; vulD++) {
+
+						var attackersDied = attackerVulnerable.to - vulA;
+						var defendersDied = defenderVulnerable.to - vulD;
+						var splitDistribution = structs.createMatrix(problem.distribution.rows - attackersDied, problem.distribution.columns - defendersDied, 0);
+						var subproblemProbabilityMass = 0;
+						for (var a = attackerVulnerable.to + 1; a < problem.distribution.rows; a++) {
+							for (var d = defenderVulnerable.to + 1; d < problem.distribution.columns; d++) {
+								if (attackersDied < defenderTransitions[d].length && defendersDied < attackerTransitions[a].length) {
+									var transitionMatrix = orthogonalMultiply(attackerTransitions[a], defenderTransitions[d], dieableDefenders, dieableAttackers);
+									subproblemProbabilityMass += (
+										splitDistribution[a - attackersDied][d - defendersDied] += problem.distribution[a][d] * transitionMatrix.at(defendersDied, attackersDied)
+									);
+								}
+							}
+						}
+						if (subproblemProbabilityMass !== 0) {
+							result.push(new structs.Problem(splitDistribution, splitAttacker(attackersDied), splitDefender(defendersDied), problem.options));
+						}
+					}
+				}
+
+				return result;
+
+				function splitAttacker(attackersDied) {
+					if (!memoize.attacker[attackersDied]) {
+						var a = attackerVulnerable.to - attackersDied;
+						var newAttacker = problem.attacker.slice();
+						newAttacker.splice(a, attackersDied);
+						memoize.attacker[attackersDied] = newAttacker;
+					}
+					return memoize.attacker[attackersDied];
+				}
+
+				function splitDefender(defendersDied) {
+					if (!memoize.defender[defendersDied]) {
+						var d = defenderVulnerable.to - defendersDied;
+						var newDefender = problem.defender.slice();
+						newDefender.splice(d, defendersDied);
+						memoize.defender[defendersDied] = newDefender;
+					}
+					return memoize.defender[defendersDied];
+				}
+
+				function extractMinor(distribution, rows, columns) {
+					var result = structs.createMatrix(rows, columns, 0);
+					for (var i = 0; i < rows; i++) {
+						for (var j = 0; j < columns; j++) {
+							result[i][j] = distribution[i][j];
+						}
+					}
+					return result;
+				}
 			}
 		}
 

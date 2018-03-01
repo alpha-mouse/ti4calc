@@ -338,7 +338,7 @@ exports.spacePerformance = function (test) {
 	test.done();
 };
 
-exports.spaceBarrage = {
+exports.barrage = {
 	spaceBarrageNoGhosts: function (test) {
 
 		var fleet1 = {};
