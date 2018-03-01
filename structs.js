@@ -13,11 +13,10 @@
 	};
 
 
-	root.Problem = function (distribution, attacker, defender, options) {
+	root.Problem = function (distribution, attacker, defender) {
 		this.distribution = distribution;
 		this.attacker = attacker;
 		this.defender = defender;
-		this.options = options || { attacker: {}, defender: {} };
 	};
 
 

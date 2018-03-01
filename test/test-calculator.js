@@ -807,5 +807,5 @@ function group(exports, testGroup) {
 }
 
 //exports.plasmaScoring = group(exports, 'plasmaScoring');
-exports.magenDefense = group(exports, 'magenDefense');
+//exports.magenDefense = group(exports, 'magenDefense');
 //exports.ground = group(exports, 'ground');

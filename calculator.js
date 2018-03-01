@@ -29,7 +29,7 @@
 			//initially all the probability mass is concentrated at both fleets being unharmed
 			var distribution = structs.createMatrix(attacker.length + 1, defender.length + 1, 0);
 			distribution[attacker.length][defender.length] = 1;
-			var problemArray = [new structs.Problem(distribution, attacker, defender, options)];
+			var problemArray = [new structs.Problem(distribution, attacker, defender)];
 
 			//apply all pre-battle actions, like PDS fire and Barrage
 			prebattleActions.forEach(function (action) {
@@ -39,7 +39,7 @@
 
 			// the most interesting part - actually compute outcome probabilities
 			for (var i = 0; i < problemArray.length; ++i)
-				solveProblem(problemArray[i], battleType, attackerFull, defenderFull);
+				solveProblem(problemArray[i], battleType, attackerFull, defenderFull, options);
 
 			// format output
 			var finalDistribution = new structs.DistributionBase(-attacker.length, defender.length);
@@ -81,7 +81,7 @@
 		}
 
 		/** Do full probability mass redistribution according to transition vectors */
-		function solveProblem(problem, battleType, attackerFull, defenderFull) {
+		function solveProblem(problem, battleType, attackerFull, defenderFull, options) {
 			/*var attackerBoost = 0;
 			 var defenderBoost = 0;
 
@@ -96,7 +96,7 @@
 			 }*/
 
 			if (battleType === game.BattleType.Ground &&
-				problem.options.defender.magenDefense &&
+				options.defender.magenDefense &&
 				defenderFull.some(unitIs(game.UnitType.PDS)) &&
 				!attackerFull.some(unitIs(game.UnitType.WarSun))) {
 				//need to make one round of propagation with attacker not firing
@@ -285,9 +285,9 @@
 				{
 					name: 'Mentak racial',
 					appliesTo: game.BattleType.Space,
-					execute: function (problemArray) {
+					execute: function (problemArray, attackerFull, defenderFull, options) {
 						problemArray.forEach(function (problem) {
-							if (problem.options.attacker.race !== 'Mentak' && problem.options.defender.race !== 'Mentak')
+							if (options.attacker.race !== 'Mentak' && options.defender.race !== 'Mentak')
 								return;
 
 							function createMentakTransitions(fleet) {
@@ -305,11 +305,11 @@
 
 							var attackerTransitions;
 							var defenderTransitions;
-							if (problem.options.attacker.race === 'Mentak')
+							if (options.attacker.race === 'Mentak')
 								attackerTransitions = createMentakTransitions(problem.attacker);
 							else
 								attackerTransitions = scaleTransitions([], null, problem.attacker.length + 1);
-							if (problem.options.defender.race === 'Mentak')
+							if (options.defender.race === 'Mentak')
 								defenderTransitions = createMentakTransitions(problem.defender);
 							else
 								defenderTransitions = scaleTransitions([], null, problem.defender.length + 1);
@@ -489,7 +489,7 @@
 				// do simple round of transitions for the part of distribution matrix that doesn't require splitting
 				var nonSplittableSubmatrix = extractMinor(problem.distribution, attackerVulnerable.to + 1, defenderVulnerable.to + 1);
 				applyTransitions(nonSplittableSubmatrix, attackerTransitions, defenderTransitions, attackerVulnerable.from, defenderVulnerable.from);
-				result.push(new structs.Problem(nonSplittableSubmatrix, problem.attacker.slice(0, attackerVulnerable.to), problem.defender.slice(0, defenderVulnerable.to), problem.options));
+				result.push(new structs.Problem(nonSplittableSubmatrix, problem.attacker.slice(0, attackerVulnerable.to), problem.defender.slice(0, defenderVulnerable.to)));
 
 				var memoize = { attacker: {}, defender: {} }; // forget about this variable
 
@@ -515,7 +515,7 @@
 							}
 						}
 						if (subproblemProbabilityMass !== 0) {
-							result.push(new structs.Problem(splitDistribution, splitAttacker(attackersDied), problem.defender, problem.options));
+							result.push(new structs.Problem(splitDistribution, splitAttacker(attackersDied), problem.defender));
 						}
 					}
 				}
@@ -540,7 +540,7 @@
 							}
 						}
 						if (subproblemProbabilityMass !== 0) {
-							result.push(new structs.Problem(splitDistribution, problem.attacker, splitDefender(defendersDied), problem.options));
+							result.push(new structs.Problem(splitDistribution, problem.attacker, splitDefender(defendersDied)));
 						}
 					}
 				}
@@ -569,7 +569,7 @@
 							}
 						}
 						if (subproblemProbabilityMass !== 0) {
-							result.push(new structs.Problem(splitDistribution, splitAttacker(attackersDied), splitDefender(defendersDied), problem.options));
+							result.push(new structs.Problem(splitDistribution, splitAttacker(attackersDied), splitDefender(defendersDied)));
 						}
 					}
 				}
