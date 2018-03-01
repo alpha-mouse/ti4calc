@@ -176,8 +176,10 @@
 					name: 'Space Cannon -> Ships',
 					appliesTo: game.BattleType.Space,
 					execute: function (attacker, defender, attackerFull, defenderFull, options) {
-						var attackerInflicted = rollDice(attackerFull.filter(hasSpaceCannon), game.ThrowTypes.SpaceCannon);
-						var defenderInflicted = rollDice(defenderFull.filter(hasSpaceCannon), game.ThrowTypes.SpaceCannon);
+						var attackerModifier = options.defender.antimassDeflectors ? -1 : 0;
+						var attackerInflicted = rollDice(attackerFull.filter(hasSpaceCannon), game.ThrowTypes.SpaceCannon, attackerModifier);
+						var defenderModifier = options.attacker.antimassDeflectors ? -1 : 0;
+						var defenderInflicted = rollDice(defenderFull.filter(hasSpaceCannon), game.ThrowTypes.SpaceCannon, defenderModifier);
 						applyDamage(attacker, defenderInflicted);
 						applyDamage(defender, attackerInflicted);
 
@@ -272,7 +274,8 @@
 					name: 'Space Cannon -> Ground Forces',
 					appliesTo: game.BattleType.Ground,
 					execute: function (attacker, defender, attackerFull, defenderFull, options) {
-						var defenderInflicted = rollDice(defenderFull.filter(unitIs(game.UnitType.PDS)), game.ThrowTypes.SpaceCannon);
+						var defenderModifier = options.attacker.antimassDeflectors ? -1 : 0;
+						var defenderInflicted = rollDice(defenderFull.filter(unitIs(game.UnitType.PDS)), game.ThrowTypes.SpaceCannon, defenderModifier);
 
 						for (var i = attacker.length - 1; 0 <= i && 0 < defenderInflicted; i--) {
 							if (attacker[i].type === game.UnitType.Ground) {

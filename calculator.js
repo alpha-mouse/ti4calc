@@ -34,7 +34,7 @@
 			//apply all pre-battle actions, like PDS fire and Barrage
 			prebattleActions.forEach(function (action) {
 				if (action.appliesTo === battleType)
-					problemArray = action.execute(problemArray, attackerFull, defenderFull);
+					problemArray = action.execute(problemArray, attackerFull, defenderFull, options);
 			});
 
 			// the most interesting part - actually compute outcome probabilities
@@ -247,10 +247,12 @@
 				{
 					name: 'Space Cannon -> Ships',
 					appliesTo: game.BattleType.Space,
-					execute: function (problemArray, attackerFull, defenderFull) {
+					execute: function (problemArray, attackerFull, defenderFull, options) {
 						problemArray.forEach(function (problem) {
-							var attackerTransitions = scaleTransitions(attackerFull.filter(hasSpaceCannon), game.ThrowTypes.SpaceCannon, problem.attacker.length + 1);
-							var defenderTransitions = scaleTransitions(defenderFull.filter(hasSpaceCannon), game.ThrowTypes.SpaceCannon, problem.defender.length + 1);
+							var attackerModifier = options.defender.antimassDeflectors ? -1 : 0;
+							var attackerTransitions = scaleTransitions(attackerFull.filter(hasSpaceCannon), game.ThrowTypes.SpaceCannon, problem.attacker.length + 1, attackerModifier);
+							var defenderModifier = options.attacker.antimassDeflectors ? -1 : 0;
+							var defenderTransitions = scaleTransitions(defenderFull.filter(hasSpaceCannon), game.ThrowTypes.SpaceCannon, problem.defender.length + 1, defenderModifier);
 							applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
 						});
 						return problemArray;
@@ -391,10 +393,11 @@
 				{
 					name: 'Space Cannon -> Ground Forces',
 					appliesTo: game.BattleType.Ground,
-					execute: function (problemArray, attackerFull, defenderFull) {
+					execute: function (problemArray, attackerFull, defenderFull, options) {
 						problemArray.forEach(function (problem) {
 							var attackerTransitions = scaleTransitions([], null, problem.attacker.length + 1); // attacker does not fire
-							var defenderTransitions = scaleTransitions(defenderFull.filter(unitIs(game.UnitType.PDS)), game.ThrowTypes.SpaceCannon, problem.defender.length + 1);
+							var defenderModifier = options.attacker.antimassDeflectors ? -1 : 0;
+							var defenderTransitions = scaleTransitions(defenderFull.filter(unitIs(game.UnitType.PDS)), game.ThrowTypes.SpaceCannon, problem.defender.length + 1, defenderModifier);
 							applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
 						});
 						return problemArray;
@@ -402,8 +405,8 @@
 				},
 			];
 
-			function scaleTransitions(fleet, throwType, repeat, reroll) {
-				var fleetInflicted = computeFleetTransitions(fleet, throwType, 0, reroll).pop();
+			function scaleTransitions(fleet, throwType, repeat, modifier, reroll) {
+				var fleetInflicted = computeFleetTransitions(fleet, throwType, modifier, reroll).pop();
 				var result = new Array(repeat);
 				result.fill(fleetInflicted);
 				return result;

@@ -32,6 +32,21 @@ function invertDistribution(distr) {
 	};
 }
 
+function testBattle(test, fleet1, fleet2, battleType, options) {
+	options = options || { attacker: {}, defender: {} };
+
+	var expanded1 = game.expandFleet(options.attacker.race || defaultRace, fleet1);
+	var expanded2 = game.expandFleet(options.defender.race || defaultRace, fleet2);
+
+	var expected = im.estimateProbabilities(expanded1, expanded2, battleType, options).distribution;
+	//console.log(expected.toString());
+	var got = calc.computeProbabilities(expanded1, expanded2, battleType, options).distribution;
+	//console.log(got.toString());
+	test.ok(distributionsEqual(expected, got, accuracy), 'empirical differs from analytical');
+
+	test.done();
+}
+
 var accuracy = 0.02;
 
 /** test unit counts expansion into ship units */
@@ -191,7 +206,6 @@ exports.symmetricCalculator = function (test) {
 	test.done();
 };
 
-/** test space battle */
 exports.space = function (test) {
 
 	var fleet1 = {};
@@ -207,19 +221,9 @@ exports.space = function (test) {
 	fleet2[game.UnitType.Carrier] = { count: 3 };
 	fleet2[game.UnitType.PDS] = { count: 3 };
 
-	fleet1 = game.expandFleet(defaultRace, fleet1);
-	fleet2 = game.expandFleet(defaultRace, fleet2);
-
-	var expected = im.estimateProbabilities(fleet1, fleet2, game.BattleType.Space).distribution;
-	//console.log(expected.toString());
-	var got = calc.computeProbabilities(fleet1, fleet2, game.BattleType.Space).distribution;
-	//console.log(got.toString());
-	test.ok(distributionsEqual(expected, got, accuracy), 'empirical differs from analytical');
-
-	test.done();
+	testBattle(test, fleet1, fleet2, game.BattleType.Space);
 };
 
-/** test another space battle */
 exports.space2 = function (test) {
 
 	var fleet1 = {};
@@ -237,19 +241,9 @@ exports.space2 = function (test) {
 	fleet2[game.UnitType.Carrier] = { count: 3 };
 	fleet2[game.UnitType.PDS] = { count: 3 };
 
-	fleet1 = game.expandFleet(defaultRace, fleet1);
-	fleet2 = game.expandFleet(defaultRace, fleet2);
-
-	var expected = im.estimateProbabilities(fleet1, fleet2, game.BattleType.Space).distribution;
-	//console.log(expected.toString());
-	var got = calc.computeProbabilities(fleet1, fleet2, game.BattleType.Space).distribution;
-	//console.log(got.toString());
-	test.ok(distributionsEqual(expected, got, accuracy), 'empirical differs from analytical');
-
-	test.done();
+	testBattle(test, fleet1, fleet2, game.BattleType.Space);
 };
 
-/** test space battle with unit upgrades */
 exports.spaceUpgrades = function (test) {
 
 	var fleet1 = {};
@@ -267,19 +261,9 @@ exports.spaceUpgrades = function (test) {
 	fleet2[game.UnitType.Carrier] = { count: 5 };
 	fleet2[game.UnitType.PDS] = { count: 4, upgraded: true };
 
-	fleet1 = game.expandFleet(defaultRace, fleet1);
-	fleet2 = game.expandFleet(defaultRace, fleet2);
-
-	var expected = im.estimateProbabilities(fleet1, fleet2, game.BattleType.Space).distribution;
-	//console.log(expected.toString());
-	var got = calc.computeProbabilities(fleet1, fleet2, game.BattleType.Space).distribution;
-	//console.log(got.toString());
-	test.ok(distributionsEqual(expected, got, accuracy), 'empirical differs from analytical');
-
-	test.done();
+	testBattle(test, fleet1, fleet2, game.BattleType.Space);
 };
 
-/** test long space battle */
 exports.spaceLong = function (test) {
 
 	var fleet1 = {};
@@ -293,19 +277,9 @@ exports.spaceLong = function (test) {
 	fleet2[game.UnitType.Carrier] = { count: 5 };
 	fleet2[game.UnitType.Fighter] = { count: 20 };
 
-	fleet1 = game.expandFleet(defaultRace, fleet1);
-	fleet2 = game.expandFleet(defaultRace, fleet2);
-
-	var expected = im.estimateProbabilities(fleet1, fleet2, game.BattleType.Space).distribution;
-	//console.log(expected.toString());
-	var got = calc.computeProbabilities(fleet1, fleet2, game.BattleType.Space).distribution;
-	//console.log(got.toString());
-	test.ok(distributionsEqual(expected, got, accuracy), 'empirical differs from analytical');
-
-	test.done();
+	testBattle(test, fleet1, fleet2, game.BattleType.Space);
 };
 
-/** test performance */
 exports.spacePerformance = function (test) {
 
 	var fleet1 = {};
@@ -350,16 +324,7 @@ exports.barrage = {
 		fleet2[game.UnitType.Fighter] = { count: 3 };
 		fleet2[game.UnitType.PDS] = { count: 1 };
 
-		fleet1 = game.expandFleet(defaultRace, fleet1);
-		fleet2 = game.expandFleet(defaultRace, fleet2);
-
-		var expected = im.estimateProbabilities(fleet1, fleet2, game.BattleType.Space).distribution;
-		//console.log(expected.toString());
-		var got = calc.computeProbabilities(fleet1, fleet2, game.BattleType.Space).distribution;
-		//console.log(got.toString());
-		test.ok(distributionsEqual(expected, got, accuracy), 'empirical differs from analytical');
-
-		test.done();
+		testBattle(test, fleet1, fleet2, game.BattleType.Space);
 	},
 
 	spaceBarrageSplitDefender: function (test) {
@@ -375,16 +340,7 @@ exports.barrage = {
 		fleet2[game.UnitType.Fighter] = { count: 4 };
 		fleet2[game.UnitType.PDS] = { count: 1 };
 
-		fleet1 = game.expandFleet(defaultRace, fleet1);
-		fleet2 = game.expandFleet(defaultRace, fleet2);
-
-		var expected = im.estimateProbabilities(fleet1, fleet2, game.BattleType.Space).distribution;
-		//console.log(expected.toString());
-		var got = calc.computeProbabilities(fleet1, fleet2, game.BattleType.Space).distribution;
-		//console.log(got.toString());
-		test.ok(distributionsEqual(expected, got, accuracy), 'empirical differs from analytical');
-
-		test.done();
+		testBattle(test, fleet1, fleet2, game.BattleType.Space);
 	},
 
 	spaceBarrageSplitAttacker: function (test) {
@@ -400,16 +356,7 @@ exports.barrage = {
 		fleet2[game.UnitType.Destroyer] = { count: 4 };
 		fleet2[game.UnitType.Fighter] = { count: 7 };
 
-		fleet1 = game.expandFleet(defaultRace, fleet1);
-		fleet2 = game.expandFleet(defaultRace, fleet2);
-
-		var expected = im.estimateProbabilities(fleet1, fleet2, game.BattleType.Space).distribution;
-		//console.log(expected.toString());
-		var got = calc.computeProbabilities(fleet1, fleet2, game.BattleType.Space).distribution;
-		//console.log(got.toString());
-		test.ok(distributionsEqual(expected, got, accuracy), 'empirical differs from analytical');
-
-		test.done();
+		testBattle(test, fleet1, fleet2, game.BattleType.Space);
 	},
 
 	spaceBarrageQuadraticSplit: function (test) {
@@ -424,16 +371,7 @@ exports.barrage = {
 		fleet2[game.UnitType.Destroyer] = { count: 4 };
 		fleet2[game.UnitType.Fighter] = { count: 2 };
 
-		fleet1 = game.expandFleet(defaultRace, fleet1);
-		fleet2 = game.expandFleet(defaultRace, fleet2);
-
-		var expected = im.estimateProbabilities(fleet1, fleet2, game.BattleType.Space).distribution;
-		//console.log(expected.toString());
-		var got = calc.computeProbabilities(fleet1, fleet2, game.BattleType.Space).distribution;
-		//console.log(got.toString());
-		test.ok(distributionsEqual(expected, got, accuracy), 'empirical differs from analytical');
-
-		test.done();
+		testBattle(test, fleet1, fleet2, game.BattleType.Space);
 	},
 
 	spaceBarragePDSvsDestroyers: function (test) {
@@ -446,16 +384,7 @@ exports.barrage = {
 
 		fleet2[game.UnitType.Destroyer] = { count: 3 };
 
-		fleet1 = game.expandFleet(defaultRace, fleet1);
-		fleet2 = game.expandFleet(defaultRace, fleet2);
-
-		var expected = im.estimateProbabilities(fleet1, fleet2, game.BattleType.Space).distribution;
-		//console.log(expected.toString());
-		var got = calc.computeProbabilities(fleet1, fleet2, game.BattleType.Space).distribution;
-		//console.log(got.toString());
-		test.ok(distributionsEqual(expected, got, accuracy), 'empirical differs from analytical');
-
-		test.done();
+		testBattle(test, fleet1, fleet2, game.BattleType.Space);
 	},
 
 	spaceBarragePDSandDestroyers: function (test) {
@@ -468,16 +397,7 @@ exports.barrage = {
 		fleet2[game.UnitType.Destroyer] = { count: 3 };
 		fleet2[game.UnitType.PDS] = { count: 4 };
 
-		fleet1 = game.expandFleet(defaultRace, fleet1);
-		fleet2 = game.expandFleet(defaultRace, fleet2);
-
-		var expected = im.estimateProbabilities(fleet1, fleet2, game.BattleType.Space).distribution;
-		//console.log(expected.toString());
-		var got = calc.computeProbabilities(fleet1, fleet2, game.BattleType.Space).distribution;
-		//console.log(got.toString());
-		test.ok(distributionsEqual(expected, got, accuracy), 'empirical differs from analytical');
-
-		test.done();
+		testBattle(test, fleet1, fleet2, game.BattleType.Space);
 	},
 
 	spaceBarrageHyperPDS: function (test) {
@@ -490,16 +410,7 @@ exports.barrage = {
 
 		fleet2[game.UnitType.Destroyer] = { count: 1 };
 
-		fleet1 = game.expandFleet(defaultRace, fleet1);
-		fleet2 = game.expandFleet(defaultRace, fleet2);
-
-		var expected = im.estimateProbabilities(fleet1, fleet2, game.BattleType.Space).distribution;
-		//console.log(expected.toString());
-		var got = calc.computeProbabilities(fleet1, fleet2, game.BattleType.Space).distribution;
-		//console.log(got.toString());
-		test.ok(distributionsEqual(expected, got, accuracy), 'empirical differs from analytical');
-
-		test.done();
+		testBattle(test, fleet1, fleet2, game.BattleType.Space);
 	},
 
 	spaceBarrageMess: function (test) {
@@ -516,20 +427,10 @@ exports.barrage = {
 		fleet2[game.UnitType.Fighter] = { count: 2 };
 		fleet2[game.UnitType.PDS] = { count: 1 };
 
-		fleet1 = game.expandFleet(defaultRace, fleet1);
-		fleet2 = game.expandFleet(defaultRace, fleet2);
-
-		var expected = im.estimateProbabilities(fleet1, fleet2, game.BattleType.Space).distribution;
-		//console.log(expected.toString());
-		var got = calc.computeProbabilities(fleet1, fleet2, game.BattleType.Space).distribution;
-		//console.log(got.toString());
-		test.ok(distributionsEqual(expected, got, accuracy), 'empirical differs from analytical');
-
-		test.done();
+		testBattle(test, fleet1, fleet2, game.BattleType.Space);
 	},
 };
 
-/** test compare ground battle */
 exports.ground = function (test) {
 
 	var fleet1 = {};
@@ -542,16 +443,7 @@ exports.ground = function (test) {
 	fleet2[game.UnitType.Cruiser] = { count: 7 }; //should have no impact
 	fleet2[game.UnitType.PDS] = { count: 2 };
 
-	fleet1 = game.expandFleet(defaultRace, fleet1);
-	fleet2 = game.expandFleet(defaultRace, fleet2);
-
-	var expected = im.estimateProbabilities(fleet1, fleet2, game.BattleType.Ground).distribution;
-	//console.log(expected.toString());
-	var got = calc.computeProbabilities(fleet1, fleet2, game.BattleType.Ground).distribution;
-	//console.log(got.toString());
-	test.ok(distributionsEqual(expected, got, accuracy), 'empirical differs from analytical');
-
-	test.done();
+	testBattle(test, fleet1, fleet2, game.BattleType.Ground);
 };
 
 exports.groundLonelyPDS = function (test) {
@@ -562,14 +454,53 @@ exports.groundLonelyPDS = function (test) {
 
 	fleet2[game.UnitType.PDS] = { count: 2 };
 
-	fleet1 = game.expandFleet(defaultRace, fleet1);
-	fleet2 = game.expandFleet(defaultRace, fleet2);
+	testBattle(test, fleet1, fleet2, game.BattleType.Ground);
+};
 
-	var expected = im.estimateProbabilities(fleet1, fleet2, game.BattleType.Ground).distribution;
-	//console.log(expected.toString());
-	var got = calc.computeProbabilities(fleet1, fleet2, game.BattleType.Ground).distribution;
-	//console.log(got.toString());
-	test.ok(distributionsEqual(expected, got, accuracy), 'empirical differs from analytical');
+exports.groundPlanetaryShield = function (test) {
+	var fleet1 = {};
+	var fleet2 = {};
+	fleet1[game.UnitType.Ground] = { count: 4 };
+	fleet1[game.UnitType.Dreadnought] = { count: 0 };
+
+	fleet2[game.UnitType.Ground] = { count: 6 };
+	fleet2[game.UnitType.PDS] = { count: 2 };
+
+	var expanded1 = game.expandFleet(defaultRace, fleet1);
+	var expanded2 = game.expandFleet(defaultRace, fleet2);
+
+	var noDreadnoughts = calc.computeProbabilities(expanded1, expanded2, game.BattleType.Ground).distribution;
+	//console.log(noDreadnoughts.toString());
+
+	fleet1[game.UnitType.Dreadnought] = { count: 6 };
+	expanded1 = game.expandFleet(defaultRace, fleet1);
+	var withDreadnoughts = calc.computeProbabilities(expanded1, expanded2, game.BattleType.Ground).distribution;
+	//console.log(withDreadnoughts.toString());
+	test.ok(distributionsEqual(noDreadnoughts, withDreadnoughts, accuracy), 'Dreadnoughts bombarded over Planetary Shield');
+
+	test.done();
+};
+
+exports.groundPlanetaryShieldWarSun = function (test) {
+	var fleet1 = {};
+	var fleet2 = {};
+	fleet1[game.UnitType.Ground] = { count: 4 };
+	fleet1[game.UnitType.Dreadnought] = { count: 5 };
+
+	fleet2[game.UnitType.Ground] = { count: 6 };
+	fleet2[game.UnitType.PDS] = { count: 2 };
+
+	var expanded1 = game.expandFleet(defaultRace, fleet1);
+	var expanded2 = game.expandFleet(defaultRace, fleet2);
+
+	var noWarSun = calc.computeProbabilities(expanded1, expanded2, game.BattleType.Ground).distribution;
+	//console.log(noWarSun.toString());
+
+	fleet1[game.UnitType.WarSun] = { count: 1 };
+	expanded1 = game.expandFleet(defaultRace, fleet1);
+	var withWarSun = calc.computeProbabilities(expanded1, expanded2, game.BattleType.Ground).distribution;
+	//console.log(withWarSun.toString());
+	test.ok(!distributionsEqual(noWarSun, withWarSun, accuracy), 'War Sun didn\'t negate Planetary Shield');
 
 	test.done();
 };
@@ -584,19 +515,9 @@ exports.mentakRacial = function (test) {
 	fleet2[game.UnitType.Cruiser] = { count: 1 };
 	fleet2[game.UnitType.Destroyer] = { count: 1 };
 
-	var mentak = 'Mentak';
-	var options = { attacker: { race: mentak }, defender: { race: defaultRace } };
+	var options = { attacker: { race: 'Mentak' }, defender: { race: defaultRace } };
 
-	fleet1 = game.expandFleet(mentak, fleet1);
-	fleet2 = game.expandFleet(mentak, fleet2);
-
-	var expected = im.estimateProbabilities(fleet1, fleet2, game.BattleType.Space, options).distribution;
-	//console.log(expected.toString());
-	var got = calc.computeProbabilities(fleet1, fleet2, game.BattleType.Space, options).distribution;
-	//console.log(got.toString());
-	test.ok(distributionsEqual(expected, got, accuracy), 'empirical differs from analytical');
-
-	test.done();
+	testBattle(test, fleet1, fleet2, game.BattleType.Space, options);
 };
 
 exports.mentakRacialWithBarrageAndPds = function (test) {
@@ -612,19 +533,9 @@ exports.mentakRacialWithBarrageAndPds = function (test) {
 	fleet2[game.UnitType.Destroyer] = { count: 1 };
 	fleet2[game.UnitType.Fighter] = { count: 1 };
 	fleet2[game.UnitType.PDS] = { count: 2 };
-	var mentak = 'Mentak';
-	var options = { attacker: { race: mentak }, defender: { race: defaultRace } };
+	var options = { attacker: { race: 'Mentak' }, defender: { race: defaultRace } };
 
-	fleet1 = game.expandFleet(defaultRace, fleet1);
-	fleet2 = game.expandFleet(defaultRace, fleet2);
-
-	var expected = im.estimateProbabilities(fleet1, fleet2, game.BattleType.Space, options).distribution;
-	//console.log(expected.toString());
-	var got = calc.computeProbabilities(fleet1, fleet2, game.BattleType.Space, options).distribution;
-	//console.log(got.toString());
-	test.ok(distributionsEqual(expected, got, accuracy), 'empirical differs from analytical');
-
-	test.done();
+	testBattle(test, fleet1, fleet2, game.BattleType.Space, options);
 };
 
 exports.moraleBoost1stRound = function (test) {
@@ -637,16 +548,7 @@ exports.moraleBoost1stRound = function (test) {
 
 	var options = { attacker: { moraleBoost1: true }, defender: { moraleBoost1: true } };
 
-	fleet1 = game.expandFleet(defaultRace, fleet1);
-	fleet2 = game.expandFleet(defaultRace, fleet2);
-
-	var expected = im.estimateProbabilities(fleet1, fleet2, game.BattleType.Space, options).distribution;
-	//console.log(expected.toString());
-	var got = calc.computeProbabilities(fleet1, fleet2, game.BattleType.Space, options).distribution;
-	//console.log(got.toString());
-	test.ok(distributionsEqual(expected, got, accuracy), 'empirical differs from analytical');
-
-	test.done();
+	testBattle(test, fleet1, fleet2, game.BattleType.Space, options);
 };
 
 exports.assaultCannon = function (test) {
@@ -663,14 +565,39 @@ exports.assaultCannon = function (test) {
 		defender: { assaultCannon: true },
 	};
 
-	fleet1 = game.expandFleet(defaultRace, fleet1);
-	fleet2 = game.expandFleet(defaultRace, fleet2);
+	testBattle(test, fleet1, fleet2, game.BattleType.Space, options);
+};
 
-	var expected = im.estimateProbabilities(fleet1, fleet2, game.BattleType.Space, options).distribution;
-	//console.log(expected.toString());
-	var got = calc.computeProbabilities(fleet1, fleet2, game.BattleType.Space, options).distribution;
-	//console.log(got.toString());
-	test.ok(distributionsEqual(expected, got, accuracy), 'empirical differs from analytical');
+exports.antimassDeflectorsSpace = function (test) {
 
-	test.done();
+	var fleet1 = {};
+	var fleet2 = {};
+	fleet1[game.UnitType.Cruiser] = { count: 3 };
+
+	fleet2[game.UnitType.Cruiser] = { count: 3 };
+	fleet2[game.UnitType.PDS] = { count: 3 };
+
+	var options = {
+		attacker: { antimassDeflectors: true },
+		defender: { },
+	};
+
+	testBattle(test, fleet1, fleet2, game.BattleType.Space, options);
+};
+
+exports.antimassDeflectorsGround = function (test) {
+
+	var fleet1 = {};
+	var fleet2 = {};
+	fleet1[game.UnitType.Ground] = { count: 3 };
+
+	fleet2[game.UnitType.Ground] = { count: 3 };
+	fleet2[game.UnitType.PDS] = { count: 3 };
+
+	var options = {
+		attacker: { antimassDeflectors: true },
+		defender: { },
+	};
+
+	testBattle(test, fleet1, fleet2, game.BattleType.Ground, options);
 };
