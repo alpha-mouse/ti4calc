@@ -206,7 +206,7 @@ exports.symmetricCalculator = function (test) {
 	test.done();
 };
 
-exports.space = function (test) {
+exports.space1 = function (test) {
 
 	var fleet1 = {};
 	var fleet2 = {};
@@ -443,7 +443,7 @@ exports.barrage = {
 	},
 };
 
-exports.ground = function (test) {
+exports.groundSimple = function (test) {
 
 	var fleet1 = {};
 	var fleet2 = {};
@@ -459,7 +459,7 @@ exports.ground = function (test) {
 
 };
 
-exports.groundLonelyPDS = function (test) {
+exports.groundPds = function (test) {
 
 	var fleet1 = {};
 	var fleet2 = {};
@@ -556,7 +556,7 @@ exports.mentakRacialWithBarrageAndPds = function (test) {
 
 };
 
-exports.moraleBoost1stRound = function (test) {
+exports.moraleBoost1stRoundSpace = function (test) {
 
 	var fleet1 = {};
 	var fleet2 = {};
@@ -567,6 +567,21 @@ exports.moraleBoost1stRound = function (test) {
 	var options = { attacker: { moraleBoost1: true }, defender: { moraleBoost1: true } };
 
 	testBattle(test, fleet1, fleet2, game.BattleType.Space, options);
+
+};
+
+exports.moraleBoost1stRoundGround = function (test) {
+
+	var fleet1 = {};
+	var fleet2 = {};
+	fleet1[game.UnitType.Ground] = { count: 2 };
+	fleet1[game.UnitType.PDS] = { count: 2 };
+
+	fleet2[game.UnitType.Ground] = { count: 5 };
+
+	var options = { attacker: { moraleBoost1: true }, defender: { } };
+
+	testBattle(test, fleet1, fleet2, game.BattleType.Ground, options);
 
 };
 
@@ -624,7 +639,7 @@ exports.antimassDeflectorsGround = function (test) {
 
 };
 
-exports.gravitonLaser = function (test) {
+exports.gravitonLaserSpace = function (test) {
 
 	var fleet1 = {};
 	var fleet2 = {};
@@ -642,3 +657,94 @@ exports.gravitonLaser = function (test) {
 	testBattle(test, fleet1, fleet2, game.BattleType.Space, options);
 
 };
+
+exports.plasmaScoringBombardmentGround = function (test) {
+
+	var fleet1 = {};
+	var fleet2 = {};
+	fleet1[game.UnitType.WarSun] = { count: 1 };
+	fleet1[game.UnitType.Dreadnought] = { count: 2 };
+	fleet1[game.UnitType.Ground] = { count: 2 };
+
+	fleet2[game.UnitType.Ground] = { count: 5 };
+
+	var options = {
+		attacker: { plasmaScoring: true },
+		defender: {},
+	};
+
+	testBattle(test, fleet1, fleet2, game.BattleType.Ground, options);
+
+};
+
+exports.plasmaScoringSpaceCannonSpace = function (test) {
+
+	var fleet1 = {};
+	var fleet2 = {};
+	fleet1[game.UnitType.Cruiser] = { count: 3 };
+
+	fleet2[game.UnitType.Cruiser] = { count: 2 };
+	fleet2[game.UnitType.PDS] = { count: 2 };
+
+	var options = {
+		attacker: {},
+		defender: { plasmaScoring: true },
+	};
+
+	testBattle(test, fleet1, fleet2, game.BattleType.Space, options);
+
+};
+
+exports.plasmaScoringSpaceCannonXxcha = function (test) {
+
+	var fleet1 = {};
+	var fleet2 = {};
+	fleet1[game.UnitType.Flagship] = { count: 1 };
+	fleet1[game.UnitType.PDS] = { count: 1 };
+
+	fleet2[game.UnitType.Cruiser] = { count: 4 };
+
+
+	var options = {
+		attacker: { race: 'Xxcha', plasmaScoring: true },
+		defender: {},
+	};
+
+	testBattle(test, fleet1, fleet2, game.BattleType.Space, options);
+
+};
+
+exports.plasmaScoringSpaceCannonGround = function (test) {
+
+	var fleet1 = {};
+	var fleet2 = {};
+	fleet1[game.UnitType.Ground] = { count: 3 };
+
+	fleet2[game.UnitType.Ground] = { count: 2 };
+	fleet2[game.UnitType.PDS] = { count: 2 };
+
+	var options = {
+		attacker: {},
+		defender: { plasmaScoring: true },
+	};
+
+	testBattle(test, fleet1, fleet2, game.BattleType.Ground, options);
+
+};
+
+
+/** used to group tests for easier selective running */
+function group(exports, testGroup) {
+	var result = {};
+	var rx = new RegExp(testGroup, 'i');
+	for (var test in exports){
+		if (exports.hasOwnProperty(test) && rx.test(test)){
+			var name = test.replace(rx, '');
+			result[name] = exports[test];
+		}
+	}
+	return result;
+}
+
+exports.plasmaScoring = group(exports, 'plasmaScoring');
+//exports.ground = group(exports, 'ground');

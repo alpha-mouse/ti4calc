@@ -74,7 +74,7 @@
 	root.Technologies = {
 		antimassDeflectors: new Option('Antimass Deflectors', '-1 to opponents Space Cannon rolls'),
 		gravitonLaser: new Option('Graviton Laser System', 'Space Cannon hits should be applied to non-fighters if possible'),
-		plasmeScoring: new Option('Plasma Scoring', 'One additional die for one unit during Space Cannon or Bombardment'),
+		plasmaScoring: new Option('Plasma Scoring', 'One additional die for one unit during Space Cannon or Bombardment'),
 		magenDefense: new Option('Magen Defense Grid', 'Opponent doesn\'t throw dice for one round if you have Planetary Shield'),
 		duraniumArmor: new Option('Duranium Armor', 'After each round repair 1 unit that wasn\'t damaged this round'),
 		assaultCannon: new Option('Assault Cannon', 'Opponent destroys 1 non-Fighter ship if you have at least 3 non-Fighters'),

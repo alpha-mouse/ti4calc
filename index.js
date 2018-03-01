@@ -10,7 +10,7 @@
 
 				antimassDeflectors: false,
 				gravitonLaser: false,
-				plasmeScoring: false,
+				plasmaScoring: false,
 				magenDefense: false,
 				duraniumArmor: false,
 				assaultCannon: false,

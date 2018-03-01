@@ -3,7 +3,8 @@
 This is a calculator of battle outcomes probabilities for Twilight Imperium board game. You can play with it at [alphamou.se/ti4calc].  
 It's written purely in client-side javascript so can be easily copied locally and run from the file system.  
 Licensed under [Creative Commons Attribution](http://creativecommons.org/licenses/by/4.0/) license.  
-I have no further plans of improving it. If you find a bug or consider some feature needed, let me know (ivan.bachtin@gmail.com). Or feel free to implement them yourself, I'll happily accept pull requests. Or you can even steal it and improve it silently. Whatever =)  
+I have no further plans of improving it. If you find a bug or consider some feature needed, let me know (ivan.bachtin@gmail.com). Or feel free to implement them yourself, I'll happily accept pull requests. Or you can even steal it and improve it silently. Whatever =)
+Also, I haven't played the game myself, so if you notice something suspicious, it might very likely be wrong, so don't hesitate to notify me.
 
 ## Developing calculator ##
 ### Unit tests ###

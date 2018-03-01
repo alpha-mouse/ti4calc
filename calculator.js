@@ -144,7 +144,7 @@
 			for (var a = 1; a <= fleet.length; ++a) {
 				var unit = fleet[a - 1];
 				var thisUnitTransitions = computeUnitTransitions(unit, throwType, modifier, reroll);
-				result[a] = slideMultiply(thisUnitTransitions, result[a - 1]);
+				result.push(slideMultiply(thisUnitTransitions, result[a - 1]));
 			}
 			return result;
 		}
@@ -250,9 +250,21 @@
 					execute: function (problemArray, attackerFull, defenderFull, options) {
 						problemArray.forEach(function (problem) {
 							var attackerModifier = options.defender.antimassDeflectors ? -1 : 0;
-							var attackerTransitions = scaleTransitions(attackerFull.filter(hasSpaceCannon), game.ThrowTypes.SpaceCannon, problem.attacker.length + 1, attackerModifier);
+							var spaceCannonAttacker = attackerFull.filter(hasSpaceCannon);
+							var attackerTransitions;
+							if (options.attacker.plasmaScoring)
+								attackerTransitions = scaleTransitionsWithPlasmaScoring(spaceCannonAttacker, game.ThrowTypes.SpaceCannon, problem.attacker.length + 1, attackerModifier);
+							else
+								attackerTransitions = scaleTransitions(spaceCannonAttacker, game.ThrowTypes.SpaceCannon, problem.attacker.length + 1, attackerModifier);
+
 							var defenderModifier = options.attacker.antimassDeflectors ? -1 : 0;
-							var defenderTransitions = scaleTransitions(defenderFull.filter(hasSpaceCannon), game.ThrowTypes.SpaceCannon, problem.defender.length + 1, defenderModifier);
+							var spaceCannonDefender = defenderFull.filter(hasSpaceCannon);
+							var defenderTransitions;
+							if (options.defender.plasmaScoring)
+								defenderTransitions = scaleTransitionsWithPlasmaScoring(spaceCannonDefender, game.ThrowTypes.SpaceCannon, problem.defender.length + 1, defenderModifier);
+							else
+								defenderTransitions = scaleTransitions(spaceCannonDefender, game.ThrowTypes.SpaceCannon, problem.defender.length + 1, defenderModifier);
+
 							applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
 						});
 						return problemArray;
@@ -373,13 +385,19 @@
 				{
 					name: 'Bombardment',
 					appliesTo: game.BattleType.Ground,
-					execute: function (problemArray, attackerFull, defenderFull) {
+					execute: function (problemArray, attackerFull, defenderFull, options) {
 						problemArray.forEach(function (problem) {
 							var bombardmentPossible = !defenderFull.some(unitIs(game.UnitType.PDS)) // either there are no defending PDS
 								|| attackerFull.some(unitIs(game.UnitType.WarSun)); // or there are but attacking WarSuns negate their Planetary Shield
 							if (!bombardmentPossible) return;
 
-							var attackerTransitions = scaleTransitions(attackerFull.filter(hasBombardment), game.ThrowTypes.Bombardment, problem.attacker.length + 1);
+							var bombardmentAttacker = attackerFull.filter(hasBombardment);
+							var attackerTransitions;
+							if (options.attacker.plasmaScoring)
+								attackerTransitions = scaleTransitionsWithPlasmaScoring(bombardmentAttacker, game.ThrowTypes.Bombardment, problem.attacker.length + 1);
+							else
+								attackerTransitions = scaleTransitions(bombardmentAttacker, game.ThrowTypes.Bombardment, problem.attacker.length + 1);
+
 							var defenderTransitions = scaleTransitions([], null, problem.defender.length + 1);
 							applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
 						});
@@ -397,7 +415,13 @@
 						problemArray.forEach(function (problem) {
 							var attackerTransitions = scaleTransitions([], null, problem.attacker.length + 1); // attacker does not fire
 							var defenderModifier = options.attacker.antimassDeflectors ? -1 : 0;
-							var defenderTransitions = scaleTransitions(defenderFull.filter(unitIs(game.UnitType.PDS)), game.ThrowTypes.SpaceCannon, problem.defender.length + 1, defenderModifier);
+							var pdsDefender = defenderFull.filter(unitIs(game.UnitType.PDS));
+							var defenderTransitions;
+							if (options.defender.plasmaScoring)
+								defenderTransitions = scaleTransitionsWithPlasmaScoring(pdsDefender, game.ThrowTypes.SpaceCannon, problem.defender.length + 1, defenderModifier);
+							else
+								defenderTransitions = scaleTransitions(pdsDefender, game.ThrowTypes.SpaceCannon, problem.defender.length + 1, defenderModifier);
+
 							applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
 						});
 						return problemArray;
@@ -586,6 +610,32 @@
 					}
 					return result;
 				}
+			}
+
+			function scaleTransitionsWithPlasmaScoring(fleet, throwType, repeat, modifier, reroll) {
+				var fleetInflicted = computeFleetTransitions(fleet, throwType, modifier, reroll).pop();
+				var bestUnit = getUnitWithLowest(fleet, throwType + 'Value');
+				if (bestUnit) {
+					var unitWithOneDie = bestUnit.clone();
+					unitWithOneDie[throwType + 'Dice'] = 1;
+					var unitTransitions = computeUnitTransitions(unitWithOneDie, throwType, modifier, reroll);
+					fleetInflicted = slideMultiply(unitTransitions, fleetInflicted);
+				}
+				var result = new Array(repeat);
+				result.fill(fleetInflicted);
+				return result;
+			}
+
+			function getUnitWithLowest(fleet, property) {
+				var result = null;
+				var bestBattleValue = Infinity;
+				for (var i = 0; i < fleet.length; i++) {
+					if (fleet[i][property] < bestBattleValue) {
+						result = fleet[i];
+						bestBattleValue = fleet[i][property];
+					}
+				}
+				return result;
 			}
 		}
 
