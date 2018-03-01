@@ -2,21 +2,24 @@
 
 var game = require('../game-elements');
 var calc = require('../calculator').calculator;
-var im = require('../imitator').imitator;
+var imitatorModule = require('../imitator');
+var im = imitatorModule.imitator;
+imitatorModule.imitationIterations = 30000;
 var defaultRace = 'Sardakk';
 
-function distributionsEqual(distr1, distr2, epsilon) {
+
+function distributionsEqual(distr1, distr2) {
 	var min = Math.min(distr1.min, distr2.min);
 	var max = Math.max(distr1.max, distr2.max);
 	if (isNaN(min) || isNaN(max)) return false;
 	var cumulative1 = 0, cumulative2 = 0;
 	for (var i = min; i <= max; i++) {
-		if (epsilon < Math.abs(distr1.at(i) - distr2.at(i)))
+		if (accuracy < Math.abs(distr1.at(i) - distr2.at(i)))
 			return false;
 
 		cumulative1 += distr1.at(i);
 		cumulative2 += distr2.at(i);
-		if (epsilon < Math.abs(cumulative1 - cumulative2))
+		if (accuracy < Math.abs(cumulative1 - cumulative2))
 			return false;
 	}
 	return true;
@@ -42,12 +45,12 @@ function testBattle(test, fleet1, fleet2, battleType, options) {
 	//console.log(expected.toString());
 	var got = calc.computeProbabilities(expanded1, expanded2, battleType, options).distribution;
 	//console.log(got.toString());
-	test.ok(distributionsEqual(expected, got, accuracy), 'empirical differs from analytical');
+	test.ok(distributionsEqual(expected, got), 'empirical differs from analytical');
 
 	test.done();
 }
 
-var accuracy = 0.02;
+var accuracy = 0.01;
 
 /** test unit counts expansion into ship units */
 exports.expansion = function (test) {
@@ -184,7 +187,7 @@ exports.symmetricImitator = function (test) {
 	var fleet2 = game.expandFleet(defaultRace, fleet);
 	var distr = im.estimateProbabilities(fleet1, fleet2, game.BattleType.Space).distribution;
 	var inverse = invertDistribution(distr);
-	test.ok(distributionsEqual(distr, inverse, accuracy), 'got asymmetric distribution');
+	test.ok(distributionsEqual(distr, inverse), 'got asymmetric distribution');
 	test.done();
 };
 
@@ -202,7 +205,7 @@ exports.symmetricCalculator = function (test) {
 	var fleet2 = game.expandFleet(defaultRace, fleet);
 	var distr = calc.computeProbabilities(fleet1, fleet2, game.BattleType.Space).distribution;
 	var inverse = invertDistribution(distr);
-	test.ok(distributionsEqual(distr, inverse, accuracy), 'got asymmetric distribution');
+	test.ok(distributionsEqual(distr, inverse), 'got asymmetric distribution');
 	test.done();
 };
 
@@ -488,7 +491,7 @@ exports.groundPlanetaryShield = function (test) {
 	expanded1 = game.expandFleet(defaultRace, fleet1);
 	var withDreadnoughts = calc.computeProbabilities(expanded1, expanded2, game.BattleType.Ground).distribution;
 	//console.log(withDreadnoughts.toString());
-	test.ok(distributionsEqual(noDreadnoughts, withDreadnoughts, accuracy), 'Dreadnoughts bombarded over Planetary Shield');
+	test.ok(distributionsEqual(noDreadnoughts, withDreadnoughts), 'Dreadnoughts bombarded over Planetary Shield');
 
 	test.done();
 
@@ -513,7 +516,7 @@ exports.groundPlanetaryShieldWarSun = function (test) {
 	expanded1 = game.expandFleet(defaultRace, fleet1);
 	var withWarSun = calc.computeProbabilities(expanded1, expanded2, game.BattleType.Ground).distribution;
 	//console.log(withWarSun.toString());
-	test.ok(!distributionsEqual(noWarSun, withWarSun, accuracy), 'War Sun didn\'t negate Planetary Shield');
+	test.ok(!distributionsEqual(noWarSun, withWarSun), 'War Sun didn\'t negate Planetary Shield');
 
 	test.done();
 
@@ -577,7 +580,7 @@ exports.moraleBoost1stRoundGround = function (test) {
 
 	fleet2[game.UnitType.Ground] = { count: 5 };
 
-	var options = { attacker: { moraleBoost1: true }, defender: { } };
+	var options = { attacker: { moraleBoost1: true }, defender: {} };
 
 	testBattle(test, fleet1, fleet2, game.BattleType.Ground, options);
 
@@ -634,7 +637,6 @@ exports.antimassDeflectorsGround = function (test) {
 	};
 
 	testBattle(test, fleet1, fleet2, game.BattleType.Ground, options);
-
 };
 
 exports.gravitonLaserSpace = function (test) {
@@ -653,7 +655,6 @@ exports.gravitonLaserSpace = function (test) {
 	};
 
 	testBattle(test, fleet1, fleet2, game.BattleType.Space, options);
-
 };
 
 exports.plasmaScoringBombardmentGround = function (test) {
@@ -672,7 +673,6 @@ exports.plasmaScoringBombardmentGround = function (test) {
 	};
 
 	testBattle(test, fleet1, fleet2, game.BattleType.Ground, options);
-
 };
 
 exports.plasmaScoringSpaceCannonSpace = function (test) {
@@ -690,7 +690,6 @@ exports.plasmaScoringSpaceCannonSpace = function (test) {
 	};
 
 	testBattle(test, fleet1, fleet2, game.BattleType.Space, options);
-
 };
 
 exports.plasmaScoringSpaceCannonXxcha = function (test) {
@@ -709,7 +708,6 @@ exports.plasmaScoringSpaceCannonXxcha = function (test) {
 	};
 
 	testBattle(test, fleet1, fleet2, game.BattleType.Space, options);
-
 };
 
 exports.plasmaScoringSpaceCannonGround = function (test) {
@@ -727,7 +725,6 @@ exports.plasmaScoringSpaceCannonGround = function (test) {
 	};
 
 	testBattle(test, fleet1, fleet2, game.BattleType.Ground, options);
-
 };
 
 exports.magenDefenseGround = function (test) {
@@ -740,7 +737,7 @@ exports.magenDefenseGround = function (test) {
 	fleet2[game.UnitType.PDS] = { count: 1 };
 
 	var options = {
-		attacker: { },
+		attacker: {},
 		defender: { magenDefense: 1 },
 	};
 
@@ -759,8 +756,8 @@ exports.magenDefenseGroundWithoutPds = function (test) {
 	var expanded2 = game.expandFleet(defaultRace, fleet2);
 
 	var options = {
-		attacker: { },
-		defender: { },
+		attacker: {},
+		defender: {},
 	};
 
 	var noMagenDefense = calc.computeProbabilities(expanded1, expanded2, game.BattleType.Ground, options).distribution;
@@ -769,7 +766,7 @@ exports.magenDefenseGroundWithoutPds = function (test) {
 	options.defender.magenDefense = true;
 	var withMagenDefense = calc.computeProbabilities(expanded1, expanded2, game.BattleType.Ground, options).distribution;
 	//console.log(withMagenDefense.toString());
-	test.ok(distributionsEqual(noMagenDefense, withMagenDefense, accuracy), 'Magen Defense activated without PDS');
+	test.ok(distributionsEqual(noMagenDefense, withMagenDefense), 'Magen Defense activated without PDS');
 
 	test.done();
 };
@@ -785,11 +782,39 @@ exports.magenDefenseWarSunGround = function (test) {
 	fleet2[game.UnitType.PDS] = { count: 1 };
 
 	var options = {
-		attacker: { },
+		attacker: {},
 		defender: { magenDefense: 1 },
 	};
 
 	testBattle(test, fleet1, fleet2, game.BattleType.Ground, options);
+};
+
+exports.duraniumArmorSpace = function (test) {
+
+	var fleet1 = {};
+	var fleet2 = {};
+	fleet1[game.UnitType.Flagship] = { count: 1 };
+	fleet1[game.UnitType.WarSun] = { count: 1 };
+	fleet1[game.UnitType.Dreadnought] = { count: 1 };
+
+	fleet2[game.UnitType.Flagship] = { count: 1 };
+	fleet2[game.UnitType.WarSun] = { count: 1 };
+	fleet2[game.UnitType.Dreadnought] = { count: 1 };
+
+	var options = {
+		attacker: {},
+		defender: { duraniumArmor: true },
+	};
+
+	var expanded1 = game.expandFleet(defaultRace, fleet1);
+	var expanded2 = game.expandFleet(defaultRace, fleet2);
+
+	var distribution = im.estimateProbabilities(expanded1, expanded2, game.BattleType.Space, options).distribution;
+	//console.log(distribution.toString());
+	var inverse = invertDistribution(distribution);
+	test.ok(!distributionsEqual(distribution, inverse), 'Duranium Armor not applied');
+
+	test.done();
 };
 
 
@@ -797,8 +822,8 @@ exports.magenDefenseWarSunGround = function (test) {
 function group(exports, testGroup) {
 	var result = {};
 	var rx = new RegExp(testGroup, 'i');
-	for (var test in exports){
-		if (exports.hasOwnProperty(test) && rx.test(test)){
+	for (var test in exports) {
+		if (exports.hasOwnProperty(test) && rx.test(test)) {
 			var name = test.replace(rx, '');
 			result[name] = exports[test];
 		}

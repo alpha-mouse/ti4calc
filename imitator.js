@@ -9,10 +9,10 @@
 		game = window;
 	}
 
+	root.imitationIterations = 10000;
 	root.imitator = (function () {
 
 		var prebattleActions = initPrebattleActions();
-		var imitationIterations = 10000;
 
 		return {
 			estimateProbabilities: estimateProbabilities,
@@ -33,7 +33,7 @@
 				.map(function (unit) {
 					return [unit.shortType];
 				});
-			for (var i = 0; i < imitationIterations; ++i) {
+			for (var i = 0; i < root.imitationIterations; ++i) {
 				var tmpAttacker = attacker.map(function (unit) {
 					return unit.clone();
 				});
