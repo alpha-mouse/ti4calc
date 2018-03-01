@@ -59,6 +59,12 @@
 				else if (unitType === UnitType.Ground) return 'Ground Force';
 				else return unitType;
 			},
+			clear: function (side) {
+				for (var unitType in UnitType) {
+					input[side + 'Units'][unitType].count = 0;
+					input[side + 'Units'][unitType].upgraded = false;
+				}
+			},
 			recompute: function () {
 				var attacker = expandFleet(this.options.attacker.race, this.attackerUnits);
 				var defender = expandFleet(this.options.defender.race, this.defenderUnits);

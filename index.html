@@ -88,11 +88,15 @@
 	</div>
 	<div class="o-grid o-grid--no-gutter center-grid">
 		<div class="o-grid__cell block">
-			<button type="button" class="c-button c-button--ghost-brand u-small">Clear Attacker</button>
+			<button type="button" class="c-button c-button--ghost-brand u-small"
+					@click="clear('attacker')">Clear Attacker
+			</button>
 		</div>
 		<div class="unit-name"></div>
 		<div class="o-grid__cell block">
-			<button type="button" class="c-button c-button--ghost-brand u-small">Clear Defender</button>
+			<button type="button" class="c-button c-button--ghost-brand u-small"
+					@click="clear('defender')">Clear Defender
+			</button>
 		</div>
 	</div>
 	<div class="o-grid o-grid--no-gutter spread-grid">
