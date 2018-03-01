@@ -110,9 +110,16 @@
 			return { attacker: attacker, defender: defender };
 		}
 
-		function applyDamage(fleet, hits) {
-			for (var i = 0; i < hits; i++)
-				fleet.pop();
+		function applyDamage(fleet, hits, hittable) {
+			hittable = hittable || function (unit) {
+					return true;
+				};
+			for (var i = fleet.length - 1; 0 <= i && 0 < hits; i--) {
+				if (hittable(fleet[i])) {
+					fleet.splice(i, 1);
+					hits--;
+				}
+			}
 		}
 
 		function rollDice(fleet, throwType, modifier, reroll) {
@@ -180,11 +187,17 @@
 						var attackerInflicted = rollDice(attackerFull.filter(hasSpaceCannon), game.ThrowTypes.SpaceCannon, attackerModifier);
 						var defenderModifier = options.attacker.antimassDeflectors ? -1 : 0;
 						var defenderInflicted = rollDice(defenderFull.filter(hasSpaceCannon), game.ThrowTypes.SpaceCannon, defenderModifier);
-						applyDamage(attacker, defenderInflicted);
-						applyDamage(defender, attackerInflicted);
+						applyDamage(attacker, defenderInflicted, gravitonLaserUnitHittable(options.defender));
+						applyDamage(defender, attackerInflicted, gravitonLaserUnitHittable(options.attacker));
 
 						function hasSpaceCannon(unit) {
 							return unit.spaceCannonDice !== 0;
+						}
+
+						function gravitonLaserUnitHittable(sideOptions) {
+							return function (unit) {
+								return !(sideOptions.gravitonLaser && unit.type === game.UnitType.Fighter);
+							};
 						}
 					},
 				},
@@ -232,18 +245,8 @@
 						var defenderBarrageUnits = defender.filter(hasBarrage);
 						var attackerInflicted = rollDice(attackerBarrageUnits, game.ThrowTypes.Barrage);
 						var defenderInflicted = rollDice(defenderBarrageUnits, game.ThrowTypes.Barrage);
-						for (var i = attacker.length - 1; 0 <= i && 0 < defenderInflicted; i--) {
-							if (attacker[i].type === game.UnitType.Fighter) {
-								attacker.splice(i, 1);
-								defenderInflicted--;
-							}
-						}
-						for (var i = defender.length - 1; 0 <= i && 0 < attackerInflicted; i--) {
-							if (defender[i].type === game.UnitType.Fighter) {
-								defender.splice(i, 1);
-								attackerInflicted--;
-							}
-						}
+						applyDamage(attacker, defenderInflicted, unitIs(game.UnitType.Fighter));
+						applyDamage(defender, attackerInflicted, unitIs(game.UnitType.Fighter));
 
 						function hasBarrage(unit) {
 							return unit.barrageDice !== 0;

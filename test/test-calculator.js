@@ -222,6 +222,7 @@ exports.space = function (test) {
 	fleet2[game.UnitType.PDS] = { count: 3 };
 
 	testBattle(test, fleet1, fleet2, game.BattleType.Space);
+
 };
 
 exports.space2 = function (test) {
@@ -242,6 +243,7 @@ exports.space2 = function (test) {
 	fleet2[game.UnitType.PDS] = { count: 3 };
 
 	testBattle(test, fleet1, fleet2, game.BattleType.Space);
+
 };
 
 exports.spaceUpgrades = function (test) {
@@ -262,6 +264,7 @@ exports.spaceUpgrades = function (test) {
 	fleet2[game.UnitType.PDS] = { count: 4, upgraded: true };
 
 	testBattle(test, fleet1, fleet2, game.BattleType.Space);
+
 };
 
 exports.spaceLong = function (test) {
@@ -278,6 +281,7 @@ exports.spaceLong = function (test) {
 	fleet2[game.UnitType.Fighter] = { count: 20 };
 
 	testBattle(test, fleet1, fleet2, game.BattleType.Space);
+
 };
 
 exports.spacePerformance = function (test) {
@@ -325,6 +329,7 @@ exports.barrage = {
 		fleet2[game.UnitType.PDS] = { count: 1 };
 
 		testBattle(test, fleet1, fleet2, game.BattleType.Space);
+
 	},
 
 	spaceBarrageSplitDefender: function (test) {
@@ -341,6 +346,7 @@ exports.barrage = {
 		fleet2[game.UnitType.PDS] = { count: 1 };
 
 		testBattle(test, fleet1, fleet2, game.BattleType.Space);
+
 	},
 
 	spaceBarrageSplitAttacker: function (test) {
@@ -357,6 +363,7 @@ exports.barrage = {
 		fleet2[game.UnitType.Fighter] = { count: 7 };
 
 		testBattle(test, fleet1, fleet2, game.BattleType.Space);
+
 	},
 
 	spaceBarrageQuadraticSplit: function (test) {
@@ -372,6 +379,7 @@ exports.barrage = {
 		fleet2[game.UnitType.Fighter] = { count: 2 };
 
 		testBattle(test, fleet1, fleet2, game.BattleType.Space);
+
 	},
 
 	spaceBarragePDSvsDestroyers: function (test) {
@@ -385,6 +393,7 @@ exports.barrage = {
 		fleet2[game.UnitType.Destroyer] = { count: 3 };
 
 		testBattle(test, fleet1, fleet2, game.BattleType.Space);
+
 	},
 
 	spaceBarragePDSandDestroyers: function (test) {
@@ -398,6 +407,7 @@ exports.barrage = {
 		fleet2[game.UnitType.PDS] = { count: 4 };
 
 		testBattle(test, fleet1, fleet2, game.BattleType.Space);
+
 	},
 
 	spaceBarrageHyperPDS: function (test) {
@@ -411,6 +421,7 @@ exports.barrage = {
 		fleet2[game.UnitType.Destroyer] = { count: 1 };
 
 		testBattle(test, fleet1, fleet2, game.BattleType.Space);
+
 	},
 
 	spaceBarrageMess: function (test) {
@@ -428,6 +439,7 @@ exports.barrage = {
 		fleet2[game.UnitType.PDS] = { count: 1 };
 
 		testBattle(test, fleet1, fleet2, game.BattleType.Space);
+
 	},
 };
 
@@ -444,6 +456,7 @@ exports.ground = function (test) {
 	fleet2[game.UnitType.PDS] = { count: 2 };
 
 	testBattle(test, fleet1, fleet2, game.BattleType.Ground);
+
 };
 
 exports.groundLonelyPDS = function (test) {
@@ -455,6 +468,7 @@ exports.groundLonelyPDS = function (test) {
 	fleet2[game.UnitType.PDS] = { count: 2 };
 
 	testBattle(test, fleet1, fleet2, game.BattleType.Ground);
+
 };
 
 exports.groundPlanetaryShield = function (test) {
@@ -479,6 +493,7 @@ exports.groundPlanetaryShield = function (test) {
 	test.ok(distributionsEqual(noDreadnoughts, withDreadnoughts, accuracy), 'Dreadnoughts bombarded over Planetary Shield');
 
 	test.done();
+
 };
 
 exports.groundPlanetaryShieldWarSun = function (test) {
@@ -503,6 +518,7 @@ exports.groundPlanetaryShieldWarSun = function (test) {
 	test.ok(!distributionsEqual(noWarSun, withWarSun, accuracy), 'War Sun didn\'t negate Planetary Shield');
 
 	test.done();
+
 };
 
 exports.mentakRacial = function (test) {
@@ -518,6 +534,7 @@ exports.mentakRacial = function (test) {
 	var options = { attacker: { race: 'Mentak' }, defender: { race: defaultRace } };
 
 	testBattle(test, fleet1, fleet2, game.BattleType.Space, options);
+
 };
 
 exports.mentakRacialWithBarrageAndPds = function (test) {
@@ -536,6 +553,7 @@ exports.mentakRacialWithBarrageAndPds = function (test) {
 	var options = { attacker: { race: 'Mentak' }, defender: { race: defaultRace } };
 
 	testBattle(test, fleet1, fleet2, game.BattleType.Space, options);
+
 };
 
 exports.moraleBoost1stRound = function (test) {
@@ -549,6 +567,7 @@ exports.moraleBoost1stRound = function (test) {
 	var options = { attacker: { moraleBoost1: true }, defender: { moraleBoost1: true } };
 
 	testBattle(test, fleet1, fleet2, game.BattleType.Space, options);
+
 };
 
 exports.assaultCannon = function (test) {
@@ -566,6 +585,7 @@ exports.assaultCannon = function (test) {
 	};
 
 	testBattle(test, fleet1, fleet2, game.BattleType.Space, options);
+
 };
 
 exports.antimassDeflectorsSpace = function (test) {
@@ -579,10 +599,11 @@ exports.antimassDeflectorsSpace = function (test) {
 
 	var options = {
 		attacker: { antimassDeflectors: true },
-		defender: { },
+		defender: {},
 	};
 
 	testBattle(test, fleet1, fleet2, game.BattleType.Space, options);
+
 };
 
 exports.antimassDeflectorsGround = function (test) {
@@ -596,8 +617,28 @@ exports.antimassDeflectorsGround = function (test) {
 
 	var options = {
 		attacker: { antimassDeflectors: true },
-		defender: { },
+		defender: {},
 	};
 
 	testBattle(test, fleet1, fleet2, game.BattleType.Ground, options);
+
+};
+
+exports.gravitonLaser = function (test) {
+
+	var fleet1 = {};
+	var fleet2 = {};
+	fleet1[game.UnitType.Cruiser] = { count: 3 };
+	fleet1[game.UnitType.Fighter] = { count: 3 };
+
+	fleet2[game.UnitType.Cruiser] = { count: 3 };
+	fleet2[game.UnitType.PDS] = { count: 3 };
+
+	var options = {
+		attacker: {},
+		defender: { gravitonLaser: true },
+	};
+
+	testBattle(test, fleet1, fleet2, game.BattleType.Space, options);
+
 };
