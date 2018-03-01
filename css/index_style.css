@@ -1,4 +1,34 @@
-#counters .counter {
+body {
+	padding-top: .2em;
+	padding-bottom: .2em;
+}
+
+.center-grid {
+	justify-content: center;
+}
+
+.center-grid .unit-name {
+	text-align: center;
+	flex-basis: 10em;
+	flex-grow: 0;
+	align-self: center;
+}
+
+.center-grid .block {
+	flex-basis: 9em;
+	flex-grow: 0;
+	width: auto;
+}
+
+.center-grid .block:first-child {
+	text-align: right;
+}
+
+.spread-grid {
+	justify-content: space-between;
+}
+
+.spread-grid .o-grid__cell {
 	flex-basis: auto;
 	flex-grow: 0;
 	width: auto;
@@ -6,11 +36,43 @@
 
 #counters .counter input {
 	width: 3em;
+	text-align: center;
 }
 
-#counters .unit-name {
-	flex-basis: 10em;
+#counters .counter {
+	flex-basis: auto;
 	flex-grow: 0;
+	width: auto;
+}
+
+#counters .counter .c-button {
+	padding: .2em .3em;
+}
+
+#counters .c-button.upgrade {
+	min-width: 2em;
+}
+
+#counters .counter .count-stepper {
+	padding-left: .8em;
+	padding-right: .8em;
+}
+
+#options .heading {
+	margin-top: .6em;
+	margin-bottom: .3em;
+	text-align: center;
+}
+
+#options .o-grid__cell {
+	flex-basis: auto;
+	flex-grow: 0;
+	width: auto;
+}
+
+#result-area {
+	margin-left: auto;
+	margin-right: auto;
 }
 
 /* stolen from http://stackoverflow.com/questions/3790935/can-i-hide-the-html5-number-inputs-spin-box*/
@@ -23,6 +85,10 @@ input::-webkit-inner-spin-button {
 
 .hidden {
 	visibility: hidden;
+}
+
+.collapsed {
+	display: none;
 }
 
 #chart-area {
@@ -47,5 +113,30 @@ input::-webkit-inner-spin-button {
 	text-align: center;
 	border: 1px solid cornflowerblue;
 	font-weight: bold;
-	color: white;
+	color: darkblue;
+	padding: 0;
+}
+
+#help .letter {
+	width: 3em;
+	text-align: center;
+}
+
+.o-grid {
+	margin-top: .1em;
+	margin-bottom: .1em;
+}
+
+.c-button {
+	padding: .3em;
+}
+
+.c-field {
+	padding: .3em;
+}
+
+/* workaround blazecss input groups handling a bit */
+.c-input-group .c-button.hidden:first-child + .c-button {
+	border-left-width: 1px;
+	margin-left: -1px;
 }

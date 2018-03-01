@@ -6,7 +6,13 @@
 	<meta http-equiv="Content-Language" content="en">
 	<title>Twilight Imperium IV battle calculator</title>
 
-	<link href="css/bootstrap.css" type="text/css" rel="stylesheet"/>
+	<link href="css/normalize.min.css" type="text/css" rel="stylesheet"/>
+	<link href="css/generics.global.min.css" type="text/css" rel="stylesheet"/>
+	<link href="css/objects.containers.min.css" type="text/css" rel="stylesheet"/>
+	<link href="css/objects.grid.min.css" type="text/css" rel="stylesheet"/>
+	<link href="css/components.buttons.min.css" type="text/css" rel="stylesheet"/>
+	<link href="css/components.input-groups.min.css" type="text/css" rel="stylesheet"/>
+	<link href="css/components.inputs.min.css" type="text/css" rel="stylesheet"/>
 	<link href="css/index_style.css" type="text/css" rel="stylesheet"/>
 	<link rel="shortcut icon" href="favicon.gif" type="image/x-icon"/>
 
@@ -20,112 +26,145 @@
 
 </head>
 <body>
-<div id="root" class="container">
-	<div class="row">
-		<div class="col">Attacker</div>
-		<div class="col btn-group btn-group-toggle">
-			<label class="btn btn-outline-secondary" :class="{ active: battleType === BattleType.Space }">
-				<input type="radio" name="battleType" id="option1"
-					   v-bind:value="BattleType.Space" v-model="battleType">Space Battle
-			</label>
-			<label class="btn btn-outline-secondary" :class="{ active: battleType === BattleType.Ground }">
-				<input type="radio" name="battleType" id="option2"
-					   v-bind:value="BattleType.Ground" v-model="battleType">Invasion Combat
-			</label>
-		</div>
-		<div class="col offset-2">Defender</div>
+<div id="root" class="o-container o-container--small">
+	<div class="o-grid center-grid">
+		<div class="o-grid__cell block"><strong>Attacker</strong></div>
+		<div class="unit-name"></div>
+		<div class="o-grid__cell block"><strong>Defender</strong></div>
 	</div>
-	<div id="races" class="row justify-content-center">
-		<select v-model="options.attacker.race" class="col-auto">
+	<div class="o-grid center-grid">
+		<select v-model="options.attacker.race" class="o-grid__cell c-field block">
 			<option v-for="(name, key) in Races" v-bind:value="key">
 				{{ name }}
 			</option>
 		</select>
-		<select v-model="options.defender.race" class="col-auto offset-2">
+		<div class="unit-name"></div>
+		<select v-model="options.defender.race" class="o-grid__cell c-field block">
 			<option v-for="(name, key) in Races" v-bind:value="key">
 				{{ name }}
 			</option>
 		</select>
 	</div>
 	<div id="counters">
-		<div class="row no-gutters justify-content-center" v-for="(name, key) in UnitType">
-			<div class="counter input-group">
-				<div class="input-group-prepend btn-group-toggle">
-					<label class="btn btn-outline-secondary"
-						   title="Unit upgrade"
-						   :class="{ active: attackerUnits[key].upgraded,
-									 hidden: !upgradeable(options.attacker.race, key) }">
-						<input type="checkbox" autocomplete="off" v-model="attackerUnits[key].upgraded">^
-					</label>
-					<button type="button" class="btn btn-outline-secondary" title="Remove unit"
-							@click="decrement(attackerUnits[key])">-
-					</button>
+		<div class="o-grid o-grid--no-gutter center-grid" v-for="(name, key) in UnitType">
+			<div class="o-grid__cell counter c-input-group">
+				<button type="button" class="c-button upgrade"
+						:class="{ 'c-button--brand': attackerUnits[key].upgraded,
+								  'c-button--ghost-brand': !attackerUnits[key].upgraded,
+								   hidden: !upgradeable(options.attacker.race, key) }"
+						@click="attackerUnits[key].upgraded = !attackerUnits[key].upgraded">
+					{{ attackerUnits[key].upgraded ? '\u25B2' : '\u25b3' }}
+				</button>
+				<button type="button" class="c-button c-button--ghost-brand count-stepper" title="Remove unit"
+						@click="decrement(attackerUnits[key])">-
+				</button>
+				<div class="o-field">
+					<input v-model.number="attackerUnits[key].count" class="c-field" type="number" min="0">
 				</div>
-				<input v-model.number="attackerUnits[key].count" class="form-control" type="number" min="0">
-				<div class="input-group-append">
-					<button type="button" class="btn btn-outline-secondary" title="Add unit"
-							@click="increment(attackerUnits[key])">+
-					</button>
-				</div>
+				<button type="button" class="c-button c-button--ghost-brand count-stepper" title="Add unit"
+						@click="increment(attackerUnits[key])">+
+				</button>
 			</div>
-			<div class="col unit-name">{{displayName(name)}}</div>
-			<div class="counter input-group">
-				<div class="input-group-prepend">
-					<button type="button" class="btn btn-outline-secondary" title="Remove unit"
-							@click="decrement(defenderUnits[key])">-
-					</button>
+			<div class="unit-name">{{displayName(name)}}</div>
+			<div class="o-grid__cell counter c-input-group">
+				<button type="button" class="c-button c-button--ghost-brand count-stepper" title="remove unit"
+						@click="decrement(defenderUnits[key])">-
+				</button>
+				<div class="o-field">
+					<input v-model.number="defenderUnits[key].count" class="c-field" type="number" min="0">
 				</div>
-				<input v-model.number="defenderUnits[key].count" class="form-control" type="number" min="0">
-				<div class="input-group-append btn-group-toggle">
-					<button type="button" class="btn btn-outline-secondary" title="Add unit"
-							@click="increment(defenderUnits[key])">+
-					</button>
-					<label class="btn btn-outline-secondary"
-						   title="Unit upgrade"
-						   :class="{ active: defenderUnits[key].upgraded,
-									 hidden: !upgradeable(options.defender.race, key) }">
-						<input type="checkbox" autocomplete="off" v-model="defenderUnits[key].upgraded">^
-					</label>
-				</div>
+				<button type="button" class="c-button c-button--ghost-brand count-stepper" title="Add unit"
+						@click="increment(defenderUnits[key])">+
+				</button>
+				<button type="button" class="c-button upgrade"
+						:class="{ 'c-button--brand': defenderUnits[key].upgraded,
+								  'c-button--ghost-brand': !defenderUnits[key].upgraded,
+								   hidden: !upgradeable(options.defender.race, key) }"
+						@click="defenderUnits[key].upgraded = !defenderUnits[key].upgraded">
+					{{ defenderUnits[key].upgraded ? '\u25B2' : '\u25b3' }}
+				</button>
 			</div>
 		</div>
 	</div>
-	<div id="options">
-		<div class="row">Technologies</div>
-		<div class="row no-gutters justify-content-center" v-for="(option, key) in Technologies">
-			<div class="col form-check">
-				<input type="checkbox" class="form-check-input" v-bind:id="'attacker.' + key"
+	<div class="o-grid o-grid--no-gutter center-grid">
+		<div class="o-grid__cell block">
+			<button type="button" class="c-button c-button--ghost-brand u-small">Clear Attacker</button>
+		</div>
+		<div class="unit-name"></div>
+		<div class="o-grid__cell block">
+			<button type="button" class="c-button c-button--ghost-brand u-small">Clear Defender</button>
+		</div>
+	</div>
+	<div class="o-grid o-grid--no-gutter spread-grid">
+		<div class="o-grid__cell">
+			<button type="button" class="c-button u-small"
+					:class="{ 'c-button--brand': showOptions,
+					 		  'c-button--ghost-brand': !showOptions }"
+					@click="showOptions = !showOptions">Options
+			</button>
+		</div>
+		<div class="o-grid__cell c-input-group">
+			<button type="button" class="c-button"
+					:class="{ 'c-button--brand': battleType === BattleType.Space,
+							  'c-button--ghost-brand': battleType !== BattleType.Space }"
+					@click="battleType = BattleType.Space">Space Battle
+			</button>
+			<button type="button" class="c-button"
+					:class="{ 'c-button--brand': battleType === BattleType.Ground,
+							  'c-button--ghost-brand': battleType !== BattleType.Ground }"
+					@click="battleType = BattleType.Ground">Invasion Combat
+			</button>
+		</div>
+		<div class="o-grid__cell">
+			<button type="button" class="c-button u-small"
+					:class="{ 'c-button--brand': showHelp,
+					 		  'c-button--ghost-brand': !showHelp }"
+					@click="showHelp = !showHelp">Help
+			</button>
+		</div>
+	</div>
+	<div id="options" :class="{ collapsed: !showOptions }">
+		<div class="heading"><strong>Technologies</strong></div>
+		<div class="o-grid center-grid" v-for="(option, key) in Technologies">
+			<div class="o-grid__cell">
+				<label class="" v-bind:for="'attacker.' + key"
+					   v-bind:title="option.description">{{option.title}}</label>
+				<input type="checkbox" class="" v-bind:id="'attacker.' + key"
 					   v-model="options.attacker[key]">
-				<label class="form-check-label" v-bind:for="'attacker.' + key" v-bind:title="option.description">{{option.title}}</label>
-				<span class="help" v-bind:title="option.description"></span>
 			</div>
-			<div class="col form-check">
-				<input type="checkbox" class="form-check-input" v-bind:id="'defender.' + key"
+			<div class="o-grid__cell">
+				<button type="button" class="help" v-bind:title="option.description"></button>
+			</div>
+			<div class="o-grid__cell">
+				<input type="checkbox" class="" v-bind:id="'defender.' + key"
 					   v-model="options.defender[key]">
-				<label class="form-check-label" v-bind:for="'defender.' + key" v-bind:title="option.description">{{option.title}}</label>
-				<span class="help" v-bind:title="option.description"></span>
+				<label class="" v-bind:for="'defender.' + key"
+					   v-bind:title="option.description">{{option.title}}</label>
 			</div>
 		</div>
-		<div class="row">ActionCards</div>
-		<div class="row no-gutters justify-content-center" v-for="(option, key) in ActionCards">
-			<div class="col form-check">
-				<input type="checkbox" class="form-check-input" v-bind:id="'attacker.' + key"
+		<div class="heading"><strong>Action Cards</strong></div>
+		<div class="o-grid center-grid" v-for="(option, key) in ActionCards">
+			<div class="o-grid__cell">
+				<label class="" v-bind:for="'attacker.' + key"
+					   v-bind:title="option.description">{{option.title}}</label>
+				<input type="checkbox" class="" v-bind:id="'attacker.' + key"
 					   v-model="options.attacker[key]">
-				<label class="form-check-label" v-bind:for="'attacker.' + key" v-bind:title="option.description">{{option.title}}</label>
-				<span class="help" v-bind:title="option.description"></span>
 			</div>
-			<div class="col form-check">
-				<input type="checkbox" class="form-check-input" v-bind:id="'defender.' + key"
+			<div class="o-grid__cell">
+				<button type="button" class="help" v-bind:title="option.description"></button>
+			</div>
+			<div class="o-grid__cell">
+				<input type="checkbox" class="" v-bind:id="'defender.' + key"
 					   v-model="options.defender[key]">
-				<label class="form-check-label" v-bind:for="'defender.' + key" v-bind:title="option.description">{{option.title}}</label>
-				<span class="help" v-bind:title="option.description"></span>
+				<label class="" v-bind:for="'defender.' + key"
+					   v-bind:title="option.description">{{option.title}}</label>
 			</div>
 		</div>
 	</div>
-	<div id="help">
+	<div id="help" :class="{ collapsed: !showHelp }">
 		<h1>Twilight Imperium IV Edition Battle Calculator</h1>
 		<p>Add and remove units to the battle by using '+' and '-' buttons.</p>
-		<p>Toggle unit upgrade by '^' button.</p>
+		<p>Toggle unit upgrade by '&#x25b3' button.</p>
 		<p>Switch battle type between Space Combat and Invasion.</p>
 		<p>Read the chart. Huge red and blue percent figures tell the probabilities of either side winning the
 			battle.</p>
@@ -186,15 +225,16 @@
 		<p>Thanks to:
 		<ul>
 			<li>Ling Weak, Edward Nickson, and L0ft3r​ – for various improvements to the calculator for the third
-				edition of the game. This calculator is heavily based on that one.</li>
+				edition of the game. This calculator is heavily based on that one.
+			</li>
 		</ul>
 		</p>
 		<p>Any suggestions and bug reports are welcome at ivan.bachtin@gmail.com</p>
 	</div>
-	<div id="result-area">
-		<canvas id="chart-area" width="600px" height="400px"></canvas>
-		<canvas id="chart-area-overlay" width="600px" height="400px"></canvas>
-	</div>
+</div>
+<div id="result-area" style="width: 600px; height: 400px">
+	<canvas id="chart-area" width="600px" height="400px"></canvas>
+	<canvas id="chart-area-overlay" width="600px" height="400px"></canvas>
 </div>
 <script type="text/javascript" src="index.js"></script>
 <script type="text/javascript">

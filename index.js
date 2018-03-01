@@ -43,7 +43,10 @@
 
 	app = new Vue({
 		el: '#root',
-		data: Object.assign({}, input),
+		data: Object.assign({}, input, {
+			showOptions: false,
+			showHelp: false,
+		}),
 		methods: {
 			increment: function (unitInput) {
 				unitInput.count++;
