@@ -72,7 +72,7 @@
 
 				// unfortunately Duranium Armor cannot be handled by the calculator
 				var duraniumArmor = this.options.attacker.duraniumArmor || this.options.defender.duraniumArmor;
-				if (duraniumArmor)
+				if (duraniumArmor && this.battleType === BattleType.Space)
 					computed = imitator.estimateProbabilities(attacker, defender, this.battleType, this.options);
 				else
 					computed = calculator.computeProbabilities(attacker, defender, this.battleType, this.options);

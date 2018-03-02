@@ -40,6 +40,8 @@
 				var tmpDefender = defender.map(function (unit) {
 					return unit.clone();
 				});
+				relinkDamageGhosts(tmpAttacker, attacker);
+				relinkDamageGhosts(tmpDefender, defender);
 
 				var survivors = imitateBattle(tmpAttacker, tmpDefender, battleType, options);
 
@@ -78,6 +80,16 @@
 					});
 				}),
 			};
+
+			function relinkDamageGhosts(cloneFleet, originalFleet) {
+				for (var i = 0; i < cloneFleet.length; i++) {
+					var unit = cloneFleet[i];
+					if (unit.isDamageGhost) {
+						var corporealIndex = originalFleet.indexOf(unit.damageCorporeal);
+						unit.damageCorporeal = cloneFleet[corporealIndex];
+					}
+				}
+			}
 		}
 
 		function imitateBattle(attackerFull, defenderFull, battleType, options) {
@@ -109,10 +121,10 @@
 				applyDamage(attacker, defenderInflicted);
 				applyDamage(defender, attackerInflicted);
 
-				//if (options.attacker.duraniumArmor)
-				//	undamageUnit(attacker);
-				//if (options.defender.duraniumArmor)
-				//	undamageUnit(defender);
+				if (options.attacker.duraniumArmor)
+					undamageUnit(attacker);
+				if (options.defender.duraniumArmor)
+					undamageUnit(defender);
 			}
 
 			return { attacker: attacker, defender: defender };
@@ -124,7 +136,11 @@
 				};
 			for (var i = fleet.length - 1; 0 <= i && 0 < hits; i--) {
 				if (hittable(fleet[i])) {
-					fleet.splice(i, 1);
+					var killed = fleet.splice(i, 1)[0];
+					if (killed.isDamageGhost) {
+						killed.damageCorporeal.damaged = true;
+						killed.damageCorporeal.damagedThisRound = true;
+					}
 					hits--;
 				}
 			}
@@ -154,34 +170,25 @@
 		}
 
 		function undamageUnit(fleet) {
-			//todo implement
-			var damageable = fleet.filter(function (unit) {
-				return unit.isDamageable && !unit.isDamageGhost;
-			});
-			var damageGhosts = fleet.filter(function (unit) {
-				return unit.isDamageGhost;
-			});
-			if (damageable.length > damageGhosts.length) {
-				// This means that some units are damaged and can be repaired.
-				// Which units exactly can be repaired is a separate question
-				var damageableTypes = _.countBy(damageable, function (unit) {
-					return unit.type;
-				});
-				var ghostTypes = _.countBy(damageGhosts, function (unit) {
-					return unit.type;
-				});
-				for (var type in damageableTypes)
-					if (damageableTypes.hasOwnProperty(type) &&
-						damageableTypes[type] > (ghostTypes[type] || 0)) {
-						var repairedGhost = damageable.find(function (unit) {
-							return unit.type === type;
-						}).toDamageGhost();
-						// nooow its damage ghost should be put into proper place among other damage ghosts
-						damageGhosts.push(repairedGhost);
-						var sorted = calc.defaultSort(damageGhosts);
-						var index = sorted.indexOf(repairedGhost);
-						fleet.splice(damageable.length + index, 0, repairedGhost);
+
+			var somethingRepaired = false;
+			for (var i = 0; i < fleet.length; i++) {
+				var unit = fleet[i];
+				if (unit.damaged) {
+					if (unit.damagedThisRound) {
+						unit.damagedThisRound = false;
+					} else {
+						if (!somethingRepaired) {
+							var damageGhost = unit.toDamageGhost();
+							// find proper place for the new damage ghost
+							var index = structs.binarySearch(fleet, damageGhost, game.unitComparer);
+							if (index < 0)
+								index = -index - 1;
+							fleet.splice(index, 0, damageGhost);
+							somethingRepaired = true;
+						}
 					}
+				}
 			}
 		}
 

@@ -58,6 +58,7 @@
 		this.description = description;
 		this.limitedTo = limitedTo;
 	}
+
 	Option.prototype.availableFor = function (battleSide) {
 		return this.limitedTo === undefined || this.limitedTo === battleSide;
 	};
@@ -115,13 +116,18 @@
 			return new UnitInfo(this.type, this);
 		};
 
-		//create damage ghost for damageable units
+		/** Create damage ghost for damageable units */
 		UnitInfo.prototype.toDamageGhost = function () {
-			return new UnitInfo(this.type, {
+			var result = new UnitInfo(this.type, {
 				sustainDamageHits: this.sustainDamageHits,
 				battleDice: 0,
 				isDamageGhost: true,
 			});
+			// 'corporeal' as an antonym to 'ghost' =)
+			result.damageCorporeal = this;
+			this.damaged = false;
+			this.damagedThisRound = false;
+			return result;
 		};
 
 		return UnitInfo;
@@ -362,10 +368,10 @@
 	 * @param {string} race - one of 'Sardakk', 'JolNar', etc.
 	 * @param {object} counters - object of the form
 	 *     { Flagship: { count: 0, upgraded: false },
- *       ..
- *       Cruiser: { count: 3, upgraded: true }
- *       ..
- *     }
+	 *       ..
+	 *       Cruiser: { count: 3, upgraded: true }
+	 *       ..
+	 *     }
 	 */
 	root.expandFleet = function (race, counters) {
 
@@ -377,13 +383,26 @@
 			var counter = counters[unitType] || { count: 0 };
 			for (var i = 0; i < counter.count; i++) {
 				var unit = (counter.upgraded ? upgradedUnits : standardUnits)[unitType];
-				result.push(unit.clone());
+				var addedUnit = unit.clone();
+				result.push(addedUnit);
 				if (unit.sustainDamageHits > 0) {
-					damageGhosts.push(unit.toDamageGhost());
+					damageGhosts.push(addedUnit.toDamageGhost());
 				}
 			}
 		}
 		return result.concat(damageGhosts);
+	};
+
+	var unitOrder = createUnitOrder();
+
+	root.unitComparer = function(unit1, unit2) {
+		var typeOrder = unitOrder[unit1.type] - unitOrder[unit2.type];
+		if (unit1.isDamageGhost === unit2.isDamageGhost)
+			return typeOrder;
+		if (unit1.isDamageGhost)
+			return 1;
+		else
+			return -1;
 	};
 
 	/** Check whether the unit can receive hits in the specific battle type.
@@ -434,4 +453,13 @@
 
 //todo Letnev racial
 //todo generic tech
+
+	function createUnitOrder() {
+		var result = [];
+		var i = 0;
+		for (var unitType in UnitType) {
+			result[unitType] = i++;
+		}
+		return result;
+	}
 })(typeof exports === 'undefined' ? window : exports);
