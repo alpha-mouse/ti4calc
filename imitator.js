@@ -252,12 +252,43 @@
 					name: 'Assault Cannon',
 					appliesTo: game.BattleType.Space,
 					execute: function (attacker, defender, attackerFull, defenderFull, options) {
+
+						var attackerDestroys = options.attacker.assaultCannon && attacker.filter(notFighterShip).length >= 3;
+						var defenderDestroys = options.defender.assaultCannon && defender.filter(notFighterShip).length >= 3;
+
+						if (attackerDestroys)
+							killOffNonFighter(defender);
+						if (defenderDestroys)
+							killOffNonFighter(attacker);
+
 						// todo implement Assault Cannon
 
 						//var attackerInflicted = options.attacker.assaultCannon ? rollDice(attacker.filter(unitIs(calc.UnitType.Dreadnought))) : 0;
 						//var defenderInflicted = options.defender.assaultCannon ? rollDice(defender.filter(unitIs(calc.UnitType.Dreadnought))) : 0;
 						//applyDamage(attacker, defenderInflicted);
 						//applyDamage(defender, attackerInflicted);
+
+						function notFighterShip(unit) {
+							return unit.type !== game.UnitType.Fighter && !unit.isDamageGhost;
+						}
+
+						function killOffNonFighter(fleet) {
+							for (var i = fleet.length - 1; i >= 0; i--) {
+								var unit = fleet[i];
+								if (notFighterShip(unit)) {
+									fleet.splice(i, 1);
+									if (unit.sustainDamageHits > 0) {
+										var damageGhostIndex = fleet.findIndex(function (ghostCandidate) {
+											return ghostCandidate.damageCorporeal === unit;
+										});
+										if (damageGhostIndex >= 0) {
+											fleet.splice(damageGhostIndex, 1);
+										}
+									}
+									return;
+								}
+							}
+						}
 					},
 				},
 				{

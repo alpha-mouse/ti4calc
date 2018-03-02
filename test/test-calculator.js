@@ -213,6 +213,17 @@ exports.space1 = function (test) {
 
 	var fleet1 = {};
 	var fleet2 = {};
+	fleet1[game.UnitType.Cruiser] = { count: 2 };
+
+	fleet2[game.UnitType.Destroyer] = { count: 3 };
+
+	testBattle(test, fleet1, fleet2, game.BattleType.Space);
+};
+
+exports.space2 = function (test) {
+
+	var fleet1 = {};
+	var fleet2 = {};
 	fleet1[game.UnitType.Cruiser] = { count: 4 };
 	fleet1[game.UnitType.Destroyer] = { count: 6 };
 	fleet1[game.UnitType.Dreadnought] = { count: 2 };
@@ -225,10 +236,9 @@ exports.space1 = function (test) {
 	fleet2[game.UnitType.PDS] = { count: 3 };
 
 	testBattle(test, fleet1, fleet2, game.BattleType.Space);
-
 };
 
-exports.space2 = function (test) {
+exports.space3 = function (test) {
 
 	var fleet1 = {};
 	var fleet2 = {};
@@ -586,12 +596,30 @@ exports.moraleBoost1stRoundGround = function (test) {
 
 };
 
-exports.assaultCannon = function (test) {
+exports.assaultCannonNonDagameable = function (test) {
+
+	var fleet1 = {};
+	var fleet2 = {};
+	fleet1[game.UnitType.Cruiser] = { count: 3 };
+	fleet1[game.UnitType.Fighter] = { count: 1 };
+
+	fleet2[game.UnitType.Cruiser] = { count: 3 };
+
+	var options = {
+		attacker: { assaultCannon: true },
+		defender: { assaultCannon: true },
+	};
+
+	testBattle(test, fleet1, fleet2, game.BattleType.Space, options);
+};
+
+exports.assaultCannonDamageable = function (test) {
 
 	var fleet1 = {};
 	var fleet2 = {};
 	fleet1[game.UnitType.Dreadnought] = { count: 1 };
 	fleet1[game.UnitType.Cruiser] = { count: 3 };
+	fleet1[game.UnitType.Fighter] = { count: 1 };
 
 	fleet2[game.UnitType.Dreadnought] = { count: 3 };
 
@@ -601,7 +629,62 @@ exports.assaultCannon = function (test) {
 	};
 
 	testBattle(test, fleet1, fleet2, game.BattleType.Space, options);
+};
 
+exports.assaultCannonFighters = function (test) {
+
+	var fleet1 = {};
+	var fleet2 = {};
+	fleet1[game.UnitType.Dreadnought] = { count: 1 };
+	fleet1[game.UnitType.Cruiser] = { count: 3 };
+	fleet1[game.UnitType.Fighter] = { count: 3 };
+
+	fleet2[game.UnitType.Dreadnought] = { count: 3 };
+	fleet2[game.UnitType.Fighter] = { count: 3 };
+
+	var options = {
+		attacker: { assaultCannon: true },
+		defender: { assaultCannon: true },
+	};
+
+	testBattle(test, fleet1, fleet2, game.BattleType.Space, options);
+};
+
+exports.assaultCannonNotEnoughShips = function (test) {
+
+	var fleet1 = {};
+	var fleet2 = {};
+	fleet1[game.UnitType.Dreadnought] = { count: 2 };
+	fleet1[game.UnitType.Fighter] = { count: 3 };
+
+	fleet2[game.UnitType.Dreadnought] = { count: 3 };
+	fleet2[game.UnitType.Fighter] = { count: 3 };
+
+	var options = {
+		attacker: { assaultCannon: true },
+		defender: { assaultCannon: true },
+	};
+
+	testBattle(test, fleet1, fleet2, game.BattleType.Space, options);
+};
+
+exports.assaultCannonPds = function (test) {
+
+	var fleet1 = {};
+	var fleet2 = {};
+	fleet1[game.UnitType.Dreadnought] = { count: 2 };
+	fleet1[game.UnitType.Fighter] = { count: 3 };
+
+	fleet2[game.UnitType.Dreadnought] = { count: 3 };
+	fleet2[game.UnitType.Fighter] = { count: 1 };
+	fleet2[game.UnitType.PDS] = { count: 2 };
+
+	var options = {
+		attacker: { assaultCannon: true },
+		defender: { assaultCannon: true },
+	};
+
+	testBattle(test, fleet1, fleet2, game.BattleType.Space, options);
 };
 
 exports.antimassDeflectorsSpace = function (test) {
@@ -789,7 +872,7 @@ exports.magenDefenseWarSunGround = function (test) {
 	testBattle(test, fleet1, fleet2, game.BattleType.Ground, options);
 };
 
-exports.duraniumArmorSpace = function (test) {
+exports.duraniumArmor = function (test) {
 
 	var fleet1 = {};
 	var fleet2 = {};
@@ -834,3 +917,4 @@ function group(exports, testGroup) {
 //exports.plasmaScoring = group(exports, 'plasmaScoring');
 //exports.magenDefense = group(exports, 'magenDefense');
 //exports.ground = group(exports, 'ground');
+//exports.assaultCannon = group(exports, 'assaultCannon');

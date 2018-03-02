@@ -321,43 +321,104 @@
 				{
 					name: 'Assault Cannon',
 					appliesTo: game.BattleType.Space,
-					execute: function (problemArray) {
-						return problemArray;
-						//todo assault cannon
+					execute: function (problemArray, attackerFull, defenderFull, options) {
 
-						return problemArray.map(function (problem) {
-							if (!problem.options.attacker.assaultCannon && !problem.options.defender.assaultCannon)
-								return problem;
+						var result = [];
 
-							function createSpaceCannonTransitions(fleet) {
-								var result = [];
-								var nonFightersFound = 0;
-								for (var i = 0; i < fleet.length; i++) {
-									if (fleet[i].type !== game.UnitType.Fighter)
-										nonFightersFound++;
-									if (nonFightersFound < 3)
-										result.push([1]);
-									else
-										result.push([0, 1]);
-								}
-								return result;
+						problemArray.forEach(function (problem) {
+							if (!options.attacker.assaultCannon && !options.defender.assaultCannon) {
+								result.push(problem);
+								return;
 							}
 
+							var attackerTransitions = createAssaultCannonTransitions(problem.attacker, options.attacker.assaultCannon);
+							var defenderTransitions = createAssaultCannonTransitions(problem.defender, options.defender.assaultCannon);
 
-							var attackerTransitions;
-							var defenderTransitions;
-							if (problem.options.attacker.assaultCannon)
-								attackerTransitions = createSpaceCannonTransitions(problem.attacker);
-							else
-								attackerTransitions = scaleTransitions([], null, problem.attacker.length + 1);
-							if (problem.options.defender.assaultCannon)
-								defenderTransitions = createSpaceCannonTransitions(problem.defender);
-							else
-								defenderTransitions = scaleTransitions([], null, problem.defender.length + 1);
+							var attackerVulnerable = getVulnerableUnitsRange(problem.attacker, notFighterShip);
+							var defenderVulnerable = getVulnerableUnitsRange(problem.defender, notFighterShip);
 
-							//CALL inter-split
-							//applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
+							var subproblems = interSplit(problem, attackerVulnerable, defenderVulnerable, attackerTransitions, defenderTransitions);
+
+							// now, if damageable ship was killed off - remove the damage ghost as well
+							for (var i = 0; i < subproblems.length; i++) {
+								var subproblem = subproblems[i];
+								var attackerIndex = findOrphanDamageGhostIndex(subproblem.attacker, problem.attacker);
+								var defenderIndex = findOrphanDamageGhostIndex(subproblem.defender, problem.defender);
+								if (attackerIndex !== null) {
+									for (var d = 0; d <= subproblem.defender.length; d++) {
+										subproblem.distribution[attackerIndex][d] += subproblem.distribution[attackerIndex + 1][d];
+									}
+									subproblem.distribution.splice(attackerIndex + 1, 1);
+									subproblem.distribution.rows--;
+									subproblem.attacker.splice(attackerIndex, 1);
+								}
+								if (defenderIndex !== null) {
+									for (var a = 0; a <= subproblem.attacker.length; a++) {
+										subproblem.distribution[a][defenderIndex] += subproblem.distribution[a][defenderIndex + 1];
+										subproblem.distribution[a].splice(defenderIndex + 1, 1);
+									}
+									subproblem.distribution.columns--;
+									subproblem.defender.splice(defenderIndex, 1);
+								}
+							}
+
+							result.push.apply(result, subproblems);
 						});
+
+						return result;
+
+						function createAssaultCannonTransitions(fleet, assaultCannon) {
+							var result = [[1]];
+							var nonFightersFound = 0;
+							for (var i = 0; i < fleet.length; i++) {
+								if (notFighterShip(fleet[i]))
+									nonFightersFound++;
+								if (nonFightersFound >= 3 && assaultCannon)
+									result.push([0, 1]);
+								else
+									result.push([1]);
+							}
+							return result;
+						}
+
+						function notFighterShip(unit) {
+							return unit.type !== game.UnitType.Fighter && !unit.isDamageGhost;
+						}
+
+						function findOrphanDamageGhostIndex(fleet, originalFleet) {
+							if (fleet.length == originalFleet.length) {
+								// No units died
+								return null;
+							}
+							var killedUnit;
+							for (var a = 0; a < fleet.length; a++) {
+								if (fleet[a] !== originalFleet[a]) {
+									killedUnit = originalFleet[a];
+									break;
+								}
+							}
+							if (!killedUnit) {
+								// This means either that
+								// 1. the unit from the end of the array was killed,
+								//    which implies that it didn't have damage ghost anyway,
+								//    because damage ghosts come after corporeal units
+								// 2. this is the subproblem that doesn't have higher units at all
+								return null;
+							}
+							if (killedUnit.sustainDamageHits === 0) {
+								// Not damageable unit - no problems once again
+								return null;
+							}
+							var ghostIndex = fleet.findIndex(function (unit) {
+								return killedUnit === unit.damageCorporeal;
+							});
+							if (ghostIndex < 0) {
+								// For some reason the killed ship was damaged already. All fine
+								return null;
+							}
+							return ghostIndex;
+						}
+
 					},
 				},
 				{
@@ -643,7 +704,7 @@
 
 		function unitIs(unitType) {
 			return function (unit) {
-				return unit.type === unitType;
+				return unit.type === unitType && !unit.isDamageGhost;
 			};
 		}
 
