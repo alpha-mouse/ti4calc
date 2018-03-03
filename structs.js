@@ -36,10 +36,20 @@
 			var result = 'Min: ' + this.min + ', Max: ' + this.max + '. ';
 
 			result += '[';
-			for (var i = this.min; i <= this.max; ++i)
-				result += this.at(i) + ' ';
+			for (var i = this.min; i <= this.max; ++i) {
+				if (i === 0)
+					result += '| ';
+				result += round(this.at(i), 3) + ' ';
+				if (i === 0)
+					result += '| ';
+			}
 			result += ']';
 			return result;
+		}
+
+		function round(number, precision) {
+			var factor = Math.pow(10, precision);
+			return Math.round(number * factor) / factor;
 		}
 	};
 
@@ -99,12 +109,12 @@
 			var cmp = compare_fn(el, ar[k]);
 			if (cmp > 0) {
 				m = k + 1;
-			} else if(cmp < 0) {
+			} else if (cmp < 0) {
 				n = k - 1;
 			} else {
 				return k;
 			}
 		}
 		return -m - 1;
-	}
+	};
 })(typeof exports === 'undefined' ? window : exports);

@@ -334,8 +334,12 @@
 							var attackerTransitions = createAssaultCannonTransitions(problem.attacker, options.attacker.assaultCannon);
 							var defenderTransitions = createAssaultCannonTransitions(problem.defender, options.defender.assaultCannon);
 
-							var attackerVulnerable = getVulnerableUnitsRange(problem.attacker, notFighterShip);
-							var defenderVulnerable = getVulnerableUnitsRange(problem.defender, notFighterShip);
+							// little optimization, less subproblems will be created if one or both sides cannot inflict damage
+							var attackerCanInflictDamage = attackerTransitions.some(canInflictDamage);
+							var defenderCanInflictDamage = defenderTransitions.some(canInflictDamage);
+
+							var attackerVulnerable = getVulnerableUnitsRange(problem.attacker, (defenderCanInflictDamage ? notFighterShip : falsePredicate));
+							var defenderVulnerable = getVulnerableUnitsRange(problem.defender, (attackerCanInflictDamage ? notFighterShip : falsePredicate));
 
 							var subproblems = interSplit(problem, attackerVulnerable, defenderVulnerable, attackerTransitions, defenderTransitions);
 
@@ -436,8 +440,12 @@
 							var attackerTransitions = computeSelectedUnitsTransitions(problem.attacker, game.ThrowType.Barrage, hasBarrage);
 							var defenderTransitions = computeSelectedUnitsTransitions(problem.defender, game.ThrowType.Barrage, hasBarrage);
 
-							var attackerVulnerable = getVulnerableUnitsRange(problem.attacker, unitIs(game.UnitType.Fighter));
-							var defenderVulnerable = getVulnerableUnitsRange(problem.defender, unitIs(game.UnitType.Fighter));
+							// little optimization, less subproblems will be created if one or both sides cannot inflict damage
+							var attackerCanInflictDamage = attackerTransitions.some(canInflictDamage);
+							var defenderCanInflictDamage = defenderTransitions.some(canInflictDamage);
+
+							var attackerVulnerable = getVulnerableUnitsRange(problem.attacker, (defenderCanInflictDamage ? unitIs(game.UnitType.Fighter) : falsePredicate));
+							var defenderVulnerable = getVulnerableUnitsRange(problem.defender, (attackerCanInflictDamage ? unitIs(game.UnitType.Fighter) : falsePredicate));
 
 							var subproblems = interSplit(problem, attackerVulnerable, defenderVulnerable, attackerTransitions, defenderTransitions);
 
@@ -552,12 +560,11 @@
 				applyTransitions(nonSplittableSubmatrix, attackerTransitions, defenderTransitions, attackerVulnerable.from, defenderVulnerable.from);
 				result.push(new structs.Problem(nonSplittableSubmatrix, problem.attacker.slice(0, attackerVulnerable.to), problem.defender.slice(0, defenderVulnerable.to)));
 
-				var memoize = { attacker: {}, defender: {} }; // forget about this variable
-
 				// Check if splitting makes sense for the attacker.
 				// If all units at the end of the list are vulnerable then no splitting is needed
 				if (attackerVulnerable.to + 1 < problem.distribution.rows) {
 					// try out all possible counts of vulnerable attacker units deaths
+					var truncatedDefender = problem.defender.slice(0, defenderVulnerable.to);
 					for (var vulA = attackerVulnerable.from; vulA <= attackerVulnerable.to; vulA++) { // "vul" stands for "vulnerable"
 						var attackersDied = attackerVulnerable.to - vulA;
 						var splitDistribution = structs.createMatrix(problem.distribution.rows - attackersDied, defenderVulnerable.to + 1, 0);
@@ -576,13 +583,14 @@
 							}
 						}
 						if (subproblemProbabilityMass !== 0) {
-							result.push(new structs.Problem(splitDistribution, splitAttacker(attackersDied), problem.defender));
+							result.push(new structs.Problem(splitDistribution, splitAttacker(attackersDied), truncatedDefender));
 						}
 					}
 				}
 				// Check if splitting makes sense for defender.
 				if (defenderVulnerable.to + 1 < problem.distribution.columns) {
 					// try out all possible counts of vulnerable defender units deaths
+					var truncatedAttacker = problem.attacker.slice(0, attackerVulnerable.to);
 					for (var vulD = defenderVulnerable.from; vulD <= defenderVulnerable.to; vulD++) { // "vul" stands for "vulnerable"
 						var defendersDied = defenderVulnerable.to - vulD;
 						var splitDistribution = structs.createMatrix(attackerVulnerable.to + 1, problem.distribution.columns - defendersDied, 0);
@@ -601,7 +609,7 @@
 							}
 						}
 						if (subproblemProbabilityMass !== 0) {
-							result.push(new structs.Problem(splitDistribution, problem.attacker, splitDefender(defendersDied)));
+							result.push(new structs.Problem(splitDistribution, truncatedAttacker, splitDefender(defendersDied)));
 						}
 					}
 				}
@@ -638,23 +646,17 @@
 				return result;
 
 				function splitAttacker(attackersDied) {
-					if (!memoize.attacker[attackersDied]) {
-						var a = attackerVulnerable.to - attackersDied;
-						var newAttacker = problem.attacker.slice();
-						newAttacker.splice(a, attackersDied);
-						memoize.attacker[attackersDied] = newAttacker;
-					}
-					return memoize.attacker[attackersDied];
+					var a = attackerVulnerable.to - attackersDied;
+					var newAttacker = problem.attacker.slice();
+					newAttacker.splice(a, attackersDied);
+					return newAttacker;
 				}
 
 				function splitDefender(defendersDied) {
-					if (!memoize.defender[defendersDied]) {
-						var d = defenderVulnerable.to - defendersDied;
-						var newDefender = problem.defender.slice();
-						newDefender.splice(d, defendersDied);
-						memoize.defender[defendersDied] = newDefender;
-					}
-					return memoize.defender[defendersDied];
+					var d = defenderVulnerable.to - defendersDied;
+					var newDefender = problem.defender.slice();
+					newDefender.splice(d, defendersDied);
+					return newDefender;
 				}
 
 				function extractMinor(distribution, rows, columns) {
@@ -692,6 +694,14 @@
 					}
 				}
 				return result;
+			}
+
+			function canInflictDamage(t) {
+				return t.length > 1;
+			}
+
+			function falsePredicate(unit) {
+				return false;
 			}
 		}
 
