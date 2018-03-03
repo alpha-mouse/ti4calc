@@ -103,18 +103,26 @@
 			}
 			var round = 0;
 
+			var magenDefenseActivated = battleType === game.BattleType.Ground &&
+				options.defender.magenDefense &&
+				defenderFull.some(unitIs(game.UnitType.PDS)) &&
+				!attackerFull.some(unitIs(game.UnitType.WarSun));
+
 			while (hasUnits(attacker) && hasUnits(defender)) {
 				round++;
+				var attackerBoost = 0;
+				var defenderBoost = 0;
 				if (round === 1) {
+					attackerBoost = options.attacker.moraleBoost ? 1 : 0;
+					defenderBoost = options.defender.moraleBoost ? 1 : 0;
 				}
-				var attackerInflicted = rollDice(attacker, game.ThrowType.Battle);
-				var defenderInflicted = rollDice(defender, game.ThrowType.Battle);
-				if (round === 1 &&
-					battleType === game.BattleType.Ground &&
-					options.defender.magenDefense &&
-					defenderFull.some(unitIs(game.UnitType.PDS)) &&
-					!attackerFull.some(unitIs(game.UnitType.WarSun))
-				) {
+				if (round === 2 && magenDefenseActivated) {
+					// if Magen Defense was activated - try morale boost attacker on the second round
+					attackerBoost = options.attacker.moraleBoost ? 1 : 0;
+				}
+				var attackerInflicted = rollDice(attacker, game.ThrowType.Battle, attackerBoost);
+				var defenderInflicted = rollDice(defender, game.ThrowType.Battle, defenderBoost);
+				if (round === 1 && magenDefenseActivated) {
 					attackerInflicted = 0;
 				}
 
@@ -294,11 +302,15 @@
 				{
 					name: 'Anti-Fighter Barrage',
 					appliesTo: game.BattleType.Space,
-					execute: function (attacker, defender) {
+					execute: function (attacker, defender, attackerFull, defenderFull, options) {
+
+						var attackerBoost = options.attacker.moraleBoost ? 1 : 0;
+						var defenderBoost = options.defender.moraleBoost ? 1 : 0;
+
 						var attackerBarrageUnits = attacker.filter(hasBarrage);
 						var defenderBarrageUnits = defender.filter(hasBarrage);
-						var attackerInflicted = rollDice(attackerBarrageUnits, game.ThrowType.Barrage);
-						var defenderInflicted = rollDice(defenderBarrageUnits, game.ThrowType.Barrage);
+						var attackerInflicted = rollDice(attackerBarrageUnits, game.ThrowType.Barrage, attackerBoost);
+						var defenderInflicted = rollDice(defenderBarrageUnits, game.ThrowType.Barrage, defenderBoost);
 						applyDamage(attacker, defenderInflicted, unitIs(game.UnitType.Fighter));
 						applyDamage(defender, attackerInflicted, unitIs(game.UnitType.Fighter));
 

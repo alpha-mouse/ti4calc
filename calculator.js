@@ -82,25 +82,29 @@
 
 		/** Do full probability mass redistribution according to transition vectors */
 		function solveProblem(problem, battleType, attackerFull, defenderFull, options) {
-			/*var attackerBoost = 0;
-			 var defenderBoost = 0;
 
-			 attackerBoost += problem.options.attacker.moraleBoost1 ? 1 : 0;
-			 defenderBoost += problem.options.defender.moraleBoost1 ? 1 : 0;
+			var attackerBoost = options.attacker.moraleBoost ? 1 : 0;
+			var defenderBoost = options.defender.moraleBoost ? 1 : 0;
 
-			 if (attackerBoost !== 0 || defenderBoost !== 0) {
-			 //need to make one round of propagation with altered probabilities
-			 var attackerTransitions = computeFleetTransitions(problem.attacker, attackerBoost, false, problem.options.attacker.admiral);
-			 var defenderTransitions = computeFleetTransitions(problem.defender, defenderBoost, false, problem.options.defender.admiral);
-			 problem.distribution = applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
-			 }*/
-
-			if (battleType === game.BattleType.Ground &&
+			var magenDefenseActivated = battleType === game.BattleType.Ground &&
 				options.defender.magenDefense &&
 				defenderFull.some(unitIs(game.UnitType.PDS)) &&
-				!attackerFull.some(unitIs(game.UnitType.WarSun))) {
-				//need to make one round of propagation with attacker not firing
-				var attackerTransitions = scaleTransitions([], null, problem.attacker.length + 1); // attacker does not fire
+				!attackerFull.some(unitIs(game.UnitType.WarSun));
+
+			if (attackerBoost !== 0 || defenderBoost !== 0 || magenDefenseActivated) {
+				//need to make one round of propagation with either altered probabilities or attacker not firing
+				var attackerTransitions;
+				if (magenDefenseActivated)
+					attackerTransitions = scaleTransitions([], null, problem.attacker.length + 1); // attacker does not fire
+				else
+					attackerTransitions = computeFleetTransitions(problem.attacker, game.ThrowType.Battle, attackerBoost);
+				var defenderTransitions = computeFleetTransitions(problem.defender, game.ThrowType.Battle, defenderBoost);
+				applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
+			}
+
+			if (magenDefenseActivated && attackerBoost !== 0) {
+				// damn it, one more round of propagation with
+				var attackerTransitions = computeFleetTransitions(problem.attacker, game.ThrowType.Battle, attackerBoost);
 				var defenderTransitions = computeFleetTransitions(problem.defender, game.ThrowType.Battle);
 				applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
 			}
@@ -158,13 +162,13 @@
 		}
 
 		/** like computeFleetTransitions, but not all units are allowed to throw dice */
-		function computeSelectedUnitsTransitions(fleet, throwType, predicate) {
+		function computeSelectedUnitsTransitions(fleet, throwType, predicate, modifier) {
 			var result = [[1]];
 			var currentTransitions = [[1]];
 			for (var i = 0; i < fleet.length; i++) {
 				var unit = fleet[i];
 				if (predicate(unit)) {
-					var transitions = computeUnitTransitions(unit, throwType);
+					var transitions = computeUnitTransitions(unit, throwType, modifier);
 					currentTransitions = slideMultiply(currentTransitions, transitions);
 				}
 				result.push(currentTransitions);
@@ -428,7 +432,7 @@
 				{
 					name: 'Anti-Fighter Barrage',
 					appliesTo: game.BattleType.Space,
-					execute: function (problemArray) {
+					execute: function (problemArray, attackerFull, defenderFull, options) {
 
 						//Barrage prevents main optimisation trick from being used, namely strict ordering of units deaths.
 						//With barrage Fighters die earlier than Warsun and Dreadnoughts are damaged.
@@ -437,8 +441,11 @@
 						var result = [];
 						problemArray.forEach(function (problem) {
 
-							var attackerTransitions = computeSelectedUnitsTransitions(problem.attacker, game.ThrowType.Barrage, hasBarrage);
-							var defenderTransitions = computeSelectedUnitsTransitions(problem.defender, game.ThrowType.Barrage, hasBarrage);
+							var attackerBoost = options.attacker.moraleBoost ? 1 : 0;
+							var defenderBoost = options.defender.moraleBoost ? 1 : 0;
+
+							var attackerTransitions = computeSelectedUnitsTransitions(problem.attacker, game.ThrowType.Barrage, hasBarrage, attackerBoost);
+							var defenderTransitions = computeSelectedUnitsTransitions(problem.defender, game.ThrowType.Barrage, hasBarrage, defenderBoost);
 
 							// little optimization, less subproblems will be created if one or both sides cannot inflict damage
 							var attackerCanInflictDamage = attackerTransitions.some(canInflictDamage);

@@ -42,8 +42,8 @@ function testBattle(test, attacker, defender, battleType, options) {
 	var defenderExpanded = game.expandFleet(options.defender.race || defaultRace, defender);
 
 	var expected = im.estimateProbabilities(attackerExpanded, defenderExpanded, battleType, options).distribution;
-	//console.log('i', expected.toString());
 	var got = calc.computeProbabilities(attackerExpanded, defenderExpanded, battleType, options).distribution;
+	//console.log('i', expected.toString());
 	//console.log('c', got.toString());
 	test.ok(distributionsEqual(expected, got), 'empirical differs from analytical');
 
@@ -328,7 +328,7 @@ exports.spacePerformance = function (test) {
 };
 
 exports.barrage = {
-	spaceBarrageNoGhosts: function (test) {
+	noGhosts: function (test) {
 
 		var attacker = {};
 		var defender = {};
@@ -343,7 +343,7 @@ exports.barrage = {
 
 	},
 
-	spaceBarrageSplitDefender: function (test) {
+	splitDefender: function (test) {
 
 		var attacker = {};
 		var defender = {};
@@ -360,7 +360,7 @@ exports.barrage = {
 
 	},
 
-	spaceBarrageSplitAttacker: function (test) {
+	splitAttacker: function (test) {
 
 		var attacker = {};
 		var defender = {};
@@ -377,7 +377,7 @@ exports.barrage = {
 
 	},
 
-	spaceBarrageQuadraticSplit: function (test) {
+	quadraticSplit: function (test) {
 
 		var attacker = {};
 		var defender = {};
@@ -393,7 +393,7 @@ exports.barrage = {
 
 	},
 
-	spaceBarragePDSvsDestroyers: function (test) {
+	PDSvsDestroyers: function (test) {
 
 		var attacker = {};
 		var defender = {};
@@ -407,7 +407,7 @@ exports.barrage = {
 
 	},
 
-	spaceBarragePDSandDestroyers: function (test) {
+	PDSandDestroyers: function (test) {
 
 		var attacker = {};
 		var defender = {};
@@ -421,7 +421,7 @@ exports.barrage = {
 
 	},
 
-	spaceBarrageHyperPDS: function (test) {
+	hyperPDS: function (test) {
 
 		var attacker = {};
 		var defender = {};
@@ -435,7 +435,7 @@ exports.barrage = {
 
 	},
 
-	spaceBarrageMess: function (test) {
+	mess: function (test) {
 
 		var attacker = {};
 		var defender = {};
@@ -567,7 +567,7 @@ exports.mentakRacialWithBarrageAndPds = function (test) {
 
 };
 
-exports.moraleBoost1stRoundSpace = function (test) {
+exports.moraleBoostSpace = function (test) {
 
 	var attacker = {};
 	var defender = {};
@@ -575,13 +575,25 @@ exports.moraleBoost1stRoundSpace = function (test) {
 
 	defender[game.UnitType.Fighter] = { count: 5 };
 
-	var options = { attacker: { moraleBoost1: true }, defender: { moraleBoost1: true } };
+	var options = { attacker: { moraleBoost: true }, defender: { moraleBoost: true } };
 
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
-
 };
 
-exports.moraleBoost1stRoundGround = function (test) {
+exports.moraleBoostBarrage = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Destroyer] = { count: 1 };
+
+	defender[game.UnitType.Fighter] = { count: 1 };
+
+	var options = { attacker: { moraleBoost: true }, defender: { moraleBoost: true } };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.moraleBoostGround = function (test) {
 
 	var attacker = {};
 	var defender = {};
@@ -590,10 +602,30 @@ exports.moraleBoost1stRoundGround = function (test) {
 
 	defender[game.UnitType.Ground] = { count: 5 };
 
-	var options = { attacker: { moraleBoost1: true }, defender: {} };
+	var options = { attacker: { moraleBoost: true }, defender: {} };
 
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
 
+exports.moraleBoostMagenDefenseGround = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Ground] = { count: 4 };
+
+	defender[game.UnitType.Ground] = { count: 4 };
+	defender[game.UnitType.PDS] = { count: 1 };
+
+	var options = {
+		attacker: {
+			moraleBoost: true,
+		}, defender: {
+			moraleBoost: true,
+			magenDefense: true,
+		},
+	};
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
 
 exports.assaultCannonNonDagameable = function (test) {
@@ -1011,20 +1043,20 @@ function chaoticTest(test) {
 
 /** If chaotic test fails, this test is convenient to reproduce the problem */
 exports.chaoticReproduce = function (test) {
-	var battleType = game.BattleType.Ground;
+	var battleType = game.BattleType.Space;
 	var attacker = {
-		'Ground': { 'count': 1 },
-	};
+			'Flagship': { 'count': 1 },
+			'PDS': { 'count': 1 },
+		}
+	;
 	var defender = {
-		'PDS': { 'count': 1 },
+		'Cruiser': { 'count': 1 },
 	};
 	var options = {
 		'attacker': {
-			'antimassDeflectors': true,
+			'race': 'Winnu',
 		},
-		'defender': {
-			'plasmaScoring': true,
-		},
+		'defender': {},
 	};
 	testBattle(test, attacker, defender, battleType, options);
 };
@@ -1048,3 +1080,4 @@ function group(exports, testGroup) {
 //exports.magenDefense = group(exports, 'magenDefense');
 //exports.ground = group(exports, 'ground');
 //exports.assaultCannon = group(exports, 'assaultCannon');
+//exports.moraleBoost = group(exports, 'moraleBoost');
