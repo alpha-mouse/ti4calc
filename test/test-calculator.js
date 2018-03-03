@@ -917,7 +917,7 @@ exports.duraniumArmor = function (test) {
 
 /** Test some random battle. Because I couldn't have imagined all edge cases.
  * When this test fails - take input fleets and options from the console and reproduce the problem */
-exports.chaoticDontIgnore = function (test) {
+function chaoticTest(test) {
 	var attacker = {};
 	var defender = {};
 
@@ -989,8 +989,9 @@ exports.chaoticDontIgnore = function (test) {
 		else
 			return obj[pickRandom(Object.keys(obj))];
 	}
-};
+}
 
+/** If chaotic test fails, this test is convenient to reproduce the problem */
 exports.chaoticReproduce = function (test) {
 	var battleType = game.BattleType.Space;
 	var attacker = {
@@ -1011,6 +1012,8 @@ exports.chaoticReproduce = function (test) {
 	};
 	testBattle(test, attacker, defender, battleType, options);
 };
+
+exports.chaoticMonkey = new Array(200).fill(chaoticTest);
 
 /** used to group tests for easier selective running */
 function group(exports, testGroup) {
