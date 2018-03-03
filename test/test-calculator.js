@@ -42,9 +42,9 @@ function testBattle(test, attacker, defender, battleType, options) {
 	var defenderExpanded = game.expandFleet(options.defender.race || defaultRace, defender);
 
 	var expected = im.estimateProbabilities(attackerExpanded, defenderExpanded, battleType, options).distribution;
-	//console.log(expected.toString());
+	//console.log('i', expected.toString());
 	var got = calc.computeProbabilities(attackerExpanded, defenderExpanded, battleType, options).distribution;
-	//console.log(got.toString());
+	//console.log('c', got.toString());
 	test.ok(distributionsEqual(expected, got), 'empirical differs from analytical');
 
 	test.done();
@@ -825,6 +825,21 @@ exports.plasmaScoringSpaceCannonGround = function (test) {
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
 
+exports.plasmaScoringAntimassDeflectorsGround = function (test) {
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Ground] = { count: 1 };
+
+	defender[game.UnitType.PDS] = { count: 1 };
+
+	var options = {
+		attacker: { antimassDeflectors: true },
+		defender: { plasmaScoring: true },
+	};
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
 exports.magenDefenseGround = function (test) {
 
 	var attacker = {};
@@ -998,40 +1013,23 @@ function chaoticTest(test) {
 exports.chaoticReproduce = function (test) {
 	var battleType = game.BattleType.Ground;
 	var attacker = {
-		'Flagship': { 'count': 1 },
-		'WarSun': { 'count': 2 },
-		'Dreadnought': { 'count': 4 },
-		'Cruiser': { 'count': 3 },
-		'Carrier': { 'count': 4 },
-		'Ground': { 'count': 3 },
-		'PDS': { 'count': 1 },
+		'Ground': { 'count': 1 },
 	};
 	var defender = {
-		'Flagship': { 'count': 4 },
-		'Cruiser': { 'count': 2 },
-		'Destroyer': { 'count': 2 },
-		'Carrier': { 'count': 4 },
-		'Fighter': { 'count': 1 },
-		'PDS': { 'count': 4 },
+		'PDS': { 'count': 1 },
 	};
 	var options = {
 		'attacker': {
-			'race': 'Mentak',
 			'antimassDeflectors': true,
 		},
 		'defender': {
-			'race': 'Xxcha',
 			'plasmaScoring': true,
-			'magenDefense': true,
-			'moraleBoost': true,
-			'riskDirectHit': true,
-			'experimentalBattlestation': true,
 		},
 	};
 	testBattle(test, attacker, defender, battleType, options);
 };
 
-//exports.chaoticMonkey = new Array(200).fill(chaoticTest);
+exports.chaoticMonkey = new Array(20).fill(chaoticTest);
 
 /** used to group tests for easier selective running */
 function group(exports, testGroup) {

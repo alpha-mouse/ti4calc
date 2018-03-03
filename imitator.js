@@ -338,7 +338,7 @@
 						var defenderInflicted = rollDice(defenderFull.filter(unitIs(game.UnitType.PDS)), game.ThrowType.SpaceCannon, defenderModifier);
 
 						if (options.defender.plasmaScoring) {
-							defenderInflicted += fromPlasmaScoring(defenderFull.filter(unitIs(game.UnitType.PDS)), game.ThrowType.SpaceCannon);
+							defenderInflicted += fromPlasmaScoring(defenderFull.filter(unitIs(game.UnitType.PDS)), game.ThrowType.SpaceCannon, defenderModifier);
 						}
 
 						applyDamage(attacker, defenderInflicted, unitIs(game.UnitType.Ground));
