@@ -1,52 +1,20 @@
 (function () {
 
-	var input = {
-		battleType: BattleType.Space,
-		attackerUnits: {},
-		defenderUnits: {},
-		options: {
-			attacker: {
-				race: 'Sardakk',
-
-				antimassDeflectors: false,
-				gravitonLaser: false,
-				plasmaScoring: false,
-				magenDefense: false,
-				duraniumArmor: false,
-				assaultCannon: false,
-
-				moraleBoost: false,
-				fireTeam: false,
-				fighterPrototype: false,
-				bunker: false,
-				emergencyRepairs: false,
-				riskDirectHit: true,
-
-				shieldsHolding: false,
-				experimentalBattlestation: false,
-				courageous: false,
-			}, defender: null,
-		},
-	};
-
-	input.options.defender = Object.assign({}, input.options.attacker);
-
-	for (var unitType in UnitType) {
-		input.attackerUnits[unitType] = { count: 0, upgraded: false };
-		input.defenderUnits[unitType] = { count: 0, upgraded: false };
-	}
+	var input = getInput();
 
 	var recomputeHandler = {
 		handler: 'recompute',
 		deep: true,
 	};
 
+	var viewOnlyProperties = {
+		showOptions: false,
+		showHelp: false,
+	};
+
 	app = new Vue({
 		el: '#root',
-		data: Object.assign({}, input, {
-			showOptions: false,
-			showHelp: false,
-		}),
+		data: Object.assign(input, viewOnlyProperties),
 		methods: {
 			increment: function (unitInput) {
 				unitInput.count++;
@@ -61,11 +29,13 @@
 			},
 			clear: function (side) {
 				for (var unitType in UnitType) {
-					input[side + 'Units'][unitType].count = 0;
-					input[side + 'Units'][unitType].upgraded = false;
+					this[side + 'Units'][unitType].count = 0;
+					this[side + 'Units'][unitType].upgraded = false;
 				}
 			},
 			recompute: function () {
+				persistInput();
+
 				var attacker = expandFleet(this.options.attacker.race, this.attackerUnits);
 				var defender = expandFleet(this.options.defender.race, this.defenderUnits);
 				var computed;
@@ -175,6 +145,8 @@
 		},
 	});
 
+	app.recompute();
+
 	/** When the race changed from the race having an upgrade for the unit (eg Sol Carrier)
 	 * to the race not having such upgrade, input flag for the unit upgrade should be set to false */
 	function resetUpdates(battleSide) {
@@ -186,5 +158,57 @@
 				}
 			}
 		};
+	}
+
+	function getInput() {
+		return Object.assign(getDefaultInput(), getPersistedInput());
+	}
+
+	function getDefaultInput() {
+		var result = {
+			battleType: BattleType.Space,
+			attackerUnits: {},
+			defenderUnits: {},
+			options: {
+				attacker: {
+					race: 'Sardakk',
+				}, defender: null,
+			},
+		};
+
+		for (var technology in Technologies) {
+			result.options.attacker[technology] = false;
+		}
+		for (var actionCard in ActionCards) {
+			result.options.attacker[actionCard] = false;
+		}
+		result.options.attacker.riskDirectHit = true;
+
+		result.options.defender = Object.assign({}, result.options.attacker);
+
+		for (var unitType in UnitType) {
+			result.attackerUnits[unitType] = { count: 0, upgraded: false };
+			result.defenderUnits[unitType] = { count: 0, upgraded: false };
+		}
+		return result;
+	}
+
+	function persistInput() {
+		if (localStorage) {
+			var inputToSave = JSON.parse(JSON.stringify(input));
+			for (var viewOnlyProperty in viewOnlyProperties) {
+				delete inputToSave[viewOnlyProperty];
+			}
+			localStorage.setItem('input', JSON.stringify(inputToSave));
+			return true;
+		}
+		return false;
+	}
+
+	function getPersistedInput() {
+		if (!localStorage) return null;
+		var result = localStorage.getItem('input');
+		if (!result) return null;
+		return JSON.parse(result);
 	}
 })();

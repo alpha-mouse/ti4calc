@@ -949,6 +949,9 @@ function chaoticTest(test) {
 	options.attacker.duraniumArmor = false;
 	options.defender.duraniumArmor = false;
 
+	options.attacker.gravitonLaser = false;
+	options.defender.gravitonLaser = false;
+
 	for (var actionCard in game.ActionCards) {
 		options.attacker[actionCard] = Math.random() < .2;
 		options.defender[actionCard] = Math.random() < .2;
@@ -993,27 +996,42 @@ function chaoticTest(test) {
 
 /** If chaotic test fails, this test is convenient to reproduce the problem */
 exports.chaoticReproduce = function (test) {
-	var battleType = game.BattleType.Space;
+	var battleType = game.BattleType.Ground;
 	var attacker = {
-		//'WarSun': { 'count': 1 },
-		'Dreadnought': { 'count': 1 },
-		'PDS': { 'count': 4 },
-	};
-	var defender = {
-		'Destroyer': { 'count': 3 },
-		'Fighter': { 'count': 1 },
+		'Flagship': { 'count': 1 },
+		'WarSun': { 'count': 2 },
+		'Dreadnought': { 'count': 4 },
+		'Cruiser': { 'count': 3 },
+		'Carrier': { 'count': 4 },
+		'Ground': { 'count': 3 },
 		'PDS': { 'count': 1 },
 	};
+	var defender = {
+		'Flagship': { 'count': 4 },
+		'Cruiser': { 'count': 2 },
+		'Destroyer': { 'count': 2 },
+		'Carrier': { 'count': 4 },
+		'Fighter': { 'count': 1 },
+		'PDS': { 'count': 4 },
+	};
 	var options = {
-		'attacker': {},
+		'attacker': {
+			'race': 'Mentak',
+			'antimassDeflectors': true,
+		},
 		'defender': {
-			'assaultCannon': true,
+			'race': 'Xxcha',
+			'plasmaScoring': true,
+			'magenDefense': true,
+			'moraleBoost': true,
+			'riskDirectHit': true,
+			'experimentalBattlestation': true,
 		},
 	};
 	testBattle(test, attacker, defender, battleType, options);
 };
 
-exports.chaoticMonkey = new Array(200).fill(chaoticTest);
+//exports.chaoticMonkey = new Array(200).fill(chaoticTest);
 
 /** used to group tests for easier selective running */
 function group(exports, testGroup) {
