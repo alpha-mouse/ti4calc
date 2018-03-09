@@ -1116,7 +1116,7 @@ exports.noRiskingDirectHit1 = function (test) {
 
 	var options = { attacker: { riskDirectHit: false }, defender: { riskDirectHit: false } };
 
-	testBattle(test, attacker, defender, game.BattleType.Space);
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
 
 exports.noRiskingDirectHit2 = function (test) {
@@ -1138,7 +1138,50 @@ exports.noRiskingDirectHit2 = function (test) {
 
 	var options = { attacker: { riskDirectHit: false }, defender: { riskDirectHit: false } };
 
-	testBattle(test, attacker, defender, game.BattleType.Space);
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.maneuveringJetsSpace = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Cruiser] = { count: 2 };
+	attacker[game.UnitType.PDS] = { count: 1 };
+
+	defender[game.UnitType.Cruiser] = { count: 1 };
+	defender[game.UnitType.PDS] = { count: 3 };
+
+	var options = { attacker: { maneuveringJets: true }, defender: { maneuveringJets: true } };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.maneuveringJetsNoPds = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Cruiser] = { count: 2 };
+
+	defender[game.UnitType.Cruiser] = { count: 1 };
+	defender[game.UnitType.PDS] = { count: 3 };
+
+	var options = { attacker: {}, defender: { maneuveringJets: true } };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.maneuveringJetsGround = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Ground] = { count: 3 };
+
+	defender[game.UnitType.Ground] = { count: 1 };
+	defender[game.UnitType.PDS] = { count: 3 };
+
+	var options = { attacker: { maneuveringJets: true }, defender: {} };
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
 
 /** Test some random battle. Because I couldn't have imagined all edge cases.
@@ -1261,3 +1304,4 @@ function group(exports, testGroup) {
 //exports.fighterPrototype = group(exports, 'fighterPrototype');
 //exports.bunker = group(exports, 'bunker');
 //exports.directHit = group(exports, 'directHit');
+//exports.maneuveringJets = group(exports, 'maneuveringJets');

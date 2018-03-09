@@ -68,11 +68,9 @@
 		fireTeam: new Option('Fire Team 1st round', 'Reroll dice after first round of invasion combat'),
 		fighterPrototype: new Option('Fighter Prototype', '+2 dice modifier to Fighters during the first battle round'),
 		bunker: new Option('Bunker', '-4 dice modifier to Bombardment rolls', 'defender'),
+		experimentalBattlestation: new Option('Experimental Battlestation', 'Additional unit with Space Cannon 5(x3)'),
+		maneuveringJets: new Option('Maneuvering Jets', 'Cancel 1 Space Cannon hit'),
 		riskDirectHit: new Option('Risk Direct Hit', 'Damage units vulnerable to Direct Hit before killing off fodder'),
-
-		shieldsHolding: new Option('to hell with it', ''),
-		experimentalBattlestation: new Option('to hell with it', ''),
-		courageous: new Option('to hell with it', ''),
 	};
 
 	root.Technologies = {

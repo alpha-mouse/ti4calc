@@ -224,6 +224,10 @@
 						if (options.defender.plasmaScoring) {
 							defenderInflicted += fromPlasmaScoring(defenderFull, game.ThrowType.SpaceCannon, defenderModifier);
 						}
+						if (options.attacker.maneuveringJets && defenderInflicted > 0)
+							defenderInflicted--;
+						if (options.defender.maneuveringJets && attackerInflicted > 0)
+							attackerInflicted--;
 
 						applyDamage(attacker, defenderInflicted, gravitonLaserUnitHittable(options.defender));
 						applyDamage(defender, attackerInflicted, gravitonLaserUnitHittable(options.attacker));
@@ -360,6 +364,8 @@
 						if (options.defender.plasmaScoring) {
 							defenderInflicted += fromPlasmaScoring(defenderFull.filter(unitIs(game.UnitType.PDS)), game.ThrowType.SpaceCannon, defenderModifier);
 						}
+						if (options.attacker.maneuveringJets && defenderInflicted > 0)
+							defenderInflicted--;
 
 						applyDamage(attacker, defenderInflicted, unitIs(game.UnitType.Ground));
 					},

@@ -273,17 +273,17 @@
 							var spaceCannonAttacker = attackerFull.filter(hasSpaceCannon);
 							var attackerTransitions;
 							if (options.attacker.plasmaScoring)
-								attackerTransitions = scaleTransitionsWithPlasmaScoring(spaceCannonAttacker, game.ThrowType.SpaceCannon, problem.attacker.length + 1, attackerModifier);
+								attackerTransitions = scaleTransitionsWithPlasmaScoring(spaceCannonAttacker, game.ThrowType.SpaceCannon, problem.attacker.length + 1, attackerModifier, false, options.defender.maneuveringJets ? 1 : 0);
 							else
-								attackerTransitions = scaleTransitions(spaceCannonAttacker, game.ThrowType.SpaceCannon, problem.attacker.length + 1, attackerModifier);
+								attackerTransitions = scaleTransitions(spaceCannonAttacker, game.ThrowType.SpaceCannon, problem.attacker.length + 1, attackerModifier, false, options.defender.maneuveringJets ? 1 : 0);
 
 							var defenderModifier = options.attacker.antimassDeflectors ? -1 : 0;
 							var spaceCannonDefender = defenderFull.filter(hasSpaceCannon);
 							var defenderTransitions;
 							if (options.defender.plasmaScoring)
-								defenderTransitions = scaleTransitionsWithPlasmaScoring(spaceCannonDefender, game.ThrowType.SpaceCannon, problem.defender.length + 1, defenderModifier);
+								defenderTransitions = scaleTransitionsWithPlasmaScoring(spaceCannonDefender, game.ThrowType.SpaceCannon, problem.defender.length + 1, defenderModifier, false, options.attacker.maneuveringJets ? 1 : 0);
 							else
-								defenderTransitions = scaleTransitions(spaceCannonDefender, game.ThrowType.SpaceCannon, problem.defender.length + 1, defenderModifier);
+								defenderTransitions = scaleTransitions(spaceCannonDefender, game.ThrowType.SpaceCannon, problem.defender.length + 1, defenderModifier, false, options.attacker.maneuveringJets ? 1 : 0);
 
 							applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
 						});
@@ -511,9 +511,9 @@
 							var pdsDefender = defenderFull.filter(unitIs(game.UnitType.PDS));
 							var defenderTransitions;
 							if (options.defender.plasmaScoring)
-								defenderTransitions = scaleTransitionsWithPlasmaScoring(pdsDefender, game.ThrowType.SpaceCannon, problem.defender.length + 1, defenderModifier);
+								defenderTransitions = scaleTransitionsWithPlasmaScoring(pdsDefender, game.ThrowType.SpaceCannon, problem.defender.length + 1, defenderModifier, false, options.attacker.maneuveringJets ? 1 : 0);
 							else
-								defenderTransitions = scaleTransitions(pdsDefender, game.ThrowType.SpaceCannon, problem.defender.length + 1, defenderModifier);
+								defenderTransitions = scaleTransitions(pdsDefender, game.ThrowType.SpaceCannon, problem.defender.length + 1, defenderModifier, false, options.attacker.maneuveringJets ? 1 : 0);
 
 							applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
 						});
@@ -686,7 +686,7 @@
 				}
 			}
 
-			function scaleTransitionsWithPlasmaScoring(fleet, throwType, repeat, modifier, reroll) {
+			function scaleTransitionsWithPlasmaScoring(fleet, throwType, repeat, modifier, reroll, cancelledHits) {
 				var fleetInflicted = computeFleetTransitions(fleet, throwType, modifier, reroll).pop();
 				var bestUnit = getUnitWithLowest(fleet, throwType + 'Value');
 				if (bestUnit) {
@@ -695,6 +695,7 @@
 					var unitTransitions = computeUnitTransitions(unitWithOneDie, throwType, modifier, reroll);
 					fleetInflicted = slideMultiply(unitTransitions, fleetInflicted);
 				}
+				cancelHits(fleetInflicted, cancelledHits);
 				var result = new Array(repeat);
 				result.fill(fleetInflicted);
 				return result;
@@ -771,11 +772,23 @@
 			},];
 		}
 
-		function scaleTransitions(fleet, throwType, repeat, modifier, reroll) {
+		function scaleTransitions(fleet, throwType, repeat, modifier, reroll, cancelledHits) {
 			var fleetInflicted = computeFleetTransitions(fleet, throwType, modifier, reroll).pop();
+			cancelHits(fleetInflicted, cancelledHits);
 			var result = new Array(repeat);
 			result.fill(fleetInflicted);
 			return result;
+		}
+
+		function cancelHits(transitions, cancelledHits) {
+			for (var c = 0; c < cancelledHits; ++c) {
+				if (transitions.length > 1)
+					transitions[0] += transitions[1];
+				for (var i = 2; i < transitions.length; i++)
+					transitions[i - 1] = transitions[i];
+				if (transitions.length > 1)
+					transitions.pop();
+			}
 		}
 
 		function unitIs(unitType) {
