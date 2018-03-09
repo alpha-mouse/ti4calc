@@ -483,12 +483,13 @@
 								|| attackerFull.some(unitIs(game.UnitType.WarSun)); // or there are but attacking WarSuns negate their Planetary Shield
 							if (!bombardmentPossible) return;
 
+							var attackerModifier = options.defender.bunker ? -4 : 0;
 							var bombardmentAttacker = attackerFull.filter(hasBombardment);
 							var attackerTransitions;
 							if (options.attacker.plasmaScoring)
-								attackerTransitions = scaleTransitionsWithPlasmaScoring(bombardmentAttacker, game.ThrowType.Bombardment, problem.attacker.length + 1);
+								attackerTransitions = scaleTransitionsWithPlasmaScoring(bombardmentAttacker, game.ThrowType.Bombardment, problem.attacker.length + 1, attackerModifier);
 							else
-								attackerTransitions = scaleTransitions(bombardmentAttacker, game.ThrowType.Bombardment, problem.attacker.length + 1);
+								attackerTransitions = scaleTransitions(bombardmentAttacker, game.ThrowType.Bombardment, problem.attacker.length + 1, attackerModifier);
 
 							var defenderTransitions = scaleTransitions([], null, problem.defender.length + 1);
 							applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);

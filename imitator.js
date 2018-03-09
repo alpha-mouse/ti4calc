@@ -334,9 +334,10 @@
 							|| attackerFull.some(unitIs(game.UnitType.WarSun)); // or there are but attacking WarSuns negate their Planetary Shield
 						if (!bombardmentPossible) return;
 
-						var attackerInflicted = rollDice(attackerFull.filter(hasBombardment), game.ThrowType.Bombardment);
+						var attackerModifier = options.defender.bunker ? -4 : 0;
+						var attackerInflicted = rollDice(attackerFull.filter(hasBombardment), game.ThrowType.Bombardment, attackerModifier);
 						if (options.attacker.plasmaScoring) {
-							attackerInflicted += fromPlasmaScoring(attackerFull, game.ThrowType.Bombardment);
+							attackerInflicted += fromPlasmaScoring(attackerFull, game.ThrowType.Bombardment, attackerModifier);
 						}
 
 						for (var i = defender.length - 1; 0 <= i && 0 < attackerInflicted; i--) {

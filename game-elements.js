@@ -67,7 +67,7 @@
 		moraleBoost: new Option('Morale Boost 1st round', '+1 dice modifier to all units during the first battle round'),
 		fireTeam: new Option('Fire team 1st round', 'Reroll dice after first round of invasion combat'),
 		fighterPrototype: new Option('Fighter prototype', '+2 dice modifier to Fighters during the first battle round'),
-		bunker: new Option('Bunker', '-4 dice modifier to Bombardment rolls'),
+		bunker: new Option('Bunker', '-4 dice modifier to Bombardment rolls', 'defender'),
 		emergencyRepairs: new Option('Emergency Repairs', 'Repair damaged units КОГДА БЛИН'),
 		riskDirectHit: new Option('Risk direct hit', 'Damage units vulnerable to Direct Hit before killing off fodder'),
 

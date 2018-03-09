@@ -918,7 +918,7 @@ exports.magenDefenseGround = function (test) {
 
 	var options = {
 		attacker: {},
-		defender: { magenDefense: 1 },
+		defender: { magenDefense: true },
 	};
 
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
@@ -963,7 +963,7 @@ exports.magenDefenseWarSunGround = function (test) {
 
 	var options = {
 		attacker: {},
-		defender: { magenDefense: 1 },
+		defender: { magenDefense: true },
 	};
 
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
@@ -1023,6 +1023,40 @@ exports.fighterPrototypeMoraleBoost = function (test) {
 	var options = { attacker: { fighterPrototype: true }, defender: { fighterPrototype: true, moraleBoost: true } };
 
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.bunkerSimple = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Dreadnought] = { count: 3 };
+	attacker[game.UnitType.Ground] = { count: 7 };
+
+	defender[game.UnitType.Ground] = { count: 5 };
+
+	var options = {
+		attacker: {},
+		defender: { bunker: true },
+	};
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
+exports.bunkerPlasmaScoring = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Dreadnought] = { count: 3 };
+	attacker[game.UnitType.Ground] = { count: 7 };
+
+	defender[game.UnitType.Ground] = { count: 5 };
+
+	var options = {
+		attacker: { plasmaScoring: true },
+		defender: { bunker: true },
+	};
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
 
 /** Test some random battle. Because I couldn't have imagined all edge cases.
@@ -1145,4 +1179,5 @@ function group(exports, testGroup) {
 //exports.assaultCannon = group(exports, 'assaultCannon');
 //exports.moraleBoost = group(exports, 'moraleBoost');
 //exports.fireTeam = group(exports, 'fireTeam');
-exports.fighterPrototype = group(exports, 'fighterPrototype');
+//exports.fighterPrototype = group(exports, 'fighterPrototype');
+//exports.bunker = group(exports, 'bunker');
