@@ -36,8 +36,10 @@
 			recompute: function () {
 				persistInput();
 
-				var attacker = expandFleet(this.options.attacker.race, this.attackerUnits, this.options.attacker.riskDirectHit);
-				var defender = expandFleet(this.options.defender.race, this.defenderUnits, this.options.defender.riskDirectHit);
+				var attackerBattlestation = this.options.attacker.experimentalBattlestation && this.battleType === BattleType.Space;
+				var defenderBattlestation = this.options.defender.experimentalBattlestation && this.battleType === BattleType.Space;
+				var attacker = expandFleet(this.options.attacker.race, this.attackerUnits, this.options.attacker.riskDirectHit, attackerBattlestation);
+				var defender = expandFleet(this.options.defender.race, this.defenderUnits, this.options.defender.riskDirectHit, defenderBattlestation);
 				var computed;
 
 				// unfortunately Duranium Armor cannot be handled by the calculator

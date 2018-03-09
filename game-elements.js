@@ -173,6 +173,10 @@
 		Ground: new root.UnitInfo(UnitType.Ground, {
 			battleValue: 8,
 		}),
+		ExperimentalBattlestation: new root.UnitInfo('Bloodthirsty Space Dock', {
+			spaceCannonValue: 5,
+			spaceCannonDice: 3,
+		}),
 	};
 
 	root.RaceSpecificUnits = {
@@ -370,7 +374,7 @@
 	 *       ..
 	 *     }
 	 */
-	root.expandFleet = function (race, counters, riskDirectHit) {
+	root.expandFleet = function (race, counters, riskDirectHit, experimentalBattlestation) {
 
 		var standardUnits = Object.assign({}, root.StandardUnits, root.RaceSpecificUnits[race]);
 		var upgradedUnits = Object.assign({}, root.StandardUpgrades, root.RaceSpecificUpgrades[race]);
@@ -391,7 +395,10 @@
 				damageGhosts = [];
 			}
 		}
-		return result.concat(damageGhosts);
+		result = result.concat(damageGhosts);
+		if (experimentalBattlestation)
+			result.push(root.StandardUnits.ExperimentalBattlestation);
+		return result;
 	};
 
 	var unitOrder = createUnitOrder();

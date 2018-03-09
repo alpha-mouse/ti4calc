@@ -40,8 +40,10 @@ function testBattle(test, attacker, defender, battleType, options) {
 
 	var attackerRiskDirectHit = typeof options.attacker.riskDirectHit === 'boolean' ? options.attacker.riskDirectHit : true;
 	var defenderRiskDirectHit = typeof options.defender.riskDirectHit === 'boolean' ? options.defender.riskDirectHit : true;
-	var attackerExpanded = game.expandFleet(options.attacker.race || defaultRace, attacker, attackerRiskDirectHit);
-	var defenderExpanded = game.expandFleet(options.defender.race || defaultRace, defender, defenderRiskDirectHit);
+	var attackerBattlestation = options.attacker.experimentalBattlestation && battleType === BattleType.Space;
+	var defenderBattlestation = options.defender.experimentalBattlestation && battleType === BattleType.Space;
+	var attackerExpanded = game.expandFleet(options.attacker.race || defaultRace, attacker, attackerRiskDirectHit, attackerBattlestation);
+	var defenderExpanded = game.expandFleet(options.defender.race || defaultRace, defender, defenderRiskDirectHit, defenderBattlestation);
 
 	var expected = im.estimateProbabilities(attackerExpanded, defenderExpanded, battleType, options).distribution;
 	var got = calc.computeProbabilities(attackerExpanded, defenderExpanded, battleType, options).distribution;
@@ -180,7 +182,7 @@ exports.defaultSort = function (test) {
 	fleet[unit.Ground] = { count: 1 };
 	fleet[unit.Fighter] = { count: 1 };
 	fleet[unit.PDS] = { count: 1 };
-	var expansion = game.expandFleet(defaultRace, fleet, true);
+	var expansion = game.expandFleet(defaultRace, fleet, true, true);
 
 	var units = Object.assign({}, game.RaceSpecificUnits[defaultRace], game.StandardUnits);
 
@@ -197,6 +199,7 @@ exports.defaultSort = function (test) {
 		units[unit.Flagship].toDamageGhost(),
 		units[unit.WarSun].toDamageGhost(),
 		units[unit.Dreadnought].toDamageGhost(),
+		game.StandardUnits.ExperimentalBattlestation,
 	];
 	test.equal(expected.length, expansion.length, 'wrong length');
 	var fleetTypesToString = function (fleet) {
