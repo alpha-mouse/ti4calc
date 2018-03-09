@@ -20,7 +20,7 @@
 		/** Compute survival probabilities of each subset of attacker and defender */
 		function computeProbabilities(attackerFull, defenderFull, battleType, options) {
 
-			options = options || { attacker: {}, defender: {} };
+			options = options || {attacker: {}, defender: {}};
 
 			var attacker = attackerFull.filter(game.unitBattleFilter(battleType));
 			var defender = defenderFull.filter(game.unitBattleFilter(battleType));
@@ -85,26 +85,30 @@
 
 			var attackerBoost = options.attacker.moraleBoost ? 1 : 0;
 			var defenderBoost = options.defender.moraleBoost ? 1 : 0;
+			var attackerReroll = options.attacker.fireTeam;
+			var defenderReroll = options.defender.fireTeam;
 
 			var magenDefenseActivated = battleType === game.BattleType.Ground &&
 				options.defender.magenDefense &&
 				defenderFull.some(unitIs(game.UnitType.PDS)) &&
 				!attackerFull.some(unitIs(game.UnitType.WarSun));
 
-			if (attackerBoost !== 0 || defenderBoost !== 0 || magenDefenseActivated) {
+			if (attackerBoost !== 0 || defenderBoost !== 0 ||
+				magenDefenseActivated ||
+				attackerReroll || defenderReroll) {
 				//need to make one round of propagation with either altered probabilities or attacker not firing
 				var attackerTransitions;
 				if (magenDefenseActivated)
 					attackerTransitions = scaleTransitions([], null, problem.attacker.length + 1); // attacker does not fire
 				else
-					attackerTransitions = computeFleetTransitions(problem.attacker, game.ThrowType.Battle, attackerBoost);
-				var defenderTransitions = computeFleetTransitions(problem.defender, game.ThrowType.Battle, defenderBoost);
+					attackerTransitions = computeFleetTransitions(problem.attacker, game.ThrowType.Battle, attackerBoost, attackerReroll);
+				var defenderTransitions = computeFleetTransitions(problem.defender, game.ThrowType.Battle, defenderBoost, defenderReroll);
 				applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
 			}
 
-			if (magenDefenseActivated && attackerBoost !== 0) {
-				// damn it, one more round of propagation with
-				var attackerTransitions = computeFleetTransitions(problem.attacker, game.ThrowType.Battle, attackerBoost);
+			if (magenDefenseActivated && (attackerBoost !== 0 || attackerReroll)) {
+				// damn it, one more round of propagation with altered probabilities
+				var attackerTransitions = computeFleetTransitions(problem.attacker, game.ThrowType.Battle, attackerBoost, attackerReroll);
 				var defenderTransitions = computeFleetTransitions(problem.defender, game.ThrowType.Battle);
 				applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
 			}
@@ -529,7 +533,7 @@
 				if (from === undefined) {
 					from = i;
 				}
-				return { from: from, to: i };
+				return {from: from, to: i};
 			}
 
 			/** Split problem into several subproblems in cases where main optimisation trick (strict ordering of units deaths) cannot be used.
@@ -554,7 +558,7 @@
 
 				// maaaybe no intersplitting is needed at all?..
 				if ((attackerTransitions[attackerTransitions.length - 1].length === 1 &&
-					defenderTransitions[defenderTransitions.length - 1].length === 1) ||
+						defenderTransitions[defenderTransitions.length - 1].length === 1) ||
 					(dieableAttackers === 0 && dieableDefenders === 0)) {
 					// so lucky
 					result.push(problem);

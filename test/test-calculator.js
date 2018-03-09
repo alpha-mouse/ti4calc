@@ -318,7 +318,7 @@ exports.spacePerformance = function (test) {
 
 	s = new Date();
 	var dummy = 1;
-	for (var i = 0; i < 300000000; ++i)
+	for (var i = 0; i < 500000000; ++i)
 		dummy *= 1.000000001;
 	var elapsedComparison = new Date() - s;
 
@@ -621,6 +621,41 @@ exports.moraleBoostMagenDefenseGround = function (test) {
 			moraleBoost: true,
 		}, defender: {
 			moraleBoost: true,
+			magenDefense: true,
+		},
+	};
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
+exports.fireTeamGround = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Ground] = { count: 2 };
+	attacker[game.UnitType.PDS] = { count: 2 };
+
+	defender[game.UnitType.Ground] = { count: 5 };
+
+	var options = { attacker: { fireTeam: true }, defender: {} };
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
+exports.fireTeamMagenDefenseGround = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Ground] = { count: 4 };
+
+	defender[game.UnitType.Ground] = { count: 4 };
+	defender[game.UnitType.PDS] = { count: 1 };
+
+	var options = {
+		attacker: {
+			fireTeam: true,
+		}, defender: {
+			fireTeam: true,
 			magenDefense: true,
 		},
 	};
@@ -1081,3 +1116,4 @@ function group(exports, testGroup) {
 //exports.ground = group(exports, 'ground');
 //exports.assaultCannon = group(exports, 'assaultCannon');
 //exports.moraleBoost = group(exports, 'moraleBoost');
+exports.fireTeam = group(exports, 'fireTeam');

@@ -20,7 +20,7 @@
 
 		function estimateProbabilities(attacker, defender, battleType, options) {
 
-			options = options || { attacker: {}, defender: {} };
+			options = options || {attacker: {}, defender: {}};
 
 			var result = new structs.EmpiricalDistribution();
 			var finalAttacker = attacker
@@ -112,16 +112,21 @@
 				round++;
 				var attackerBoost = 0;
 				var defenderBoost = 0;
+				var attackerReroll = false;
+				var defenderReroll = false;
 				if (round === 1) {
 					attackerBoost = options.attacker.moraleBoost ? 1 : 0;
 					defenderBoost = options.defender.moraleBoost ? 1 : 0;
+					attackerReroll = options.attacker.fireTeam && battleType === game.BattleType.Ground;
+					defenderReroll = options.defender.fireTeam && battleType === game.BattleType.Ground
 				}
 				if (round === 2 && magenDefenseActivated) {
 					// if Magen Defense was activated - try morale boost attacker on the second round
 					attackerBoost = options.attacker.moraleBoost ? 1 : 0;
+					attackerReroll = options.attacker.fireTeam && battleType === game.BattleType.Ground;
 				}
-				var attackerInflicted = rollDice(attacker, game.ThrowType.Battle, attackerBoost);
-				var defenderInflicted = rollDice(defender, game.ThrowType.Battle, defenderBoost);
+				var attackerInflicted = rollDice(attacker, game.ThrowType.Battle, attackerBoost, attackerReroll);
+				var defenderInflicted = rollDice(defender, game.ThrowType.Battle, defenderBoost, defenderReroll);
 				if (round === 1 && magenDefenseActivated) {
 					attackerInflicted = 0;
 				}
@@ -135,13 +140,13 @@
 					undamageUnit(defender);
 			}
 
-			return { attacker: attacker, defender: defender };
+			return {attacker: attacker, defender: defender};
 		}
 
 		function applyDamage(fleet, hits, hittable) {
 			hittable = hittable || function (unit) {
-					return true;
-				};
+				return true;
+			};
 			for (var i = fleet.length - 1; 0 <= i && 0 < hits; i--) {
 				if (hittable(fleet[i])) {
 					var killed = fleet.splice(i, 1)[0];
