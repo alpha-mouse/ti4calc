@@ -11,6 +11,7 @@
 
 	root.calculator = (function () {
 
+		var boosts = initBoosts();
 		var prebattleActions = initPrebattleActions();
 
 		return {
@@ -20,7 +21,7 @@
 		/** Compute survival probabilities of each subset of attacker and defender */
 		function computeProbabilities(attackerFull, defenderFull, battleType, options) {
 
-			options = options || {attacker: {}, defender: {}};
+			options = options || { attacker: {}, defender: {} };
 
 			var attacker = attackerFull.filter(game.unitBattleFilter(battleType));
 			var defender = defenderFull.filter(game.unitBattleFilter(battleType));
@@ -83,17 +84,17 @@
 		/** Do full probability mass redistribution according to transition vectors */
 		function solveProblem(problem, battleType, attackerFull, defenderFull, options) {
 
-			var attackerBoost = options.attacker.moraleBoost ? 1 : 0;
-			var defenderBoost = options.defender.moraleBoost ? 1 : 0;
-			var attackerReroll = options.attacker.fireTeam;
-			var defenderReroll = options.defender.fireTeam;
+			var attackerBoost = boost(battleType, options.attacker, true);
+			var defenderBoost = boost(battleType, options.defender, true);
+			var attackerReroll = battleType === game.BattleType.Ground && options.attacker.fireTeam;
+			var defenderReroll = battleType === game.BattleType.Ground && options.defender.fireTeam;
 
 			var magenDefenseActivated = battleType === game.BattleType.Ground &&
 				options.defender.magenDefense &&
 				defenderFull.some(unitIs(game.UnitType.PDS)) &&
 				!attackerFull.some(unitIs(game.UnitType.WarSun));
 
-			if (attackerBoost !== 0 || defenderBoost !== 0 ||
+			if (attackerBoost || defenderBoost ||
 				magenDefenseActivated ||
 				attackerReroll || defenderReroll) {
 				//need to make one round of propagation with either altered probabilities or attacker not firing
@@ -106,8 +107,8 @@
 				applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
 			}
 
-			if (magenDefenseActivated && (attackerBoost !== 0 || attackerReroll)) {
-				// damn it, one more round of propagation with altered probabilities
+			if (magenDefenseActivated && (attackerBoost || attackerReroll)) {
+				// damn it, one more round of propagation with altered probabilities, but just for attacker
 				var attackerTransitions = computeFleetTransitions(problem.attacker, game.ThrowType.Battle, attackerBoost, attackerReroll);
 				var defenderTransitions = computeFleetTransitions(problem.defender, game.ThrowType.Battle);
 				applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
@@ -187,8 +188,11 @@
 			var diceCount = unit[throwType + 'Dice'];
 			if (diceCount === 0) return [1];
 			modifier = modifier || 0;
+			var modifierFunction = typeof modifier === 'function' ? modifier : function (unit) {
+				return modifier;
+			};
 			var singleRoll = [];
-			singleRoll[0] = Math.max(Math.min((battleValue - 1 - modifier) / game.dieSides, 1), 0);
+			singleRoll[0] = Math.max(Math.min((battleValue - 1 - modifierFunction(unit)) / game.dieSides, 1), 0);
 			if (reroll)
 				singleRoll[0] = singleRoll[0] * singleRoll[0];
 			singleRoll[1] = 1 - singleRoll[0];
@@ -533,7 +537,7 @@
 				if (from === undefined) {
 					from = i;
 				}
-				return {from: from, to: i};
+				return { from: from, to: i };
 			}
 
 			/** Split problem into several subproblems in cases where main optimisation trick (strict ordering of units deaths) cannot be used.
@@ -714,6 +718,56 @@
 			function falsePredicate(unit) {
 				return false;
 			}
+		}
+
+		function boost(battleType, sideOptions, firstRound) {
+			var result = 0;
+			for (var i = 0; i < boosts.length; i++) {
+				if (!firstRound && boosts[i].firstRoundOnly) continue;
+
+				var boost = boosts[i].apply(battleType, sideOptions);
+				if (boost && !result) {
+					result = boost;
+					continue;
+				}
+				if (boost) {
+					result = compose(result, boost);
+				}
+			}
+			return result;
+
+			function compose(boost1, boost2) {
+				var boost1IsFunction = typeof boost1 === 'function';
+				var boost2IsFunction = typeof boost2 === 'function';
+				if (boost1IsFunction || boost2IsFunction) {
+					return function (unit) {
+						return (boost1IsFunction ? boost1(unit) : boost1) +
+							(boost2IsFunction ? boost2(unit) : boost2);
+					};
+				}
+				else {
+					return boost1 + boost2;
+				}
+			}
+		}
+
+		function initBoosts() {
+			return [{
+				name: 'moraleBoost',
+				firstRoundOnly: true,
+				apply: function (battleType, sideOptions) {
+					return sideOptions.moraleBoost ? 1 : 0;
+				}
+			}, {
+				name: 'fighterPrototype',
+				firstRoundOnly: true,
+				apply: function (battleType, sideOptions) {
+					return battleType === game.BattleType.Space && sideOptions.fighterPrototype ?
+						function (unit) {
+							return unit.type === game.UnitType.Fighter ? 2 : 0;
+						} : 0;
+				}
+			},];
 		}
 
 		function scaleTransitions(fleet, throwType, repeat, modifier, reroll) {

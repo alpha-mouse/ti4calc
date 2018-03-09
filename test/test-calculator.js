@@ -997,6 +997,34 @@ exports.duraniumArmor = function (test) {
 	test.done();
 };
 
+exports.fighterPrototypeSimple = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Cruiser] = { count: 2 };
+	attacker[game.UnitType.Fighter] = { count: 2 };
+
+	defender[game.UnitType.Fighter] = { count: 5 };
+
+	var options = { attacker: { fighterPrototype: true }, defender: { fighterPrototype: true } };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.fighterPrototypeMoraleBoost = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Cruiser] = { count: 2 };
+	attacker[game.UnitType.Fighter] = { count: 2 };
+
+	defender[game.UnitType.Fighter] = { count: 4 };
+
+	var options = { attacker: { fighterPrototype: true }, defender: { fighterPrototype: true, moraleBoost: true } };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
 /** Test some random battle. Because I couldn't have imagined all edge cases.
  * When this test fails - take input fleets and options from the console and reproduce the problem */
 function chaoticTest(test) {
@@ -1096,7 +1124,7 @@ exports.chaoticReproduce = function (test) {
 	testBattle(test, attacker, defender, battleType, options);
 };
 
-exports.chaoticMonkey = new Array(20).fill(chaoticTest);
+//exports.chaoticMonkey = new Array(20).fill(chaoticTest);
 
 /** used to group tests for easier selective running */
 function group(exports, testGroup) {
@@ -1116,4 +1144,5 @@ function group(exports, testGroup) {
 //exports.ground = group(exports, 'ground');
 //exports.assaultCannon = group(exports, 'assaultCannon');
 //exports.moraleBoost = group(exports, 'moraleBoost');
-exports.fireTeam = group(exports, 'fireTeam');
+//exports.fireTeam = group(exports, 'fireTeam');
+exports.fighterPrototype = group(exports, 'fighterPrototype');

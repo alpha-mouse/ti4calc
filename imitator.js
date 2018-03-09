@@ -13,6 +13,7 @@
 	root.imitator = (function () {
 
 		var prebattleActions = initPrebattleActions();
+		var boosts = initBoosts();
 
 		return {
 			estimateProbabilities: estimateProbabilities,
@@ -20,7 +21,7 @@
 
 		function estimateProbabilities(attacker, defender, battleType, options) {
 
-			options = options || {attacker: {}, defender: {}};
+			options = options || { attacker: {}, defender: {} };
 
 			var result = new structs.EmpiricalDistribution();
 			var finalAttacker = attacker
@@ -110,19 +111,17 @@
 
 			while (hasUnits(attacker) && hasUnits(defender)) {
 				round++;
-				var attackerBoost = 0;
-				var defenderBoost = 0;
+				var attackerBoost = boost(battleType, round, options.attacker);
+				var defenderBoost = boost(battleType, round, options.defender);
 				var attackerReroll = false;
 				var defenderReroll = false;
 				if (round === 1) {
-					attackerBoost = options.attacker.moraleBoost ? 1 : 0;
-					defenderBoost = options.defender.moraleBoost ? 1 : 0;
 					attackerReroll = options.attacker.fireTeam && battleType === game.BattleType.Ground;
 					defenderReroll = options.defender.fireTeam && battleType === game.BattleType.Ground
 				}
 				if (round === 2 && magenDefenseActivated) {
-					// if Magen Defense was activated - try morale boost attacker on the second round
-					attackerBoost = options.attacker.moraleBoost ? 1 : 0;
+					// if Magen Defense was activated - treat the second round as the first for the attacker
+					attackerBoost = boost(battleType, 1, options.attacker);
 					attackerReroll = options.attacker.fireTeam && battleType === game.BattleType.Ground;
 				}
 				var attackerInflicted = rollDice(attacker, game.ThrowType.Battle, attackerBoost, attackerReroll);
@@ -140,7 +139,7 @@
 					undamageUnit(defender);
 			}
 
-			return {attacker: attacker, defender: defender};
+			return { attacker: attacker, defender: defender };
 		}
 
 		function applyDamage(fleet, hits, hittable) {
@@ -162,13 +161,16 @@
 		function rollDice(fleet, throwType, modifier, reroll) {
 			modifier = modifier || 0;
 			var totalRoll = 0;
+			var modifierFunction = typeof modifier === 'function' ? modifier : function (unit) {
+				return modifier;
+			};
 			for (var i = 0; i < fleet.length; i++) {
 				var unit = fleet[i];
 				var battleValue = unit[throwType + 'Value'];
 				var diceCount = unit[throwType + 'Dice'];
 				for (var die = 0; die < diceCount; ++die)
-					if (battleValue <= rollDie() + modifier
-						|| reroll && (battleValue <= rollDie() + modifier))
+					if (battleValue <= rollDie() + modifierFunction(unit)
+						|| reroll && (battleValue <= rollDie() + modifierFunction(unit)))
 						totalRoll++;
 			}
 			return totalRoll;
@@ -384,6 +386,52 @@
 				}
 				return 0;
 			}
+		}
+
+		function boost(battleType, round, sideOptions) {
+			var result = 0;
+			for (var i = 0; i < boosts.length; i++) {
+				var boost = boosts[i].apply(battleType, round, sideOptions);
+				if (boost && !result) {
+					result = boost;
+					continue;
+				}
+				if (boost) {
+					result = compose(result, boost);
+				}
+			}
+			return result;
+
+			function compose(boost1, boost2) {
+				var boost1IsFunction = typeof boost1 === 'function';
+				var boost2IsFunction = typeof boost2 === 'function';
+				if (boost1IsFunction || boost2IsFunction) {
+					return function (unit) {
+						return (boost1IsFunction ? boost1(unit) : boost1) +
+							(boost2IsFunction ? boost2(unit) : boost2);
+					};
+				}
+				else {
+					return boost1 + boost2;
+				}
+			}
+		}
+
+		function initBoosts() {
+			return [{
+				name: 'moraleBoost',
+				apply: function (battleType, round, sideOptions) {
+					return round === 1 && sideOptions.moraleBoost ? 1 : 0;
+				}
+			}, {
+				name: 'fighterPrototype',
+				apply: function (battleType, round, sideOptions) {
+					return round === 1 && battleType === game.BattleType.Space && sideOptions.fighterPrototype ?
+						function (unit) {
+							return unit.type === game.UnitType.Fighter ? 2 : 0;
+						} : 0;
+				}
+			},];
 		}
 
 		function unitIs(unitType) {
