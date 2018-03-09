@@ -13,8 +13,8 @@ fleet2[game.UnitType.Fighter] = { count: 1 };
 
 var options = null;
 
-fleet1 = game.expandFleet('Sardakk', fleet1);
-fleet2 = game.expandFleet('Sardakk', fleet2);
+fleet1 = game.expandFleet('Sardakk', fleet1, true);
+fleet2 = game.expandFleet('Sardakk', fleet2, true);
 
 var expected = im.estimateProbabilities(fleet1, fleet2, game.BattleType.Space, options).distribution;
 console.log(expected.toString());

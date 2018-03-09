@@ -65,11 +65,10 @@
 
 	root.ActionCards = {
 		moraleBoost: new Option('Morale Boost 1st round', '+1 dice modifier to all units during the first battle round'),
-		fireTeam: new Option('Fire team 1st round', 'Reroll dice after first round of invasion combat'),
-		fighterPrototype: new Option('Fighter prototype', '+2 dice modifier to Fighters during the first battle round'),
+		fireTeam: new Option('Fire Team 1st round', 'Reroll dice after first round of invasion combat'),
+		fighterPrototype: new Option('Fighter Prototype', '+2 dice modifier to Fighters during the first battle round'),
 		bunker: new Option('Bunker', '-4 dice modifier to Bombardment rolls', 'defender'),
-		emergencyRepairs: new Option('Emergency Repairs', 'Repair damaged units КОГДА БЛИН'),
-		riskDirectHit: new Option('Risk direct hit', 'Damage units vulnerable to Direct Hit before killing off fodder'),
+		riskDirectHit: new Option('Risk Direct Hit', 'Damage units vulnerable to Direct Hit before killing off fodder'),
 
 		shieldsHolding: new Option('to hell with it', ''),
 		experimentalBattlestation: new Option('to hell with it', ''),
@@ -373,7 +372,7 @@
 	 *       ..
 	 *     }
 	 */
-	root.expandFleet = function (race, counters) {
+	root.expandFleet = function (race, counters, riskDirectHit) {
 
 		var standardUnits = Object.assign({}, root.StandardUnits, root.RaceSpecificUnits[race]);
 		var upgradedUnits = Object.assign({}, root.StandardUpgrades, root.RaceSpecificUpgrades[race]);
@@ -388,6 +387,10 @@
 				if (unit.sustainDamageHits > 0) {
 					damageGhosts.push(addedUnit.toDamageGhost());
 				}
+			}
+			if (!riskDirectHit) {
+				result = result.concat(damageGhosts);
+				damageGhosts = [];
 			}
 		}
 		return result.concat(damageGhosts);
