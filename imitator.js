@@ -280,13 +280,6 @@
 						if (defenderDestroys)
 							killOffNonFighter(attacker);
 
-						// todo implement Assault Cannon
-
-						//var attackerInflicted = options.attacker.assaultCannon ? rollDice(attacker.filter(unitIs(calc.UnitType.Dreadnought))) : 0;
-						//var defenderInflicted = options.defender.assaultCannon ? rollDice(defender.filter(unitIs(calc.UnitType.Dreadnought))) : 0;
-						//applyDamage(attacker, defenderInflicted);
-						//applyDamage(defender, attackerInflicted);
-
 						function notFighterShip(unit) {
 							return unit.type !== game.UnitType.Fighter && !unit.isDamageGhost;
 						}
@@ -437,6 +430,11 @@
 						function (unit) {
 							return unit.type === game.UnitType.Fighter ? 2 : 0;
 						} : 0;
+				}
+			},{
+				name: 'Sardakk',
+				apply: function (battleType, round, sideOptions) {
+					return sideOptions.race === 'Sardakk' ? 1 : 0;
 				}
 			},];
 		}

@@ -5,7 +5,7 @@ var calc = require('../calculator').calculator;
 var imitatorModule = require('../imitator');
 var im = imitatorModule.imitator;
 imitatorModule.imitationIterations = 30000;
-var defaultRace = 'Sardakk';
+var defaultRace = 'Muaat';
 
 
 function distributionsEqual(distr1, distr2) {
@@ -45,10 +45,12 @@ function testBattle(test, attacker, defender, battleType, options) {
 	var attackerExpanded = game.expandFleet(options.attacker.race || defaultRace, attacker, attackerRiskDirectHit, attackerBattlestation);
 	var defenderExpanded = game.expandFleet(options.defender.race || defaultRace, defender, defenderRiskDirectHit, defenderBattlestation);
 
-	var expected = im.estimateProbabilities(attackerExpanded, defenderExpanded, battleType, options).distribution;
 	var got = calc.computeProbabilities(attackerExpanded, defenderExpanded, battleType, options).distribution;
+	var expected = im.estimateProbabilities(attackerExpanded, defenderExpanded, battleType, options).distribution;
+
 	//console.log('i', expected.toString());
 	//console.log('c', got.toString());
+
 	test.ok(distributionsEqual(expected, got), 'empirical differs from analytical');
 
 	test.done();
@@ -1187,6 +1189,40 @@ exports.maneuveringJetsGround = function (test) {
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
 
+exports.sardakkRacial = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Cruiser] = { count: 2 };
+	attacker[game.UnitType.Fighter] = { count: 2 };
+	attacker[game.UnitType.PDS] = { count: 2 };
+
+	defender[game.UnitType.Cruiser] = { count: 1 };
+	defender[game.UnitType.Fighter] = { count: 3 };
+	defender[game.UnitType.PDS] = { count: 3 };
+
+	var options = { attacker: { race: 'Sardakk' }, defender: { race: 'Sardakk' } };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.sardakkFighterPrototypeMoraleBoost = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Cruiser] = { count: 2 };
+	attacker[game.UnitType.Fighter] = { count: 2 };
+	attacker[game.UnitType.PDS] = { count: 2 };
+
+	defender[game.UnitType.Cruiser] = { count: 1 };
+	defender[game.UnitType.Fighter] = { count: 3 };
+	defender[game.UnitType.PDS] = { count: 3 };
+
+	var options = { attacker: { race: 'Sardakk', moraleBoost: true }, defender: { race: 'Sardakk', fighterPrototype: true } };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
 /** Test some random battle. Because I couldn't have imagined all edge cases.
  * When this test fails - take input fleets and options from the console and reproduce the problem */
 function chaoticTest(test) {
@@ -1308,3 +1344,4 @@ function group(exports, testGroup) {
 //exports.bunker = group(exports, 'bunker');
 //exports.directHit = group(exports, 'directHit');
 //exports.maneuveringJets = group(exports, 'maneuveringJets');
+//exports.sardakk = group(exports, 'sardakk');

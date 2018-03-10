@@ -110,18 +110,18 @@
 			if (magenDefenseActivated && (attackerBoost || attackerReroll)) {
 				// damn it, one more round of propagation with altered probabilities, but just for attacker
 				var attackerTransitions = computeFleetTransitions(problem.attacker, game.ThrowType.Battle, attackerBoost, attackerReroll);
-				var defenderTransitions = computeFleetTransitions(problem.defender, game.ThrowType.Battle);
+				var defenderTransitions = computeFleetTransitions(problem.defender, game.ThrowType.Battle, boost(battleType, options.defender, false));
 				applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
 			}
 
-			propagateProbabilityUpLeft(problem);
+			propagateProbabilityUpLeft(problem, battleType, options);
 		}
 
-		function propagateProbabilityUpLeft(problem) {
+		function propagateProbabilityUpLeft(problem, battleType, options) {
 			var distr = problem.distribution;
 			// evaluate probabilities of transitions for each fleet
-			var attackerTransitions = computeFleetTransitions(problem.attacker, game.ThrowType.Battle);
-			var defenderTransitions = computeFleetTransitions(problem.defender, game.ThrowType.Battle);
+			var attackerTransitions = computeFleetTransitions(problem.attacker, game.ThrowType.Battle, boost(battleType, options.attacker, false));
+			var defenderTransitions = computeFleetTransitions(problem.defender, game.ThrowType.Battle, boost(battleType, options.defender, false));
 			//do propagation
 			for (var a = distr.rows - 1; 0 < a; a--) {
 				for (var d = distr.columns - 1; 0 < d; d--) {
@@ -768,6 +768,12 @@
 						function (unit) {
 							return unit.type === game.UnitType.Fighter ? 2 : 0;
 						} : 0;
+				}
+			}, {
+				name: 'Sardakk',
+				firstRoundOnly: false,
+				apply: function (battleType, sideOptions) {
+					return sideOptions.race === 'Sardakk' ? 1 : 0;
 				}
 			},];
 		}
