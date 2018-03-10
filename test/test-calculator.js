@@ -1223,6 +1223,23 @@ exports.sardakkFighterPrototypeMoraleBoost = function (test) {
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
 
+exports.jolNarRacial = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Cruiser] = { count: 2 };
+	attacker[game.UnitType.Fighter] = { count: 2 };
+	attacker[game.UnitType.PDS] = { count: 2 };
+
+	defender[game.UnitType.Cruiser] = { count: 1 };
+	defender[game.UnitType.Fighter] = { count: 3 };
+	defender[game.UnitType.PDS] = { count: 3 };
+
+	var options = { attacker: { race: 'JolNar' }, defender: { race: 'JolNar' } };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
 /** Test some random battle. Because I couldn't have imagined all edge cases.
  * When this test fails - take input fleets and options from the console and reproduce the problem */
 function chaoticTest(test) {

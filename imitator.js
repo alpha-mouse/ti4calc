@@ -436,6 +436,11 @@
 				apply: function (battleType, round, sideOptions) {
 					return sideOptions.race === 'Sardakk' ? 1 : 0;
 				}
+			},{
+				name: 'JolNar',
+				apply: function (battleType, round, sideOptions) {
+					return sideOptions.race === 'JolNar' ? -1 : 0;
+				}
 			},];
 		}
 
