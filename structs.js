@@ -34,16 +34,18 @@
 			return 'no stats';
 		} else {
 			var result = 'Min: ' + this.min + ', Max: ' + this.max + '. ';
-
+			var sum = 0;
 			result += '[';
 			for (var i = this.min; i <= this.max; ++i) {
 				if (i === 0)
 					result += '| ';
 				result += round(this.at(i), 3) + ' ';
+				sum += this.at(i);
 				if (i === 0)
 					result += '| ';
 			}
 			result += ']';
+			result += ' ' + round(sum, 3);
 			return result;
 		}
 

@@ -1245,9 +1245,9 @@ exports.l1z1xRacialHarrow = function (test) {
 	var attacker = {};
 	var defender = {};
 	attacker[game.UnitType.Dreadnought] = { count: 2 };
-	attacker[game.UnitType.Ground] = { count: 3 };
+	attacker[game.UnitType.Ground] = { count: 2 };
 
-	defender[game.UnitType.Ground] = { count: 4 };
+	defender[game.UnitType.Ground] = { count: 2 };
 
 	var options = { attacker: { race: 'L1Z1X' }, defender: { } };
 

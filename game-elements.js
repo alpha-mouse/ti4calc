@@ -42,7 +42,7 @@
 		Yssaril: 'Yssaril',
 		Sol: 'Sol',
 		Creuss: 'Creuss',
-		L1z1x: 'L1Z1X',
+		L1Z1X: 'L1Z1X',
 		Mentak: 'Mentak',
 		Naalu: 'Naalu',
 		Virus: 'Nekro Virus',

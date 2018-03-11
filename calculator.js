@@ -94,9 +94,11 @@
 				defenderFull.some(unitIs(game.UnitType.PDS)) &&
 				!attackerFull.some(unitIs(game.UnitType.WarSun));
 
-			if (attackerBoost || defenderBoost ||
-				magenDefenseActivated ||
-				attackerReroll || defenderReroll) {
+			if (attackerBoost || defenderBoost || // boosts apply to the first round only
+				magenDefenseActivated || // Magen Defence applies to the first round
+				attackerReroll || defenderReroll || // re-rolls apply to the first round
+				options.attacker.race === 'L1Z1X' && battleType === game.BattleType.Ground // Do one round of propagation, because Harrow will be included in all subsequent rounds
+			) {
 				//need to make one round of propagation with either altered probabilities or attacker not firing
 				var attackerTransitions;
 				if (magenDefenseActivated)
@@ -109,24 +111,35 @@
 
 			if (magenDefenseActivated && (attackerBoost || attackerReroll)) {
 				// damn it, one more round of propagation with altered probabilities, but just for attacker
+				// Harrow ignored, because Magen Defense implies Planetary Shield and no Bombardment.
 				var attackerTransitions = computeFleetTransitions(problem.attacker, game.ThrowType.Battle, attackerBoost, attackerReroll);
 				var defenderTransitions = computeFleetTransitions(problem.defender, game.ThrowType.Battle, boost(battleType, options.defender, false));
 				applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
 			}
 
-			propagateProbabilityUpLeft(problem, battleType, options);
+			propagateProbabilityUpLeft(problem, battleType, attackerFull, defenderFull, options);
 		}
 
-		function propagateProbabilityUpLeft(problem, battleType, options) {
+		function propagateProbabilityUpLeft(problem, battleType, attackerFull, defenderFull, options) {
 			var distr = problem.distribution;
 			// evaluate probabilities of transitions for each fleet
 			var attackerTransitions = computeFleetTransitions(problem.attacker, game.ThrowType.Battle, boost(battleType, options.attacker, false));
 			var defenderTransitions = computeFleetTransitions(problem.defender, game.ThrowType.Battle, boost(battleType, options.defender, false));
+			if (options.attacker.race === 'L1Z1X' && battleType === game.BattleType.Ground) {
+				var harrowTransitions = bombardmentTransitionsVector(attackerFull, defenderFull, options);
+				if (harrowTransitions.length === 1) //means no bombardment
+					harrowTransitions = undefined;
+			}
+			else
+				var harrowTransitions = undefined;
 			//do propagation
 			for (var a = distr.rows - 1; 0 < a; a--) {
 				for (var d = distr.columns - 1; 0 < d; d--) {
 
-					var transitionsMatrix = orthogonalMultiply(attackerTransitions[a], defenderTransitions[d], d, a);
+					if (harrowTransitions)
+						var transitionsMatrix = harrowMultiply(attackerTransitions, defenderTransitions, a, d, harrowTransitions);
+					else
+						var transitionsMatrix = orthogonalMultiply(attackerTransitions[a], defenderTransitions[d], d, a);
 
 					var k;
 					if (distr[a][d] === 0)
@@ -137,11 +150,11 @@
 
 					// transitions for everything except for attackerInflicted===0&&defenderInflicted===0
 					var attackerInflicted = 0;
-					for (var defenderInflicted = 1; defenderInflicted < defenderTransitions[d].length && defenderInflicted <= a; defenderInflicted++) {
+					for (var defenderInflicted = 1; defenderInflicted < transitionsMatrix.columns && defenderInflicted <= a; defenderInflicted++) {
 						distr[a - defenderInflicted][d - attackerInflicted] += transitionsMatrix.at(attackerInflicted, defenderInflicted) * k;
 					}
-					for (var attackerInflicted = 1; attackerInflicted < attackerTransitions[a].length && attackerInflicted <= d; attackerInflicted++) {
-						for (var defenderInflicted = 0; defenderInflicted < defenderTransitions[d].length && defenderInflicted <= a; defenderInflicted++) {
+					for (var attackerInflicted = 1; attackerInflicted < transitionsMatrix.rows && attackerInflicted <= d; attackerInflicted++) {
+						for (var defenderInflicted = 0; defenderInflicted < transitionsMatrix.columns && defenderInflicted <= a; defenderInflicted++) {
 							distr[a - defenderInflicted][d - attackerInflicted] += transitionsMatrix.at(attackerInflicted, defenderInflicted) * k;
 						}
 					}
@@ -220,8 +233,8 @@
 		 * matrix will conflate probabilities of damages exceeding maxI1 and maxI2 */
 		function orthogonalMultiply(transitions1, transitions2, maxI1, maxI2) {
 			return {
-				rows: maxI1,
-				columns: maxI2,
+				rows: Math.min(maxI1 + 1, transitions1.length),
+				columns: Math.min(maxI2 + 1, transitions2.length),
 				at: function (i1, i2) {
 					var inflicted1 = transitions1[i1];
 					if (i1 === maxI1)
@@ -232,6 +245,35 @@
 						while (++i2 < transitions2.length)
 							inflicted2 += transitions2[i2];
 					return inflicted1 * inflicted2;
+				},
+			};
+		}
+
+		/** Similar in purpose and result to orthogonalMultiply, but takes pre-round firing into account */
+		function harrowMultiply(attackerTransitions, defenderTransitions, a, d, preroundAttackerTransitions) {
+			if (!preroundAttackerTransitions || preroundAttackerTransitions.length === 1 || d === 0)
+				return orthogonalMultiply(attackerTransitions[a], defenderTransitions[d], d, a);
+
+			var submatrices = [];
+			for (var pa = 0; pa < preroundAttackerTransitions.length && pa <= d; ++pa) {
+				submatrices[pa] = orthogonalMultiply(attackerTransitions[a], defenderTransitions[d - pa], d - pa, a);
+			}
+			return {
+				rows: Math.min(d + 1, attackerTransitions[a].length + preroundAttackerTransitions.length - 1),
+				columns: Math.min(a + 1, defenderTransitions[d].length),
+				at: function (i1, i2) {
+					var result = 0;
+					for (var i = 0; i <= i1 && i < preroundAttackerTransitions.length && i2 < submatrices[i].columns; ++i) {
+						if (i1 - i < submatrices[i].rows) {
+							var preround = preroundAttackerTransitions[i];
+							if (i === d) {
+								for (var pa = i + 1; pa < preroundAttackerTransitions.length; ++pa)
+									preround += preroundAttackerTransitions[pa];
+							}
+							result += preround * submatrices[i].at(i1 - i, i2);
+						}
+					}
+					return result;
 				},
 			};
 		}
@@ -814,6 +856,5 @@
 				return unit.type === unitType && !unit.isDamageGhost;
 			};
 		}
-
 	})();
 })(typeof exports === 'undefined' ? window : exports);
