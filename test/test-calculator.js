@@ -1240,6 +1240,34 @@ exports.jolNarRacial = function (test) {
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
 
+exports.l1z1xRacialHarrow = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Dreadnought] = { count: 2 };
+	attacker[game.UnitType.Ground] = { count: 3 };
+
+	defender[game.UnitType.Ground] = { count: 4 };
+
+	var options = { attacker: { race: 'L1Z1X' }, defender: { } };
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
+exports.l1z1xRacialHarrowBunker = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Dreadnought] = { count: 2 };
+	attacker[game.UnitType.Ground] = { count: 3 };
+
+	defender[game.UnitType.Ground] = { count: 4 };
+
+	var options = { attacker: { race: 'L1Z1X' }, defender: { bunker: true } };
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
 /** Test some random battle. Because I couldn't have imagined all edge cases.
  * When this test fails - take input fleets and options from the console and reproduce the problem */
 function chaoticTest(test) {
@@ -1362,3 +1390,4 @@ function group(exports, testGroup) {
 //exports.directHit = group(exports, 'directHit');
 //exports.maneuveringJets = group(exports, 'maneuveringJets');
 //exports.sardakk = group(exports, 'sardakk');
+exports.l1z1x = group(exports, 'l1z1x');

@@ -111,6 +111,11 @@
 
 			while (hasUnits(attacker) && hasUnits(defender)) {
 				round++;
+				if (round !== 1 && options.attacker.race === 'L1Z1X' && battleType === game.BattleType.Ground) { // Harrow
+					prebattleActions.find(function (a) {
+						return a.name === 'Bombardment';
+					}).execute(attacker, defender, attackerFull, defenderFull, options);
+				}
 				var attackerBoost = boost(battleType, round, options.attacker);
 				var defenderBoost = boost(battleType, round, options.defender);
 				var attackerReroll = false;
@@ -431,12 +436,12 @@
 							return unit.type === game.UnitType.Fighter ? 2 : 0;
 						} : 0;
 				}
-			},{
+			}, {
 				name: 'Sardakk',
 				apply: function (battleType, round, sideOptions) {
 					return sideOptions.race === 'Sardakk' ? 1 : 0;
 				}
-			},{
+			}, {
 				name: 'JolNar',
 				apply: function (battleType, round, sideOptions) {
 					return sideOptions.race === 'JolNar' ? -1 : 0;
