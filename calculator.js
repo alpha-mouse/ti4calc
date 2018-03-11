@@ -100,7 +100,7 @@
 				//need to make one round of propagation with either altered probabilities or attacker not firing
 				var attackerTransitions;
 				if (magenDefenseActivated)
-					attackerTransitions = scaleTransitions([], null, problem.attacker.length + 1); // attacker does not fire
+					attackerTransitions = scale([1], problem.attacker.length + 1); // attacker does not fire
 				else
 					attackerTransitions = computeFleetTransitions(problem.attacker, game.ThrowType.Battle, attackerBoost, attackerReroll);
 				var defenderTransitions = computeFleetTransitions(problem.defender, game.ThrowType.Battle, defenderBoost, defenderReroll);
@@ -271,19 +271,21 @@
 						problemArray.forEach(function (problem) {
 							var attackerModifier = options.defender.antimassDeflectors ? -1 : 0;
 							var spaceCannonAttacker = attackerFull.filter(hasSpaceCannon);
-							var attackerTransitions;
+							var attackerTransitionsVector;
 							if (options.attacker.plasmaScoring)
-								attackerTransitions = scaleTransitionsWithPlasmaScoring(spaceCannonAttacker, game.ThrowType.SpaceCannon, problem.attacker.length + 1, attackerModifier, false, options.defender.maneuveringJets ? 1 : 0);
+								attackerTransitionsVector = fleetTransitionsVectorWithPlasmaScoring(spaceCannonAttacker, game.ThrowType.SpaceCannon, attackerModifier);
 							else
-								attackerTransitions = scaleTransitions(spaceCannonAttacker, game.ThrowType.SpaceCannon, problem.attacker.length + 1, attackerModifier, false, options.defender.maneuveringJets ? 1 : 0);
+								attackerTransitionsVector = fleetTransitionsVector(spaceCannonAttacker, game.ThrowType.SpaceCannon, attackerModifier);
+							var attackerTransitions = scale(cancelHits(attackerTransitionsVector, options.defender.maneuveringJets ? 1 : 0), problem.attacker.length + 1);
 
 							var defenderModifier = options.attacker.antimassDeflectors ? -1 : 0;
 							var spaceCannonDefender = defenderFull.filter(hasSpaceCannon);
-							var defenderTransitions;
+							var defenderTransitionsVector;
 							if (options.defender.plasmaScoring)
-								defenderTransitions = scaleTransitionsWithPlasmaScoring(spaceCannonDefender, game.ThrowType.SpaceCannon, problem.defender.length + 1, defenderModifier, false, options.attacker.maneuveringJets ? 1 : 0);
+								defenderTransitionsVector = fleetTransitionsVectorWithPlasmaScoring(spaceCannonDefender, game.ThrowType.SpaceCannon, defenderModifier);
 							else
-								defenderTransitions = scaleTransitions(spaceCannonDefender, game.ThrowType.SpaceCannon, problem.defender.length + 1, defenderModifier, false, options.attacker.maneuveringJets ? 1 : 0);
+								defenderTransitionsVector = fleetTransitionsVector(spaceCannonDefender, game.ThrowType.SpaceCannon, defenderModifier);
+							var defenderTransitions = scale(cancelHits(defenderTransitionsVector, options.attacker.maneuveringJets ? 1 : 0), problem.defender.length + 1);
 
 							applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
 						});
@@ -320,11 +322,11 @@
 							if (options.attacker.race === 'Mentak')
 								attackerTransitions = createMentakTransitions(problem.attacker);
 							else
-								attackerTransitions = scaleTransitions([], null, problem.attacker.length + 1);
+								attackerTransitions = scale([1], problem.attacker.length + 1);
 							if (options.defender.race === 'Mentak')
 								defenderTransitions = createMentakTransitions(problem.defender);
 							else
-								defenderTransitions = scaleTransitions([], null, problem.defender.length + 1);
+								defenderTransitions = scale([1], problem.defender.length + 1);
 							applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
 						});
 						return problemArray;
@@ -479,26 +481,12 @@
 					appliesTo: game.BattleType.Ground,
 					execute: function (problemArray, attackerFull, defenderFull, options) {
 						problemArray.forEach(function (problem) {
-							var bombardmentPossible = !defenderFull.some(unitIs(game.UnitType.PDS)) // either there are no defending PDS
-								|| attackerFull.some(unitIs(game.UnitType.WarSun)); // or there are but attacking WarSuns negate their Planetary Shield
-							if (!bombardmentPossible) return;
-
-							var attackerModifier = options.defender.bunker ? -4 : 0;
-							var bombardmentAttacker = attackerFull.filter(hasBombardment);
-							var attackerTransitions;
-							if (options.attacker.plasmaScoring)
-								attackerTransitions = scaleTransitionsWithPlasmaScoring(bombardmentAttacker, game.ThrowType.Bombardment, problem.attacker.length + 1, attackerModifier);
-							else
-								attackerTransitions = scaleTransitions(bombardmentAttacker, game.ThrowType.Bombardment, problem.attacker.length + 1, attackerModifier);
-
-							var defenderTransitions = scaleTransitions([], null, problem.defender.length + 1);
+							var attackerTransitionsVector = bombardmentTransitionsVector(attackerFull, defenderFull, options);
+							var attackerTransitions = scale(attackerTransitionsVector, problem.attacker.length + 1);
+							var defenderTransitions = scale([1], problem.defender.length + 1);
 							applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
 						});
 						return problemArray;
-
-						function hasBombardment(unit) {
-							return unit.bombardmentDice !== 0;
-						}
 					},
 				},
 				{
@@ -506,14 +494,15 @@
 					appliesTo: game.BattleType.Ground,
 					execute: function (problemArray, attackerFull, defenderFull, options) {
 						problemArray.forEach(function (problem) {
-							var attackerTransitions = scaleTransitions([], null, problem.attacker.length + 1); // attacker does not fire
+							var attackerTransitions = scale([1], problem.attacker.length + 1); // attacker does not fire
 							var defenderModifier = options.attacker.antimassDeflectors ? -1 : 0;
 							var pdsDefender = defenderFull.filter(unitIs(game.UnitType.PDS));
-							var defenderTransitions;
+							var defenderTransitionsVector;
 							if (options.defender.plasmaScoring)
-								defenderTransitions = scaleTransitionsWithPlasmaScoring(pdsDefender, game.ThrowType.SpaceCannon, problem.defender.length + 1, defenderModifier, false, options.attacker.maneuveringJets ? 1 : 0);
+								defenderTransitionsVector = fleetTransitionsVectorWithPlasmaScoring(pdsDefender, game.ThrowType.SpaceCannon, defenderModifier);
 							else
-								defenderTransitions = scaleTransitions(pdsDefender, game.ThrowType.SpaceCannon, problem.defender.length + 1, defenderModifier, false, options.attacker.maneuveringJets ? 1 : 0);
+								defenderTransitionsVector = fleetTransitionsVector(pdsDefender, game.ThrowType.SpaceCannon, defenderModifier);
+							var defenderTransitions = scale(cancelHits(defenderTransitionsVector, options.attacker.maneuveringJets ? 1 : 0), problem.defender.length + 1);
 
 							applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
 						});
@@ -686,33 +675,6 @@
 				}
 			}
 
-			function scaleTransitionsWithPlasmaScoring(fleet, throwType, repeat, modifier, reroll, cancelledHits) {
-				var fleetInflicted = computeFleetTransitions(fleet, throwType, modifier, reroll).pop();
-				var bestUnit = getUnitWithLowest(fleet, throwType + 'Value');
-				if (bestUnit) {
-					var unitWithOneDie = bestUnit.clone();
-					unitWithOneDie[throwType + 'Dice'] = 1;
-					var unitTransitions = computeUnitTransitions(unitWithOneDie, throwType, modifier, reroll);
-					fleetInflicted = slideMultiply(unitTransitions, fleetInflicted);
-				}
-				cancelHits(fleetInflicted, cancelledHits);
-				var result = new Array(repeat);
-				result.fill(fleetInflicted);
-				return result;
-			}
-
-			function getUnitWithLowest(fleet, property) {
-				var result = null;
-				var bestBattleValue = Infinity;
-				for (var i = 0; i < fleet.length; i++) {
-					if (fleet[i][property] < bestBattleValue) {
-						result = fleet[i];
-						bestBattleValue = fleet[i][property];
-					}
-				}
-				return result;
-			}
-
 			function canInflictDamage(t) {
 				return t.length > 1;
 			}
@@ -784,23 +746,67 @@
 			},];
 		}
 
-		function scaleTransitions(fleet, throwType, repeat, modifier, reroll, cancelledHits) {
-			var fleetInflicted = computeFleetTransitions(fleet, throwType, modifier, reroll).pop();
-			cancelHits(fleetInflicted, cancelledHits);
+		function fleetTransitionsVector(fleet, throwType, modifier, reroll) {
+			return computeFleetTransitions(fleet, throwType, modifier, reroll).pop();
+		}
+
+		function scale(transitionsVector, repeat) {
 			var result = new Array(repeat);
-			result.fill(fleetInflicted);
+			result.fill(transitionsVector);
 			return result;
 		}
 
-		function cancelHits(transitions, cancelledHits) {
-			for (var c = 0; c < cancelledHits; ++c) {
-				if (transitions.length > 1)
-					transitions[0] += transitions[1];
-				for (var i = 2; i < transitions.length; i++)
-					transitions[i - 1] = transitions[i];
-				if (transitions.length > 1)
-					transitions.pop();
+		function bombardmentTransitionsVector(attackerFull, defenderFull, options) {
+			var bombardmentPossible = !defenderFull.some(unitIs(game.UnitType.PDS)) // either there are no defending PDS
+				|| attackerFull.some(unitIs(game.UnitType.WarSun)); // or there are but attacking WarSuns negate their Planetary Shield
+			if (!bombardmentPossible) return [1];
+
+			var attackerModifier = options.defender.bunker ? -4 : 0;
+			var bombardmentAttacker = attackerFull.filter(hasBombardment);
+			if (options.attacker.plasmaScoring)
+				return fleetTransitionsVectorWithPlasmaScoring(bombardmentAttacker, game.ThrowType.Bombardment, attackerModifier);
+			else
+				return fleetTransitionsVector(bombardmentAttacker, game.ThrowType.Bombardment, attackerModifier);
+
+			function hasBombardment(unit) {
+				return unit.bombardmentDice !== 0;
 			}
+		}
+
+		function fleetTransitionsVectorWithPlasmaScoring(fleet, throwType, modifier, reroll) {
+			var fleetInflicted = computeFleetTransitions(fleet, throwType, modifier, reroll).pop();
+			var bestUnit = getUnitWithLowest(fleet, throwType + 'Value');
+			if (bestUnit) {
+				var unitWithOneDie = bestUnit.clone();
+				unitWithOneDie[throwType + 'Dice'] = 1;
+				var unitTransitions = computeUnitTransitions(unitWithOneDie, throwType, modifier, reroll);
+				fleetInflicted = slideMultiply(unitTransitions, fleetInflicted);
+			}
+			return fleetInflicted;
+		}
+
+		function getUnitWithLowest(fleet, property) {
+			var result = null;
+			var bestBattleValue = Infinity;
+			for (var i = 0; i < fleet.length; i++) {
+				if (fleet[i][property] < bestBattleValue) {
+					result = fleet[i];
+					bestBattleValue = fleet[i][property];
+				}
+			}
+			return result;
+		}
+
+		function cancelHits(transitionsVector, cancelledHits) {
+			for (var c = 0; c < cancelledHits; ++c) {
+				if (transitionsVector.length > 1)
+					transitionsVector[0] += transitionsVector[1];
+				for (var i = 2; i < transitionsVector.length; i++)
+					transitionsVector[i - 1] = transitionsVector[i];
+				if (transitionsVector.length > 1)
+					transitionsVector.pop();
+			}
+			return transitionsVector;
 		}
 
 		function unitIs(unitType) {

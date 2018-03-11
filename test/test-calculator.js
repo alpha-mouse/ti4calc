@@ -1268,6 +1268,37 @@ exports.l1z1xRacialHarrowBunker = function (test) {
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
 
+exports.l1z1xRacialHarrowMagenDefense = function (test) {
+	// In principle, either L1Z1X can bombard, or Magen Defense can be activated, but not both.
+	// But just in case..
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.WarSun] = { count: 1 };
+	attacker[game.UnitType.Ground] = { count: 3 };
+
+	defender[game.UnitType.Ground] = { count: 4 };
+	defender[game.UnitType.PDS] = { count: 1 };
+
+	var options = { attacker: { race: 'L1Z1X' }, defender: { magenDefense: true } };
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
+exports.l1z1xRacialHarrowPlasmaScoring = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Dreadnought] = { count: 2 };
+	attacker[game.UnitType.Ground] = { count: 3 };
+
+	defender[game.UnitType.Ground] = { count: 4 };
+
+	var options = { attacker: { race: 'L1Z1X', plasmaScoring: true }, defender: { } };
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
 /** Test some random battle. Because I couldn't have imagined all edge cases.
  * When this test fails - take input fleets and options from the console and reproduce the problem */
 function chaoticTest(test) {
