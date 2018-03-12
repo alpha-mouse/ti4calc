@@ -129,41 +129,17 @@
 	</div>
 	<div id="options" :class="{ collapsed: !showOptions }">
 		<div class="heading"><strong>Technologies</strong></div>
-		<div class="o-grid center-grid" v-for="(option, key) in Technologies">
-			<div class="o-grid__cell" :class="{ hidden: !option.availableFor('attacker') }">
-				<label class="" v-bind:for="'attacker.' + key"
-					   v-bind:title="option.description">{{option.title}}</label>
-				<input type="checkbox" class="" v-bind:id="'attacker.' + key"
-					   v-model="options.attacker[key]">
-			</div>
-			<div class="o-grid__cell">
-				<button type="button" class="help" v-bind:title="option.description"></button>
-			</div>
-			<div class="o-grid__cell" :class="{ hidden: !option.availableFor('defender') }">
-				<input type="checkbox" class="" v-bind:id="'defender.' + key"
-					   v-model="options.defender[key]">
-				<label class="" v-bind:for="'defender.' + key"
-					   v-bind:title="option.description">{{option.title}}</label>
-			</div>
+		<option-pair v-for="(option, key) in Technologies"
+					  :option-name="key" :option="option" :options="options"></option-pair>
+		<div class="o-grid center-grid" v-for="pair in raceTechnologies">
+			<left-option :option-name="pair.attacker.key" :option="pair.attacker.option" :options="options" side="attacker"></left-option>
+			<help-mark :text="pair.attacker.option.description" :class="{ hidden: !pair.attacker.option.availableFor('attacker') }"></help-mark>
+			<help-mark :text="pair.defender.option.description" :class="{ hidden: !pair.defender.option.availableFor('defender') }"></help-mark>
+			<right-option :option-name="pair.defender.key" :option="pair.defender.option" :options="options" side="defender"></right-option>
 		</div>
 		<div class="heading"><strong>Action Cards</strong></div>
-		<div class="o-grid center-grid" v-for="(option, key) in ActionCards">
-			<div class="o-grid__cell" :class="{ hidden: !option.availableFor('attacker') }">
-				<label class="" v-bind:for="'attacker.' + key"
-					   v-bind:title="option.description">{{option.title}}</label>
-				<input type="checkbox" class="" v-bind:id="'attacker.' + key"
-					   v-model="options.attacker[key]">
-			</div>
-			<div class="o-grid__cell">
-				<button type="button" class="help" v-bind:title="option.description"></button>
-			</div>
-			<div class="o-grid__cell" :class="{ hidden: !option.availableFor('defender') }">
-				<input type="checkbox" class="" v-bind:id="'defender.' + key"
-					   v-model="options.defender[key]">
-				<label class="" v-bind:for="'defender.' + key"
-					   v-bind:title="option.description">{{option.title}}</label>
-			</div>
-		</div>
+		<option-pair v-for="(option, key) in ActionCards"
+					  :option-name="key" :option="option" :options="options"></option-pair>
 	</div>
 	<div id="help" :class="{ collapsed: !showHelp }">
 		<h1>Twilight Imperium IV Edition Battle Calculator</h1>
@@ -231,10 +207,11 @@
 			<li><strong>Courageous to the End</strong>, <strong>Emergency Repairs</strong> and <strong>Shields Holding</strong> Action Cards.
 				I wasn't able to imagine any obvious way to algorithmically decide when to play these cards during the battle,
 			</li>
-			<li><strong>Yin Brotherhood</strong> <strong>Devotion</strong> (and <strong>Indoctrination</strong> for that matter) racial abilities.
-			</li>
-			<li><strong>Letnev</strong> <strong>Munitions Reserves</strong>. Though it can be partially emulated by <strong>Fire Team</strong> Action Card option.
-			</li>
+			<li><strong>Yin Brotherhood</strong> <strong>Devotion</strong>, <strong>Indoctrination</strong> racial abilities and <strong>Impulse Core</strong> technology,</li>
+			<li><strong>Letnev</strong> <strong>Munitions Reserves</strong> ability. Though it can be partially emulated by <strong>Fire Team</strong> Action Card option,</li>
+			<li><strong>Mentak</strong> <strong>Salvage Operations</strong> technology,</li>
+			<li><strong>Sardakk N'orr</strong> <strong>Exotrireme II</strong> "kamikaze" ability,</li>
+			<li><strong>Ghosts of Creuss</strong> <strong>Dimensional Splicer</strong> technology,</li>
 		</ul>
 		<p>Some other notes:</p>
 		<ul>

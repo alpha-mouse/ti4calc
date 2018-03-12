@@ -356,6 +356,8 @@
 					name: 'Space Cannon -> Ground Forces',
 					appliesTo: game.BattleType.Ground,
 					execute: function (attacker, defender, attackerFull, defenderFull, options) {
+						if (options.attacker.race === 'Letnev' && options.attacker.l4Disruptors) return;
+
 						var defenderModifier = options.attacker.antimassDeflectors ? -1 : 0;
 						var defenderInflicted = rollDice(defenderFull.filter(unitIs(game.UnitType.PDS)), game.ThrowType.SpaceCannon, defenderModifier);
 

@@ -1218,7 +1218,10 @@ exports.sardakkFighterPrototypeMoraleBoost = function (test) {
 	defender[game.UnitType.Fighter] = { count: 3 };
 	defender[game.UnitType.PDS] = { count: 3 };
 
-	var options = { attacker: { race: 'Sardakk', moraleBoost: true }, defender: { race: 'Sardakk', fighterPrototype: true } };
+	var options = {
+		attacker: { race: 'Sardakk', moraleBoost: true },
+		defender: { race: 'Sardakk', fighterPrototype: true }
+	};
 
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
@@ -1249,7 +1252,7 @@ exports.l1z1xRacialHarrow = function (test) {
 
 	defender[game.UnitType.Ground] = { count: 2 };
 
-	var options = { attacker: { race: 'L1Z1X' }, defender: { } };
+	var options = { attacker: { race: 'L1Z1X' }, defender: {} };
 
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
@@ -1294,7 +1297,20 @@ exports.l1z1xRacialHarrowPlasmaScoring = function (test) {
 
 	defender[game.UnitType.Ground] = { count: 4 };
 
-	var options = { attacker: { race: 'L1Z1X', plasmaScoring: true }, defender: { } };
+	var options = { attacker: { race: 'L1Z1X', plasmaScoring: true }, defender: {} };
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
+exports.l4Disruptors = function (test) {
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Ground] = { count: 2 };
+
+	defender[game.UnitType.Ground] = { count: 2 };
+	defender[game.UnitType.PDS] = { count: 2 };
+
+	var options = { attacker: { race: 'Letnev', l4Disruptors: true }, defender: { } };
 
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };

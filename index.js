@@ -138,20 +138,91 @@
 			},
 		},
 		watch: {
-			'options.attacker.race': resetUpdates('attacker'),
-			'options.defender.race': resetUpdates('defender'),
+			'options.attacker.race': resetUpdatesAndTechnologies('attacker'),
+			'options.defender.race': resetUpdatesAndTechnologies('defender'),
 			battleType: recomputeHandler,
 			attackerUnits: recomputeHandler,
 			defenderUnits: recomputeHandler,
 			options: recomputeHandler,
 		},
+		computed: {
+			raceTechnologies: function () {
+				var attackerTech = RaceSpecificTechnologies[this.options.attacker.race] || {};
+				var defenderTech = RaceSpecificTechnologies[this.options.defender.race] || {};
+				var attackerTechKeys = Object.keys(attackerTech);
+				var defenderTechKeys = Object.keys(defenderTech);
+				var result = [];
+				for (var i = 0; i < attackerTechKeys.length || i < defenderTechKeys.length; ++i) {
+					var pair = {};
+					pair.attacker = i < attackerTechKeys.length ? {
+						key: attackerTechKeys[i],
+						option: attackerTech[attackerTechKeys[i]],
+					} : stub(defenderTech[defenderTechKeys[i]].title);
+					pair.defender = i < defenderTechKeys.length ? {
+						key: defenderTechKeys[i],
+						option: defenderTech[defenderTechKeys[i]],
+					} : stub(attackerTech[attackerTechKeys[i]].title);
+					result.push(pair);
+				}
+				return result;
+
+				function stub(name) {
+					return {
+						key: '',
+						option:
+							{
+								title: name,
+								availableFor: function () {
+									return false;
+								}
+							}
+					};
+				}
+			}
+		}
+	});
+	Vue.component('left-option', {
+		props: ['optionName', 'option', 'options', 'side'],
+		template:
+		'<div class="o-grid__cell" :class="{ hidden: !option.availableFor(side) }">' +
+		'	<label class="" v-bind:for="side + \'.\' + optionName"' +
+		'		   v-bind:title="option.description">{{option.title}}</label>' +
+		'	<input type="checkbox" class="" v-bind:id="side + \'.\' + optionName"' +
+		'		   v-model="options[side][optionName]">' +
+		'</div>',
+	});
+	Vue.component('right-option', {
+		props: ['optionName', 'option', 'options', 'side'],
+		template:
+		'<div class="o-grid__cell" :class="{ hidden: !option.availableFor(side) }">' +
+		'	<input type="checkbox" class="" v-bind:id="side + \'.\' + optionName"' +
+		'		   v-model="options[side][optionName]">' +
+		'	<label class="" v-bind:for="side + \'.\' + optionName"' +
+		'		   v-bind:title="option.description">{{option.title}}</label>' +
+		'</div>',
+	});
+	Vue.component('option-pair', {
+		props: ['optionName', 'option', 'options',],
+		template:
+		'<div class="o-grid center-grid">' +
+		'	<left-option :option-name="optionName" :option="option" :options="options" side="attacker"></left-option>' +
+		'	<help-mark :text="option.description"></help-mark>' +
+		'	<right-option :option-name="optionName" :option="option" :options="options" side="defender"></right-option>' +
+		'</div>',
+	});
+	Vue.component('help-mark', {
+		props: ['text'],
+		template:
+		'<div class="o-grid__cell">' +
+		'	<button type="button" class="help" v-bind:title="text"></button>' +
+		'</div>',
 	});
 
 	app.recompute();
 
 	/** When the race changed from the race having an upgrade for the unit (eg Sol Carrier)
 	 * to the race not having such upgrade, input flag for the unit upgrade should be set to false */
-	function resetUpdates(battleSide) {
+	function resetUpdatesAndTechnologies(battleSide) {
 		return function (newRace, oldRace) {
 			for (var unitType in UnitType) {
 				if (upgradeable(oldRace, unitType) &&
@@ -159,6 +230,9 @@
 					this[battleSide + 'Units'][unitType].upgraded = false;
 				}
 			}
+			if (RaceSpecificTechnologies[oldRace])
+				for (var tech in RaceSpecificTechnologies[oldRace])
+					this.options[battleSide][tech] = false;
 		};
 	}
 

@@ -82,6 +82,16 @@
 		assaultCannon: new Option('Assault Cannon', 'Opponent destroys 1 non-Fighter ship if you have at least 3 non-Fighters'),
 	};
 
+	root.RaceSpecificTechnologies = {
+		Letnev: {
+			nonEuclidean: new Option('Non-Euclidean Shielding', 'Sustain Damage absorbs 2 hits'),
+			l4Disruptors: new Option('L4 Disruptors','During an Invasion units cannot use Space Cannon against you', 'attacker'),
+		},
+		Sardakk: {
+			valkyrieParticleWeave: new Option('Valkyrie Particle Weave', 'If opponent produces at least one hit in Ground combat, you produce one additional hit'),
+		},
+	};
+
 	root.UnitInfo = (function () {
 
 		function UnitInfo(type, stats) {
@@ -403,7 +413,7 @@
 
 	var unitOrder = createUnitOrder();
 
-	root.unitComparer = function(unit1, unit2) {
+	root.unitComparer = function (unit1, unit2) {
 		var typeOrder = unitOrder[unit1.type] - unitOrder[unit2.type];
 		if (unit1.isDamageGhost === unit2.isDamageGhost)
 			return typeOrder;
@@ -442,8 +452,8 @@
 	/** Check whether the race has an upgrade for the unit */
 	root.upgradeable = function (race, unitType) {
 		return !!(root.StandardUpgrades.hasOwnProperty(unitType) ||
-		root.RaceSpecificUpgrades[race] &&
-		root.RaceSpecificUpgrades[race].hasOwnProperty(unitType));
+			root.RaceSpecificUpgrades[race] &&
+			root.RaceSpecificUpgrades[race].hasOwnProperty(unitType));
 	};
 
 //todo check all racial abilities

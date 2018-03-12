@@ -536,6 +536,8 @@
 					appliesTo: game.BattleType.Ground,
 					execute: function (problemArray, attackerFull, defenderFull, options) {
 						problemArray.forEach(function (problem) {
+							if (options.attacker.race === 'Letnev' && options.attacker.l4Disruptors) return;
+
 							var attackerTransitions = scale([1], problem.attacker.length + 1); // attacker does not fire
 							var defenderModifier = options.attacker.antimassDeflectors ? -1 : 0;
 							var pdsDefender = defenderFull.filter(unitIs(game.UnitType.PDS));
