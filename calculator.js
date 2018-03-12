@@ -106,7 +106,7 @@
 				else
 					attackerTransitions = computeFleetTransitions(problem.attacker, game.ThrowType.Battle, attackerBoost, attackerReroll);
 				var defenderTransitions = computeFleetTransitions(problem.defender, game.ThrowType.Battle, defenderBoost, defenderReroll);
-				applyTransitions(problem, attackerTransitions, defenderTransitions, options);
+				applyTransitions(problem, attackerTransitions, defenderTransitions, options, 0, 0, true);
 			}
 
 			if (magenDefenseActivated && (attackerBoost || attackerReroll)) {
@@ -114,7 +114,7 @@
 				// Harrow ignored, because Magen Defense implies Planetary Shield and no Bombardment.
 				var attackerTransitions = computeFleetTransitions(problem.attacker, game.ThrowType.Battle, attackerBoost, attackerReroll);
 				var defenderTransitions = computeFleetTransitions(problem.defender, game.ThrowType.Battle, boost(battleType, options.defender, false));
-				applyTransitions(problem, attackerTransitions, defenderTransitions, options);
+				applyTransitions(problem, attackerTransitions, defenderTransitions, options, 0, 0, true);
 			}
 
 			propagateProbabilityUpLeft(problem, battleType, attackerFull, defenderFull, options);
@@ -137,28 +137,30 @@
 				for (var d = distr.columns - 1; 0 < d; d--) {
 
 					if (harrowTransitions)
-						var transitionsMatrix = harrowMultiply(attackerTransitions, defenderTransitions, a, d, harrowTransitions); // no Sustain Damage assumption
+						var transitionMatrix = harrowMultiply(attackerTransitions, defenderTransitions, a, d, harrowTransitions); // no Sustain Damage assumption
 					else {
 						var attackerTransitionsVector = adjustForNonEuclidean(attackerTransitions[a], problem.defender, d - 1, options.defender);
 						var defenderTransitionsVector = adjustForNonEuclidean(defenderTransitions[d], problem.attacker, a - 1, options.attacker);
-						var transitionsMatrix = orthogonalMultiply(attackerTransitionsVector, defenderTransitionsVector, d, a);
+						var transitionMatrix = orthogonalMultiply(attackerTransitionsVector, defenderTransitionsVector, d + 1, a + 1);
+						if (battleType === game.BattleType.Ground)
+							transitionMatrix = adjustForValkyrieParticleWeave(transitionMatrix, options, d + 1, a + 1);
 					}
 
 					var k;
 					if (distr[a][d] === 0)
 						continue;
 					else {
-						k = distr[a][d] / (1 - transitionsMatrix.at(0, 0));
+						k = distr[a][d] / (1 - transitionMatrix.at(0, 0));
 					}
 
 					// transitions for everything except for attackerInflicted===0&&defenderInflicted===0
 					var attackerInflicted = 0;
-					for (var defenderInflicted = 1; defenderInflicted < transitionsMatrix.columns && defenderInflicted <= a; defenderInflicted++) {
-						distr[a - defenderInflicted][d - attackerInflicted] += transitionsMatrix.at(attackerInflicted, defenderInflicted) * k;
+					for (var defenderInflicted = 1; defenderInflicted < transitionMatrix.columns && defenderInflicted <= a; defenderInflicted++) {
+						distr[a - defenderInflicted][d - attackerInflicted] += transitionMatrix.at(attackerInflicted, defenderInflicted) * k;
 					}
-					for (var attackerInflicted = 1; attackerInflicted < transitionsMatrix.rows && attackerInflicted <= d; attackerInflicted++) {
-						for (var defenderInflicted = 0; defenderInflicted < transitionsMatrix.columns && defenderInflicted <= a; defenderInflicted++) {
-							distr[a - defenderInflicted][d - attackerInflicted] += transitionsMatrix.at(attackerInflicted, defenderInflicted) * k;
+					for (var attackerInflicted = 1; attackerInflicted < transitionMatrix.rows && attackerInflicted <= d; attackerInflicted++) {
+						for (var defenderInflicted = 0; defenderInflicted < transitionMatrix.columns && defenderInflicted <= a; defenderInflicted++) {
+							distr[a - defenderInflicted][d - attackerInflicted] += transitionMatrix.at(attackerInflicted, defenderInflicted) * k;
 						}
 					}
 					// all probability mass was moved from distr[a][d]
@@ -231,20 +233,21 @@
 			return result;
 		}
 
-		/** Create matrix-like object providing probabilities of inflicted damage
-		 * result.at(1,2) == X means that probability of the first fleet inflicting 1 dmg while the second inflicts 2 is X
-		 * matrix will conflate probabilities of damages exceeding maxI1 and maxI2 */
-		function orthogonalMultiply(transitions1, transitions2, maxI1, maxI2) {
+		/** Same as unconstrainedOrthogonalMultiply, but will conflate probabilities of damages exceeding rows-1 and columns-1 */
+		function orthogonalMultiply(transitions1, transitions2, rows, columns) {
+			// Could have been:
+			// return constrainTransitionMatrix(unconstrainedOrthogonalMultiply(transitions1, transitions2), rows, columns);
+			// but is faster
 			return {
-				rows: Math.min(maxI1 + 1, transitions1.length),
-				columns: Math.min(maxI2 + 1, transitions2.length),
+				rows: Math.min(rows, transitions1.length),
+				columns: Math.min(columns, transitions2.length),
 				at: function (i1, i2) {
 					var inflicted1 = transitions1[i1];
-					if (i1 === maxI1)
+					if (i1 === rows - 1)
 						while (++i1 < transitions1.length)
 							inflicted1 += transitions1[i1];
 					var inflicted2 = transitions2[i2];
-					if (i2 === maxI2)
+					if (i2 === columns - 1)
 						while (++i2 < transitions2.length)
 							inflicted2 += transitions2[i2];
 					return inflicted1 * inflicted2;
@@ -252,21 +255,33 @@
 			};
 		}
 
+		/** Create matrix-like object providing probabilities of inflicted damage
+		 * result.at(1,2) == X means that probability of the first fleet inflicting 1 dmg while the second inflicts 2 is X */
+		function unconstrainedOrthogonalMultiply(transitions1, transitions2) {
+			return {
+				rows: transitions1.length,
+				columns: transitions2.length,
+				at: function (i1, i2) {
+					return transitions1[i1] * transitions2[i2];
+				},
+			};
+		}
+
 		/** Similar in purpose and result to orthogonalMultiply, but takes pre-round firing into account */
 		function harrowMultiply(attackerTransitions, defenderTransitions, a, d, preroundAttackerTransitions) {
 			if (!preroundAttackerTransitions || preroundAttackerTransitions.length === 1 || d === 0)
-				return orthogonalMultiply(attackerTransitions[a], defenderTransitions[d], d, a);
+				return orthogonalMultiply(attackerTransitions[a], defenderTransitions[d], d + 1, a + 1);
 
 			var submatrices = [];
 			for (var pa = 0; pa < preroundAttackerTransitions.length && pa <= d; ++pa) {
-				submatrices[pa] = orthogonalMultiply(attackerTransitions[a], defenderTransitions[d - pa], d - pa, a);
+				submatrices[pa] = unconstrainedOrthogonalMultiply(attackerTransitions[a], defenderTransitions[d - pa]);
 			}
-			return {
-				rows: Math.min(d + 1, attackerTransitions[a].length + preroundAttackerTransitions.length - 1),
-				columns: Math.min(a + 1, defenderTransitions[d].length),
+			return constrainTransitionMatrix({
+				rows: attackerTransitions[a].length + preroundAttackerTransitions.length - 1,
+				columns: defenderTransitions[d].length,
 				at: function (i1, i2) {
 					var result = 0;
-					for (var i = 0; i <= i1 && i < preroundAttackerTransitions.length && i2 < submatrices[i].columns; ++i) {
+					for (var i = 0; i <= i1 && i < preroundAttackerTransitions.length && i <= d && i2 < submatrices[i].columns; ++i) {
 						if (i1 - i < submatrices[i].rows) {
 							var preround = preroundAttackerTransitions[i];
 							if (i === d) {
@@ -278,12 +293,12 @@
 					}
 					return result;
 				},
-			};
+			}, d + 1, a + 1);
 		}
 
 		/** Apply transition vectors to the distribution matrix just once
 		 * attackerVulnerableFrom and defenderVulnerableFrom could be used*/
-		function applyTransitions(problem, attackerTransitions, defenderTransitions, options, attackerVulnerableFrom, defenderVulnerableFrom) {
+		function applyTransitions(problem, attackerTransitions, defenderTransitions, options, attackerVulnerableFrom, defenderVulnerableFrom, valkyrieApplicable) {
 			var distribution = problem.distribution;
 			attackerVulnerableFrom = attackerVulnerableFrom || 0;
 			defenderVulnerableFrom = defenderVulnerableFrom || 0;
@@ -297,7 +312,9 @@
 					var maxDefenderDamage = Math.max(0, d - defenderVulnerableFrom);
 					var attackerTransitionsVector = adjustForNonEuclidean(attackerTransitions[a], problem.defender, d - 1, options.defender);
 					var defenderTransitionsVector = adjustForNonEuclidean(defenderTransitions[d], problem.attacker, a - 1, options.attacker);
-					var transitionMatrix = orthogonalMultiply(attackerTransitionsVector, defenderTransitionsVector, maxDefenderDamage, maxAttackerDamage);
+					var transitionMatrix = orthogonalMultiply(attackerTransitionsVector, defenderTransitionsVector, maxDefenderDamage + 1, maxAttackerDamage + 1);
+					if (valkyrieApplicable)
+						transitionMatrix = adjustForValkyrieParticleWeave(transitionMatrix, options, maxDefenderDamage + 1, maxAttackerDamage + 1); // no Sustain Damage assumption. Otherwise Valkyrie should be taken into account before Non-Euclidean Shielding somehow
 
 					for (var attackerInflicted = 0; attackerInflicted < transitionMatrix.rows && attackerInflicted <= maxDefenderDamage; attackerInflicted++) {
 						for (var defenderInflicted = 0; defenderInflicted < transitionMatrix.columns && defenderInflicted <= maxAttackerDamage; defenderInflicted++) {
@@ -542,7 +559,7 @@
 					appliesTo: game.BattleType.Ground,
 					execute: function (problemArray, attackerFull, defenderFull, options) {
 						problemArray.forEach(function (problem) {
-							if (options.attacker.race === 'Letnev' && options.attacker.l4Disruptors) return;
+							if (options.attacker.l4Disruptors) return;
 
 							var attackerTransitions = scale([1], problem.attacker.length + 1); // attacker does not fire
 							var defenderModifier = options.attacker.antimassDeflectors ? -1 : 0;
@@ -629,7 +646,7 @@
 							if (attackersDied < defenderTransitions[d].length) {
 								for (var a = attackerVulnerable.to + 1; a < problem.distribution.rows; a++) {
 									var maxDefenderDamage = Math.max(0, d - defenderVulnerable.from);
-									var transitionMatrix = orthogonalMultiply(attackerTransitions[a], defenderTransitions[d], maxDefenderDamage, dieableAttackers);
+									var transitionMatrix = orthogonalMultiply(attackerTransitions[a], defenderTransitions[d], maxDefenderDamage + 1, dieableAttackers + 1);
 									for (var attackerInflicted = 0; attackerInflicted < attackerTransitions[a].length && attackerInflicted <= maxDefenderDamage; attackerInflicted++) {
 										subproblemProbabilityMass += (
 											splitDistribution[a - attackersDied][d - attackerInflicted] += problem.distribution[a][d] * transitionMatrix.at(attackerInflicted, attackersDied)
@@ -655,7 +672,7 @@
 							if (defendersDied < attackerTransitions[a].length) {
 								for (var d = defenderVulnerable.to + 1; d < problem.distribution.columns; d++) {
 									var maxAttackerDamage = Math.max(0, a - attackerVulnerable.from);
-									var transitionMatrix = orthogonalMultiply(attackerTransitions[a], defenderTransitions[d], dieableDefenders, maxAttackerDamage);
+									var transitionMatrix = orthogonalMultiply(attackerTransitions[a], defenderTransitions[d], dieableDefenders + 1, maxAttackerDamage + 1);
 									for (var defenderInflicted = 0; defenderInflicted < defenderTransitions[d].length && defenderInflicted <= maxAttackerDamage; defenderInflicted++) {
 										subproblemProbabilityMass += (
 											splitDistribution[a - defenderInflicted][d - defendersDied] += problem.distribution[a][d] * transitionMatrix.at(defendersDied, defenderInflicted)
@@ -686,7 +703,7 @@
 						for (var a = attackerVulnerable.to + 1; a < problem.distribution.rows; a++) {
 							for (var d = defenderVulnerable.to + 1; d < problem.distribution.columns; d++) {
 								if (attackersDied < defenderTransitions[d].length && defendersDied < attackerTransitions[a].length) {
-									var transitionMatrix = orthogonalMultiply(attackerTransitions[a], defenderTransitions[d], dieableDefenders, dieableAttackers);
+									var transitionMatrix = orthogonalMultiply(attackerTransitions[a], defenderTransitions[d], dieableDefenders + 1, dieableAttackers + 1);
 									subproblemProbabilityMass += (
 										splitDistribution[a - attackersDied][d - defendersDied] += problem.distribution[a][d] * transitionMatrix.at(defendersDied, attackersDied)
 									);
@@ -837,7 +854,7 @@
 		}
 
 		function adjustForNonEuclidean(fleetTransitionsVector, opposingFleet, opposingIndex, opposingSideOptions) {
-			if (opposingSideOptions.race === 'Letnev' && opposingSideOptions.nonEuclidean && fleetTransitionsVector.length > 2) {
+			if (opposingSideOptions.nonEuclidean && fleetTransitionsVector.length > 2) {
 				var result = fleetTransitionsVector.slice();
 				for (var dmg = 1; dmg < result.length && 0 < opposingIndex; dmg++) {
 					if (opposingFleet[opposingIndex].isDamageGhost) {
@@ -848,6 +865,52 @@
 				return result;
 			} else {
 				return fleetTransitionsVector;
+			}
+		}
+
+		function adjustForValkyrieParticleWeave(transitionMatrix, options, rows, columns) {
+			if (!options.attacker.valkyrieParticleWeave && !options.defender.valkyrieParticleWeave)
+				return transitionMatrix;
+			return constrainTransitionMatrix({
+				rows: transitionMatrix.rows + (options.attacker.valkyrieParticleWeave ? 1 : 0 ),
+				columns: transitionMatrix.columns + (options.defender.valkyrieParticleWeave ? 1 : 0 ),
+				at: function (i1, i2) {
+					if (i1 === 0 && i2 === 0)
+						return transitionMatrix.at(0, 0);
+					if (i1 === 0)
+						return options.attacker.valkyrieParticleWeave || i2 === transitionMatrix.columns ? 0 : transitionMatrix.at(i1, i2);
+					if (i2 === 0)
+						return options.defender.valkyrieParticleWeave || i1 === transitionMatrix.rows ? 0 : transitionMatrix.at(i1, i2);
+					if (i1 === 1 && i2 === 1 && options.attacker.valkyrieParticleWeave && options.defender.valkyrieParticleWeave)
+						return (transitionMatrix.columns === 1 ? 0 : transitionMatrix.at(0, 1)) + (transitionMatrix.rows === 1 ? 0 : transitionMatrix.at(1, 0));
+					if (options.attacker.valkyrieParticleWeave && options.defender.valkyrieParticleWeave &&
+						( i1 === transitionMatrix.rows && i2 === 1 ||
+							i1 === 1 && i2 === transitionMatrix.columns))
+						return 0;
+					var rowShift = options.attacker.valkyrieParticleWeave && !(options.defender.valkyrieParticleWeave && i2 === 1) ? 1 : 0;
+					var columnShift = options.defender.valkyrieParticleWeave && !(options.attacker.valkyrieParticleWeave && i1 === 1) ? 1 : 0;
+					return transitionMatrix.at(i1 - rowShift, i2 - columnShift);
+				}
+			}, rows, columns);
+		}
+
+		function constrainTransitionMatrix(transitionMatrix, rows, columns) {
+			if (transitionMatrix.rows <= rows && transitionMatrix.columns <= columns)
+				return transitionMatrix;
+			return {
+				rows: Math.min(transitionMatrix.rows, rows),
+				columns: Math.min(transitionMatrix.columns, columns),
+				at: function (i1, i2) {
+					var result = 0;
+					var upperRowsLimit = i1 === this.rows - 1 ? transitionMatrix.rows : i1 + 1;
+					var upperColumnsLimit = i2 === this.columns - 1 ? transitionMatrix.columns : i2 + 1;
+					for (var i = i1; i < upperRowsLimit; ++i) {
+						for (var j = i2; j < upperColumnsLimit; ++j) {
+							result += transitionMatrix.at(i, j);
+						}
+					}
+					return result;
+				},
 			}
 		}
 

@@ -135,6 +135,19 @@
 					attackerInflicted = 0;
 				}
 
+				if (battleType === game.BattleType.Ground) {
+					var attackerAdditional = 0;
+					var defenderAdditional = 0;
+					if (options.attacker.valkyrieParticleWeave &&
+						defenderInflicted > 0)
+						attackerAdditional = 1;
+					if (options.defender.valkyrieParticleWeave &&
+						attackerInflicted > 0)
+						defenderAdditional = 1;
+					attackerInflicted += attackerAdditional;
+					defenderInflicted += defenderAdditional;
+				}
+
 				applyDamage(attacker, defenderInflicted, options.attacker);
 				applyDamage(defender, attackerInflicted, options.defender);
 
@@ -157,7 +170,7 @@
 					if (killed.isDamageGhost) {
 						killed.damageCorporeal.damaged = true;
 						killed.damageCorporeal.damagedThisRound = true;
-						if (sideOptions && sideOptions.race === 'Letnev' && sideOptions.nonEuclidean)
+						if (sideOptions.nonEuclidean)
 							hits--;
 					}
 					hits--;
@@ -358,7 +371,7 @@
 					name: 'Space Cannon -> Ground Forces',
 					appliesTo: game.BattleType.Ground,
 					execute: function (attacker, defender, attackerFull, defenderFull, options) {
-						if (options.attacker.race === 'Letnev' && options.attacker.l4Disruptors) return;
+						if (options.attacker.l4Disruptors) return;
 
 						var defenderModifier = options.attacker.antimassDeflectors ? -1 : 0;
 						var defenderInflicted = rollDice(defenderFull.filter(unitIs(game.UnitType.PDS)), game.ThrowType.SpaceCannon, defenderModifier);

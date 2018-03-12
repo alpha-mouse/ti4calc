@@ -48,8 +48,8 @@ function testBattle(test, attacker, defender, battleType, options) {
 	var got = calc.computeProbabilities(attackerExpanded, defenderExpanded, battleType, options).distribution;
 	var expected = im.estimateProbabilities(attackerExpanded, defenderExpanded, battleType, options).distribution;
 
-	//console.log('i', expected.toString());
-	//console.log('c', got.toString());
+	console.log('i', expected.toString());
+	console.log('c', got.toString());
 
 	test.ok(distributionsEqual(expected, got), 'empirical differs from analytical');
 
@@ -1315,7 +1315,7 @@ exports.l4Disruptors = function (test) {
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
 
-exports.nonEuclideanSimple = function (test) {
+exports.letnevRacialNonEuclideanSimple = function (test) {
 	var attacker = {};
 	var defender = {};
 	attacker[game.UnitType.Dreadnought] = { count: 2 };
@@ -1327,7 +1327,7 @@ exports.nonEuclideanSimple = function (test) {
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
 
-exports.nonEuclideanDontRiskDirectHit = function (test) {
+exports.letnevRacialNonEuclideanDontRiskDirectHit = function (test) {
 	var attacker = {};
 	var defender = {};
 	attacker[game.UnitType.Dreadnought] = { count: 3 };
@@ -1340,7 +1340,7 @@ exports.nonEuclideanDontRiskDirectHit = function (test) {
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
 
-exports.nonEuclideanMoraleBoost = function (test) {
+exports.letnevRacialNonEuclideanMoraleBoost = function (test) {
 	var attacker = {};
 	var defender = {};
 	attacker[game.UnitType.Dreadnought] = { count: 3 };
@@ -1354,6 +1354,64 @@ exports.nonEuclideanMoraleBoost = function (test) {
 	};
 
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.sardakkRacialValkyrieParticleWeave = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Ground] = { count: 1 };
+
+	defender[game.UnitType.Ground] = { count: 1 };
+
+	var options = { attacker: { race: 'Sardakk', valkyrieParticleWeave: true }, defender: {} };
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
+exports.sardakkRacialValkyrieParticleWeaveBoth = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Ground] = { count: 2 };
+
+	defender[game.UnitType.Ground] = { count: 2 };
+
+	// yes, this cannot happen in the actual game, but anyway
+	var options = {
+		attacker: { race: 'Sardakk', valkyrieParticleWeave: true },
+		defender: { race: 'Sardakk', valkyrieParticleWeave: true }
+	};
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
+exports.sardakkRacialValkyrieParticleWeaveHarrow = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Ground] = { count: 2 };
+	attacker[game.UnitType.Dreadnought] = { count: 1 };
+
+	defender[game.UnitType.Ground] = { count: 3 };
+
+	var options = { attacker: { race: 'L1Z1X', }, defender: { race: 'Sardakk', valkyrieParticleWeave: true } };
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
+exports.sardakkRacialValkyrieParticleWeaveMagenDefense = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Ground] = { count: 1 };
+
+	defender[game.UnitType.Ground] = { count: 1 };
+	defender[game.UnitType.PDS] = { count: 1 };
+
+	var options = { attacker: { race: 'Sardakk', valkyrieParticleWeave: true }, defender: { magenDefense: true } };
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
 
 /** Test some random battle. Because I couldn't have imagined all edge cases.
@@ -1478,5 +1536,6 @@ function group(exports, testGroup) {
 //exports.directHit = group(exports, 'directHit');
 //exports.maneuveringJets = group(exports, 'maneuveringJets');
 //exports.sardakk = group(exports, 'sardakk');
-//exports.l1z1x = group(exports, 'l1z1x');
+exports.l1z1x = group(exports, 'l1z1x');
 //exports.nonEuclidean = group(exports, 'nonEuclidean');
+exports.valkyrieParticleWeave = group(exports, 'valkyrieParticleWeave');
