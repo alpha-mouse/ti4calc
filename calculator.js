@@ -96,8 +96,7 @@
 
 			if (attackerBoost || defenderBoost || // boosts apply to the first round only
 				magenDefenseActivated || // Magen Defence applies to the first round
-				attackerReroll || defenderReroll || // re-rolls apply to the first round
-				options.attacker.race === 'L1Z1X' && battleType === game.BattleType.Ground // Do one round of propagation, because Harrow will be included in all subsequent rounds
+				attackerReroll || defenderReroll // re-rolls apply to the first round
 			) {
 				//need to make one round of propagation with either altered probabilities or attacker not firing
 				var attackerTransitions;
@@ -107,6 +106,11 @@
 					attackerTransitions = computeFleetTransitions(problem.attacker, game.ThrowType.Battle, attackerBoost, attackerReroll);
 				var defenderTransitions = computeFleetTransitions(problem.defender, game.ThrowType.Battle, defenderBoost, defenderReroll);
 				applyTransitions(problem, attackerTransitions, defenderTransitions, options, 0, 0, true);
+				if (options.attacker.race === 'L1Z1X' && battleType === game.BattleType.Ground) { // Harrow
+					prebattleActions.find(function (action) {
+						return action.name === 'Bombardment';
+					}).execute([problem], attackerFull, defenderFull, options)
+				}
 			}
 
 			if (magenDefenseActivated && (attackerBoost || attackerReroll)) {
@@ -136,15 +140,14 @@
 			for (var a = distr.rows - 1; 0 < a; a--) {
 				for (var d = distr.columns - 1; 0 < d; d--) {
 
+					var attackerTransitionsVector = adjustForNonEuclidean(attackerTransitions[a], problem.defender, d - 1, options.defender);
+					var defenderTransitionsVector = adjustForNonEuclidean(defenderTransitions[d], problem.attacker, a - 1, options.attacker);
+					var transitionMatrix = orthogonalMultiply(attackerTransitionsVector, defenderTransitionsVector, d + 1, a + 1);
+					if (battleType === game.BattleType.Ground)
+						transitionMatrix = adjustForValkyrieParticleWeave(transitionMatrix, options, d + 1, a + 1);
+
 					if (harrowTransitions)
-						var transitionMatrix = harrowMultiply(attackerTransitions, defenderTransitions, a, d, harrowTransitions); // no Sustain Damage assumption
-					else {
-						var attackerTransitionsVector = adjustForNonEuclidean(attackerTransitions[a], problem.defender, d - 1, options.defender);
-						var defenderTransitionsVector = adjustForNonEuclidean(defenderTransitions[d], problem.attacker, a - 1, options.attacker);
-						var transitionMatrix = orthogonalMultiply(attackerTransitionsVector, defenderTransitionsVector, d + 1, a + 1);
-						if (battleType === game.BattleType.Ground)
-							transitionMatrix = adjustForValkyrieParticleWeave(transitionMatrix, options, d + 1, a + 1);
-					}
+						transitionMatrix = harrowMultiply(transitionMatrix, harrowTransitions, d + 1, a + 1); // no Sustain Damage assumption
 
 					var k;
 					if (distr[a][d] === 0)
@@ -268,32 +271,24 @@
 		}
 
 		/** Similar in purpose and result to orthogonalMultiply, but takes pre-round firing into account */
-		function harrowMultiply(attackerTransitions, defenderTransitions, a, d, preroundAttackerTransitions) {
-			if (!preroundAttackerTransitions || preroundAttackerTransitions.length === 1 || d === 0)
-				return orthogonalMultiply(attackerTransitions[a], defenderTransitions[d], d + 1, a + 1);
+		function harrowMultiply(transitionMatrix, postroundAttackerTransitions, rows, columns) {
+			if (!postroundAttackerTransitions || postroundAttackerTransitions.length === 1)
+				return transitionMatrix;
 
-			var submatrices = [];
-			for (var pa = 0; pa < preroundAttackerTransitions.length && pa <= d; ++pa) {
-				submatrices[pa] = unconstrainedOrthogonalMultiply(attackerTransitions[a], defenderTransitions[d - pa]);
-			}
 			return constrainTransitionMatrix({
-				rows: attackerTransitions[a].length + preroundAttackerTransitions.length - 1,
-				columns: defenderTransitions[d].length,
+				rows: transitionMatrix.rows + postroundAttackerTransitions.length - 1,
+				columns: transitionMatrix.columns,
 				at: function (i1, i2) {
 					var result = 0;
-					for (var i = 0; i <= i1 && i < preroundAttackerTransitions.length && i <= d && i2 < submatrices[i].columns; ++i) {
-						if (i1 - i < submatrices[i].rows) {
-							var preround = preroundAttackerTransitions[i];
-							if (i === d) {
-								for (var pa = i + 1; pa < preroundAttackerTransitions.length; ++pa)
-									preround += preroundAttackerTransitions[pa];
-							}
-							result += preround * submatrices[i].at(i1 - i, i2);
+					for (var i = 0; i <= i1 && i < postroundAttackerTransitions.length; ++i) {
+						if (i1 - i < transitionMatrix.rows) {
+							var postRound = postroundAttackerTransitions[i];
+							result += postRound * transitionMatrix.at(i1 - i, i2);
 						}
 					}
 					return result;
 				},
-			}, d + 1, a + 1);
+			}, rows, columns);
 		}
 
 		/** Apply transition vectors to the distribution matrix just once

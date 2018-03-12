@@ -48,8 +48,8 @@ function testBattle(test, attacker, defender, battleType, options) {
 	var got = calc.computeProbabilities(attackerExpanded, defenderExpanded, battleType, options).distribution;
 	var expected = im.estimateProbabilities(attackerExpanded, defenderExpanded, battleType, options).distribution;
 
-	console.log('i', expected.toString());
-	console.log('c', got.toString());
+	//console.log('i', expected.toString());
+	//console.log('c', got.toString());
 
 	test.ok(distributionsEqual(expected, got), 'empirical differs from analytical');
 
@@ -1257,6 +1257,20 @@ exports.l1z1xRacialHarrow = function (test) {
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
 
+exports.l1z1xRacialHarrowMoraleBoost = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Dreadnought] = { count: 2 };
+	attacker[game.UnitType.Ground] = { count: 2 };
+
+	defender[game.UnitType.Ground] = { count: 2 };
+
+	var options = { attacker: { race: 'L1Z1X' }, defender: { moraleBoost: true} };
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
 exports.l1z1xRacialHarrowBunker = function (test) {
 
 	var attacker = {};
@@ -1536,6 +1550,6 @@ function group(exports, testGroup) {
 //exports.directHit = group(exports, 'directHit');
 //exports.maneuveringJets = group(exports, 'maneuveringJets');
 //exports.sardakk = group(exports, 'sardakk');
-exports.l1z1x = group(exports, 'l1z1x');
+//exports.harrow = group(exports, 'harrow');
 //exports.nonEuclidean = group(exports, 'nonEuclidean');
-exports.valkyrieParticleWeave = group(exports, 'valkyrieParticleWeave');
+//exports.valkyrieParticleWeave = group(exports, 'valkyrieParticleWeave');

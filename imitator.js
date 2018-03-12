@@ -111,11 +111,6 @@
 
 			while (hasUnits(attacker) && hasUnits(defender)) {
 				round++;
-				if (round !== 1 && options.attacker.race === 'L1Z1X' && battleType === game.BattleType.Ground) { // Harrow
-					prebattleActions.find(function (a) {
-						return a.name === 'Bombardment';
-					}).execute(attacker, defender, attackerFull, defenderFull, options);
-				}
 				var attackerBoost = boost(battleType, round, options.attacker);
 				var defenderBoost = boost(battleType, round, options.defender);
 				var attackerReroll = false;
@@ -155,6 +150,12 @@
 					undamageUnit(attacker);
 				if (options.defender.duraniumArmor)
 					undamageUnit(defender);
+
+				if (options.attacker.race === 'L1Z1X' && battleType === game.BattleType.Ground) { // Harrow
+					prebattleActions.find(function (a) {
+						return a.name === 'Bombardment';
+					}).execute(attacker, defender, attackerFull, defenderFull, options);
+				}
 			}
 
 			return { attacker: attacker, defender: defender };
