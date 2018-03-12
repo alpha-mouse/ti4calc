@@ -135,8 +135,8 @@
 					attackerInflicted = 0;
 				}
 
-				applyDamage(attacker, defenderInflicted);
-				applyDamage(defender, attackerInflicted);
+				applyDamage(attacker, defenderInflicted, options.attacker);
+				applyDamage(defender, attackerInflicted, options.defender);
 
 				if (options.attacker.duraniumArmor)
 					undamageUnit(attacker);
@@ -147,7 +147,7 @@
 			return { attacker: attacker, defender: defender };
 		}
 
-		function applyDamage(fleet, hits, hittable) {
+		function applyDamage(fleet, hits, sideOptions, hittable) {
 			hittable = hittable || function (unit) {
 				return true;
 			};
@@ -157,6 +157,8 @@
 					if (killed.isDamageGhost) {
 						killed.damageCorporeal.damaged = true;
 						killed.damageCorporeal.damagedThisRound = true;
+						if (sideOptions && sideOptions.race === 'Letnev' && sideOptions.nonEuclidean)
+							hits--;
 					}
 					hits--;
 				}
@@ -234,8 +236,8 @@
 						if (options.defender.maneuveringJets && attackerInflicted > 0)
 							attackerInflicted--;
 
-						applyDamage(attacker, defenderInflicted, gravitonLaserUnitHittable(options.defender));
-						applyDamage(defender, attackerInflicted, gravitonLaserUnitHittable(options.attacker));
+						applyDamage(attacker, defenderInflicted, options.attacker, gravitonLaserUnitHittable(options.defender));
+						applyDamage(defender, attackerInflicted, options.defender, gravitonLaserUnitHittable(options.attacker));
 
 						function hasSpaceCannon(unit) {
 							return unit.spaceCannonDice !== 0;
@@ -268,8 +270,8 @@
 							attackerInflicted = getInflicted(attacker);
 						if (options.defender.race === 'Mentak')
 							defenderInflicted = getInflicted(defender);
-						applyDamage(attacker, defenderInflicted);
-						applyDamage(defender, attackerInflicted);
+						applyDamage(attacker, defenderInflicted, options.attacker);
+						applyDamage(defender, attackerInflicted, options.defender);
 					},
 				},
 				{
@@ -320,8 +322,8 @@
 						var defenderBarrageUnits = defender.filter(hasBarrage);
 						var attackerInflicted = rollDice(attackerBarrageUnits, game.ThrowType.Barrage, attackerBoost);
 						var defenderInflicted = rollDice(defenderBarrageUnits, game.ThrowType.Barrage, defenderBoost);
-						applyDamage(attacker, defenderInflicted, unitIs(game.UnitType.Fighter));
-						applyDamage(defender, attackerInflicted, unitIs(game.UnitType.Fighter));
+						applyDamage(attacker, defenderInflicted, options.attacker, unitIs(game.UnitType.Fighter));
+						applyDamage(defender, attackerInflicted, options.defender, unitIs(game.UnitType.Fighter));
 
 						function hasBarrage(unit) {
 							return unit.barrageDice !== 0;
@@ -367,7 +369,7 @@
 						if (options.attacker.maneuveringJets && defenderInflicted > 0)
 							defenderInflicted--;
 
-						applyDamage(attacker, defenderInflicted, unitIs(game.UnitType.Ground));
+						applyDamage(attacker, defenderInflicted, options.attacker, unitIs(game.UnitType.Ground));
 					},
 				},
 			];

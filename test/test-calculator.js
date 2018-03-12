@@ -1310,9 +1310,50 @@ exports.l4Disruptors = function (test) {
 	defender[game.UnitType.Ground] = { count: 2 };
 	defender[game.UnitType.PDS] = { count: 2 };
 
-	var options = { attacker: { race: 'Letnev', l4Disruptors: true }, defender: { } };
+	var options = { attacker: { race: 'Letnev', l4Disruptors: true }, defender: {} };
 
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
+exports.nonEuclideanSimple = function (test) {
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Dreadnought] = { count: 2 };
+
+	defender[game.UnitType.Dreadnought] = { count: 3 };
+
+	var options = { attacker: { race: 'Letnev', nonEuclidean: true }, defender: {} };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.nonEuclideanDontRiskDirectHit = function (test) {
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Dreadnought] = { count: 3 };
+	attacker[game.UnitType.Fighter] = { count: 2 };
+
+	defender[game.UnitType.Dreadnought] = { count: 3 };
+
+	var options = { attacker: { race: 'Letnev', nonEuclidean: true, riskDirectHit: false }, defender: {} };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.nonEuclideanMoraleBoost = function (test) {
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Dreadnought] = { count: 3 };
+	attacker[game.UnitType.Fighter] = { count: 2 };
+
+	defender[game.UnitType.Dreadnought] = { count: 3 };
+
+	var options = {
+		attacker: { race: 'Letnev', nonEuclidean: true, riskDirectHit: false },
+		defender: { moraleBoost: true }
+	};
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
 
 /** Test some random battle. Because I couldn't have imagined all edge cases.
@@ -1437,4 +1478,5 @@ function group(exports, testGroup) {
 //exports.directHit = group(exports, 'directHit');
 //exports.maneuveringJets = group(exports, 'maneuveringJets');
 //exports.sardakk = group(exports, 'sardakk');
-exports.l1z1x = group(exports, 'l1z1x');
+//exports.l1z1x = group(exports, 'l1z1x');
+//exports.nonEuclidean = group(exports, 'nonEuclidean');

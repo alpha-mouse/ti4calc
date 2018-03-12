@@ -106,7 +106,7 @@
 				else
 					attackerTransitions = computeFleetTransitions(problem.attacker, game.ThrowType.Battle, attackerBoost, attackerReroll);
 				var defenderTransitions = computeFleetTransitions(problem.defender, game.ThrowType.Battle, defenderBoost, defenderReroll);
-				applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
+				applyTransitions(problem, attackerTransitions, defenderTransitions, options);
 			}
 
 			if (magenDefenseActivated && (attackerBoost || attackerReroll)) {
@@ -114,7 +114,7 @@
 				// Harrow ignored, because Magen Defense implies Planetary Shield and no Bombardment.
 				var attackerTransitions = computeFleetTransitions(problem.attacker, game.ThrowType.Battle, attackerBoost, attackerReroll);
 				var defenderTransitions = computeFleetTransitions(problem.defender, game.ThrowType.Battle, boost(battleType, options.defender, false));
-				applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
+				applyTransitions(problem, attackerTransitions, defenderTransitions, options);
 			}
 
 			propagateProbabilityUpLeft(problem, battleType, attackerFull, defenderFull, options);
@@ -137,9 +137,12 @@
 				for (var d = distr.columns - 1; 0 < d; d--) {
 
 					if (harrowTransitions)
-						var transitionsMatrix = harrowMultiply(attackerTransitions, defenderTransitions, a, d, harrowTransitions);
-					else
-						var transitionsMatrix = orthogonalMultiply(attackerTransitions[a], defenderTransitions[d], d, a);
+						var transitionsMatrix = harrowMultiply(attackerTransitions, defenderTransitions, a, d, harrowTransitions); // no Sustain Damage assumption
+					else {
+						var attackerTransitionsVector = adjustForNonEuclidean(attackerTransitions[a], problem.defender, d - 1, options.defender);
+						var defenderTransitionsVector = adjustForNonEuclidean(defenderTransitions[d], problem.attacker, a - 1, options.attacker);
+						var transitionsMatrix = orthogonalMultiply(attackerTransitionsVector, defenderTransitionsVector, d, a);
+					}
 
 					var k;
 					if (distr[a][d] === 0)
@@ -280,7 +283,8 @@
 
 		/** Apply transition vectors to the distribution matrix just once
 		 * attackerVulnerableFrom and defenderVulnerableFrom could be used*/
-		function applyTransitions(distribution, attackerTransitions, defenderTransitions, attackerVulnerableFrom, defenderVulnerableFrom) {
+		function applyTransitions(problem, attackerTransitions, defenderTransitions, options, attackerVulnerableFrom, defenderVulnerableFrom) {
+			var distribution = problem.distribution;
 			attackerVulnerableFrom = attackerVulnerableFrom || 0;
 			defenderVulnerableFrom = defenderVulnerableFrom || 0;
 
@@ -291,10 +295,12 @@
 
 					var maxAttackerDamage = Math.max(0, a - attackerVulnerableFrom);
 					var maxDefenderDamage = Math.max(0, d - defenderVulnerableFrom);
-					var transitionMatrix = orthogonalMultiply(attackerTransitions[a], defenderTransitions[d], maxDefenderDamage, maxAttackerDamage);
+					var attackerTransitionsVector = adjustForNonEuclidean(attackerTransitions[a], problem.defender, d - 1, options.defender);
+					var defenderTransitionsVector = adjustForNonEuclidean(defenderTransitions[d], problem.attacker, a - 1, options.attacker);
+					var transitionMatrix = orthogonalMultiply(attackerTransitionsVector, defenderTransitionsVector, maxDefenderDamage, maxAttackerDamage);
 
-					for (var attackerInflicted = 0; attackerInflicted < attackerTransitions[a].length && attackerInflicted <= maxDefenderDamage; attackerInflicted++) {
-						for (var defenderInflicted = 0; defenderInflicted < defenderTransitions[d].length && defenderInflicted <= maxAttackerDamage; defenderInflicted++) {
+					for (var attackerInflicted = 0; attackerInflicted < transitionMatrix.rows && attackerInflicted <= maxDefenderDamage; attackerInflicted++) {
+						for (var defenderInflicted = 0; defenderInflicted < transitionMatrix.columns && defenderInflicted <= maxAttackerDamage; defenderInflicted++) {
 							if (attackerInflicted === 0 && defenderInflicted === 0) continue;
 							distribution[a - defenderInflicted][d - attackerInflicted] += transitionMatrix.at(attackerInflicted, defenderInflicted) * distribution[a][d];
 						}
@@ -329,7 +335,7 @@
 								defenderTransitionsVector = fleetTransitionsVector(spaceCannonDefender, game.ThrowType.SpaceCannon, defenderModifier);
 							var defenderTransitions = scale(cancelHits(defenderTransitionsVector, options.attacker.maneuveringJets ? 1 : 0), problem.defender.length + 1);
 
-							applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
+							applyTransitions(problem, attackerTransitions, defenderTransitions, options);
 						});
 						return problemArray;
 
@@ -369,7 +375,7 @@
 								defenderTransitions = createMentakTransitions(problem.defender);
 							else
 								defenderTransitions = scale([1], problem.defender.length + 1);
-							applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
+							applyTransitions(problem, attackerTransitions, defenderTransitions, options);
 						});
 						return problemArray;
 					},
@@ -397,7 +403,7 @@
 							var attackerVulnerable = getVulnerableUnitsRange(problem.attacker, (defenderCanInflictDamage ? notFighterShip : falsePredicate));
 							var defenderVulnerable = getVulnerableUnitsRange(problem.defender, (attackerCanInflictDamage ? notFighterShip : falsePredicate));
 
-							var subproblems = interSplit(problem, attackerVulnerable, defenderVulnerable, attackerTransitions, defenderTransitions);
+							var subproblems = interSplit(problem, attackerVulnerable, defenderVulnerable, attackerTransitions, defenderTransitions, options);
 
 							// now, if damageable ship was killed off - remove the damage ghost as well
 							for (var i = 0; i < subproblems.length; i++) {
@@ -506,7 +512,7 @@
 							var attackerVulnerable = getVulnerableUnitsRange(problem.attacker, (defenderCanInflictDamage ? unitIs(game.UnitType.Fighter) : falsePredicate));
 							var defenderVulnerable = getVulnerableUnitsRange(problem.defender, (attackerCanInflictDamage ? unitIs(game.UnitType.Fighter) : falsePredicate));
 
-							var subproblems = interSplit(problem, attackerVulnerable, defenderVulnerable, attackerTransitions, defenderTransitions);
+							var subproblems = interSplit(problem, attackerVulnerable, defenderVulnerable, attackerTransitions, defenderTransitions, options);
 
 							result.push.apply(result, subproblems);
 						});
@@ -526,7 +532,7 @@
 							var attackerTransitionsVector = bombardmentTransitionsVector(attackerFull, defenderFull, options);
 							var attackerTransitions = scale(attackerTransitionsVector, problem.attacker.length + 1);
 							var defenderTransitions = scale([1], problem.defender.length + 1);
-							applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
+							applyTransitions(problem, attackerTransitions, defenderTransitions, options);
 						});
 						return problemArray;
 					},
@@ -548,7 +554,7 @@
 								defenderTransitionsVector = fleetTransitionsVector(pdsDefender, game.ThrowType.SpaceCannon, defenderModifier);
 							var defenderTransitions = scale(cancelHits(defenderTransitionsVector, options.attacker.maneuveringJets ? 1 : 0), problem.defender.length + 1);
 
-							applyTransitions(problem.distribution, attackerTransitions, defenderTransitions);
+							applyTransitions(problem, attackerTransitions, defenderTransitions, options);
 						});
 						return problemArray;
 					},
@@ -588,7 +594,7 @@
 			 * parameter: *Transitions: transitions inflicted by pre-battle-action-specific subset of units within whole range of units. In case of barrage - by destroyers.
 			 * returns: array of problems.
 			 */
-			function interSplit(problem, attackerVulnerable, defenderVulnerable, attackerTransitions, defenderTransitions) {
+			function interSplit(problem, attackerVulnerable, defenderVulnerable, attackerTransitions, defenderTransitions, options) {
 				var result = [];
 
 				var dieableAttackers = attackerVulnerable.to - attackerVulnerable.from;
@@ -606,8 +612,9 @@
 				// ..fat chance
 				// do simple round of transitions for the part of distribution matrix that doesn't require splitting
 				var nonSplittableSubmatrix = extractMinor(problem.distribution, attackerVulnerable.to + 1, defenderVulnerable.to + 1);
-				applyTransitions(nonSplittableSubmatrix, attackerTransitions, defenderTransitions, attackerVulnerable.from, defenderVulnerable.from);
-				result.push(new structs.Problem(nonSplittableSubmatrix, problem.attacker.slice(0, attackerVulnerable.to), problem.defender.slice(0, defenderVulnerable.to)));
+				var subproblem = new structs.Problem(nonSplittableSubmatrix, problem.attacker.slice(0, attackerVulnerable.to), problem.defender.slice(0, defenderVulnerable.to));
+				applyTransitions(subproblem, attackerTransitions, defenderTransitions, options, attackerVulnerable.from, defenderVulnerable.from);
+				result.push(subproblem);
 
 				// Check if splitting makes sense for the attacker.
 				// If all units at the end of the list are vulnerable then no splitting is needed
@@ -829,6 +836,21 @@
 			return fleetInflicted;
 		}
 
+		function adjustForNonEuclidean(fleetTransitionsVector, opposingFleet, opposingIndex, opposingSideOptions) {
+			if (opposingSideOptions.race === 'Letnev' && opposingSideOptions.nonEuclidean && fleetTransitionsVector.length > 2) {
+				var result = fleetTransitionsVector.slice();
+				for (var dmg = 1; dmg < result.length && 0 < opposingIndex; dmg++) {
+					if (opposingFleet[opposingIndex].isDamageGhost) {
+						cancelHits(result, 1, dmg);
+					}
+					opposingIndex--;
+				}
+				return result;
+			} else {
+				return fleetTransitionsVector;
+			}
+		}
+
 		function getUnitWithLowest(fleet, property) {
 			var result = null;
 			var bestBattleValue = Infinity;
@@ -841,13 +863,14 @@
 			return result;
 		}
 
-		function cancelHits(transitionsVector, cancelledHits) {
+		function cancelHits(transitionsVector, cancelledHits, cancelFrom) {
+			cancelFrom = cancelFrom || 0;
 			for (var c = 0; c < cancelledHits; ++c) {
-				if (transitionsVector.length > 1)
-					transitionsVector[0] += transitionsVector[1];
-				for (var i = 2; i < transitionsVector.length; i++)
+				if (transitionsVector.length > cancelFrom + 1)
+					transitionsVector[cancelFrom] += transitionsVector[cancelFrom + 1];
+				for (var i = cancelFrom + 2; i < transitionsVector.length; i++)
 					transitionsVector[i - 1] = transitionsVector[i];
-				if (transitionsVector.length > 1)
+				if (transitionsVector.length > cancelFrom + 1)
 					transitionsVector.pop();
 			}
 			return transitionsVector;

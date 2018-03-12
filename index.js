@@ -214,8 +214,13 @@
 		props: ['text'],
 		template:
 		'<div class="o-grid__cell">' +
-		'	<button type="button" class="help" v-bind:title="text"></button>' +
+		'	<button type="button" class="help" v-bind:title="text" @click="showHelp"></button>' +
 		'</div>',
+		methods: {
+			showHelp: function () {
+				alert(this.text);
+			}
+		}
 	});
 
 	app.recompute();
