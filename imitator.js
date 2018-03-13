@@ -109,6 +109,16 @@
 				defenderFull.some(unitIs(game.UnitType.PDS)) &&
 				!attackerFull.some(unitIs(game.UnitType.WarSun));
 
+			function winnuFlagships(fleet, sideOptions, opposingFleet) {
+				if (battleType === game.BattleType.Space && sideOptions.race === 'Winnu'){
+					var battleDice = opposingFleet.filter(notFighterShip).length;
+					// In the game there could be only one flagship, but why the hell not)
+					fleet.filter(unitIs(game.UnitType.Flagship)).forEach(function (flagship) {
+						flagship.battleDice = battleDice;
+					});
+				}
+			}
+
 			while (hasUnits(attacker) && hasUnits(defender)) {
 				round++;
 				var attackerBoost = boost(battleType, round, options.attacker);
@@ -124,6 +134,8 @@
 					attackerBoost = boost(battleType, 1, options.attacker);
 					attackerReroll = options.attacker.fireTeam && battleType === game.BattleType.Ground;
 				}
+				winnuFlagships(attacker, options.attacker, defender);
+				winnuFlagships(defender, options.defender, attacker);
 				var attackerInflicted = rollDice(attacker, game.ThrowType.Battle, attackerBoost, attackerReroll);
 				var defenderInflicted = rollDice(defender, game.ThrowType.Battle, defenderBoost, defenderReroll);
 				if (round === 1 && magenDefenseActivated) {
@@ -301,10 +313,6 @@
 						if (defenderDestroys)
 							killOffNonFighter(attacker);
 
-						function notFighterShip(unit) {
-							return unit.type !== game.UnitType.Fighter && !unit.isDamageGhost;
-						}
-
 						function killOffNonFighter(fleet) {
 							for (var i = fleet.length - 1; i >= 0; i--) {
 								var unit = fleet[i];
@@ -469,8 +477,12 @@
 
 		function unitIs(unitType) {
 			return function (unit) {
-				return unit.type === unitType;
+				return unit.type === unitType && !unit.isDamageGhost;
 			};
+		}
+
+		function notFighterShip(unit) {
+			return unit.type !== game.UnitType.Fighter && !unit.isDamageGhost;
 		}
 	})();
 })(typeof exports === 'undefined' ? window : exports);

@@ -1266,7 +1266,7 @@ exports.l1z1xRacialHarrowMoraleBoost = function (test) {
 
 	defender[game.UnitType.Ground] = { count: 2 };
 
-	var options = { attacker: { race: 'L1Z1X' }, defender: { moraleBoost: true} };
+	var options = { attacker: { race: 'L1Z1X' }, defender: { moraleBoost: true } };
 
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
@@ -1428,6 +1428,61 @@ exports.sardakkRacialValkyrieParticleWeaveMagenDefense = function (test) {
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
 
+exports.sardakkRacialValkyrieParticleWeaveSpace = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Cruiser] = { count: 1 };
+
+	defender[game.UnitType.Cruiser] = { count: 1 };
+
+	var options = { attacker: { race: 'Sardakk', valkyrieParticleWeave: true }, defender: { } };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.winnuFlagship = function (test) {
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Flagship] = { count: 1 };
+
+	defender[game.UnitType.Destroyer] = { count: 1 };
+
+	var options = { attacker: { race: 'Winnu', }, defender: {} };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.winnuFlagshipMany = function (test) {
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Flagship] = { count: 2 };
+	attacker[game.UnitType.Cruiser] = { count: 2 };
+
+	defender[game.UnitType.Dreadnought] = { count: 1 };
+	defender[game.UnitType.Destroyer] = { count: 3 };
+	defender[game.UnitType.Fighter] = { count: 2 };
+
+	var options = { attacker: { race: 'Winnu', }, defender: {} };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.winnuFlagshipMoraleBoost = function (test) {
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Flagship] = { count: 2 };
+	attacker[game.UnitType.Cruiser] = { count: 2 };
+
+	defender[game.UnitType.Dreadnought] = { count: 1 };
+	defender[game.UnitType.Destroyer] = { count: 3 };
+	defender[game.UnitType.Fighter] = { count: 2 };
+
+	var options = { attacker: { race: 'Winnu', moraleBoost: true }, defender: {} };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
 /** Test some random battle. Because I couldn't have imagined all edge cases.
  * When this test fails - take input fleets and options from the console and reproduce the problem */
 function chaoticTest(test) {
@@ -1553,3 +1608,4 @@ function group(exports, testGroup) {
 //exports.harrow = group(exports, 'harrow');
 //exports.nonEuclidean = group(exports, 'nonEuclidean');
 //exports.valkyrieParticleWeave = group(exports, 'valkyrieParticleWeave');
+//exports.winnu = group(exports, 'winnuFlagship');

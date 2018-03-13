@@ -94,18 +94,28 @@
 				defenderFull.some(unitIs(game.UnitType.PDS)) &&
 				!attackerFull.some(unitIs(game.UnitType.WarSun));
 
+			var effectsFlags = {
+				valkyrieParticleWeave: battleType === game.BattleType.Ground,
+				winnuFlagship: battleType === game.BattleType.Space,
+			};
+
 			if (attackerBoost || defenderBoost || // boosts apply to the first round only
 				magenDefenseActivated || // Magen Defence applies to the first round
 				attackerReroll || defenderReroll // re-rolls apply to the first round
 			) {
 				//need to make one round of propagation with either altered probabilities or attacker not firing
-				var attackerTransitions;
 				if (magenDefenseActivated)
-					attackerTransitions = scale([1], problem.attacker.length + 1); // attacker does not fire
+					effectsFlags.attackerTransitionsFactory = function () {
+						return scale([1], problem.attacker.length + 1); // attacker does not fire
+					};
 				else
-					attackerTransitions = computeFleetTransitions(problem.attacker, game.ThrowType.Battle, attackerBoost, attackerReroll);
-				var defenderTransitions = computeFleetTransitions(problem.defender, game.ThrowType.Battle, defenderBoost, defenderReroll);
-				applyTransitions(problem, attackerTransitions, defenderTransitions, options, 0, 0, true);
+					effectsFlags.attackerTransitionsFactory = function () {
+						return computeFleetTransitions(problem.attacker, game.ThrowType.Battle, attackerBoost, attackerReroll);
+					};
+				effectsFlags.defenderTransitionsFactory = function () {
+					return computeFleetTransitions(problem.defender, game.ThrowType.Battle, defenderBoost, defenderReroll);
+				};
+				applyTransitions(problem, effectsFlags.attackerTransitionsFactory(), effectsFlags.defenderTransitionsFactory(), options, 0, 0, effectsFlags);
 				if (options.attacker.race === 'L1Z1X' && battleType === game.BattleType.Ground) { // Harrow
 					prebattleActions.find(function (action) {
 						return action.name === 'Bombardment';
@@ -116,9 +126,13 @@
 			if (magenDefenseActivated && (attackerBoost || attackerReroll)) {
 				// damn it, one more round of propagation with altered probabilities, but just for attacker
 				// Harrow ignored, because Magen Defense implies Planetary Shield and no Bombardment.
-				var attackerTransitions = computeFleetTransitions(problem.attacker, game.ThrowType.Battle, attackerBoost, attackerReroll);
-				var defenderTransitions = computeFleetTransitions(problem.defender, game.ThrowType.Battle, boost(battleType, options.defender, false));
-				applyTransitions(problem, attackerTransitions, defenderTransitions, options, 0, 0, true);
+				effectsFlags.attackerTransitionsFactory = function () {
+					return computeFleetTransitions(problem.attacker, game.ThrowType.Battle, attackerBoost, attackerReroll);
+				};
+				effectsFlags.defenderTransitionsFactory = function () {
+					return computeFleetTransitions(problem.defender, game.ThrowType.Battle, boost(battleType, options.defender, false));
+				};
+				applyTransitions(problem, effectsFlags.attackerTransitionsFactory(), effectsFlags.defenderTransitionsFactory(), options, 0, 0, effectsFlags);
 			}
 
 			propagateProbabilityUpLeft(problem, battleType, attackerFull, defenderFull, options);
@@ -136,10 +150,21 @@
 			}
 			else
 				var harrowTransitions = undefined;
+			var winnuFlagshipRelevant = battleType === game.BattleType.Space &&
+				(options.attacker.race === 'Winnu' && problem.attacker.some(unitIs(game.UnitType.Flagship)) ||
+					options.defender.race === 'Winnu' && problem.defender.some(unitIs(game.UnitType.Flagship)));
 			//do propagation
 			for (var a = distr.rows - 1; 0 < a; a--) {
 				for (var d = distr.columns - 1; 0 < d; d--) {
 
+					if (winnuFlagshipRelevant) {
+						if (options.attacker.race === 'Winnu' && modifyWinnuFlagship(problem.attacker, problem.defender, d)) {
+							attackerTransitions = computeFleetTransitions(problem.attacker, game.ThrowType.Battle, boost(battleType, options.attacker, false));
+						}
+						if (options.defender.race === 'Winnu' && modifyWinnuFlagship(problem.defender, problem.attacker, a)) {
+							defenderTransitions = computeFleetTransitions(problem.defender, game.ThrowType.Battle, boost(battleType, options.defender, false));
+						}
+					}
 					var attackerTransitionsVector = adjustForNonEuclidean(attackerTransitions[a], problem.defender, d - 1, options.defender);
 					var defenderTransitionsVector = adjustForNonEuclidean(defenderTransitions[d], problem.attacker, a - 1, options.attacker);
 					var transitionMatrix = orthogonalMultiply(attackerTransitionsVector, defenderTransitionsVector, d + 1, a + 1);
@@ -293,22 +318,31 @@
 
 		/** Apply transition vectors to the distribution matrix just once
 		 * attackerVulnerableFrom and defenderVulnerableFrom could be used*/
-		function applyTransitions(problem, attackerTransitions, defenderTransitions, options, attackerVulnerableFrom, defenderVulnerableFrom, valkyrieApplicable) {
+		function applyTransitions(problem, attackerTransitions, defenderTransitions, options, attackerVulnerableFrom, defenderVulnerableFrom, effectsFlags) {
 			var distribution = problem.distribution;
 			attackerVulnerableFrom = attackerVulnerableFrom || 0;
 			defenderVulnerableFrom = defenderVulnerableFrom || 0;
+			effectsFlags = effectsFlags || {};
 
 			for (var a = 0; a < distribution.rows; a++) {
 				for (var d = 0; d < distribution.columns; d++) {
 
 					if (distribution[a][d] === 0) continue;
 
+					if (effectsFlags.winnuFlagship) {
+						if (options.attacker.race === 'Winnu' && modifyWinnuFlagship(problem.attacker, problem.defender, d)) {
+							attackerTransitions = effectsFlags.attackerTransitionsFactory();
+						}
+						if (options.defender.race === 'Winnu' && modifyWinnuFlagship(problem.defender, problem.attacker, a)) {
+							defenderTransitions = effectsFlags.defenderTransitionsFactory();
+						}
+					}
 					var maxAttackerDamage = Math.max(0, a - attackerVulnerableFrom);
 					var maxDefenderDamage = Math.max(0, d - defenderVulnerableFrom);
 					var attackerTransitionsVector = adjustForNonEuclidean(attackerTransitions[a], problem.defender, d - 1, options.defender);
 					var defenderTransitionsVector = adjustForNonEuclidean(defenderTransitions[d], problem.attacker, a - 1, options.attacker);
 					var transitionMatrix = orthogonalMultiply(attackerTransitionsVector, defenderTransitionsVector, maxDefenderDamage + 1, maxAttackerDamage + 1);
-					if (valkyrieApplicable)
+					if (effectsFlags.valkyrieParticleWeave)
 						transitionMatrix = adjustForValkyrieParticleWeave(transitionMatrix, options, maxDefenderDamage + 1, maxAttackerDamage + 1); // no Sustain Damage assumption. Otherwise Valkyrie should be taken into account before Non-Euclidean Shielding somehow
 
 					for (var attackerInflicted = 0; attackerInflicted < transitionMatrix.rows && attackerInflicted <= maxDefenderDamage; attackerInflicted++) {
@@ -457,10 +491,6 @@
 									result.push([1]);
 							}
 							return result;
-						}
-
-						function notFighterShip(unit) {
-							return unit.type !== game.UnitType.Fighter && !unit.isDamageGhost;
 						}
 
 						function findOrphanDamageGhostIndex(fleet, originalFleet) {
@@ -934,10 +964,24 @@
 			return transitionsVector;
 		}
 
+		function modifyWinnuFlagship(fleet, opposingFleet, opposingFleetCount) {
+			var battleDice = null;
+			fleet.filter(unitIs(game.UnitType.Flagship)).forEach(function (flagship) {
+				flagship.battleDice = battleDice === null ?
+					(battleDice = opposingFleet.slice(0, opposingFleetCount).filter(notFighterShip).length) :
+					battleDice;
+			});
+			return battleDice !== null; // means flagship present
+		}
+
 		function unitIs(unitType) {
 			return function (unit) {
 				return unit.type === unitType && !unit.isDamageGhost;
 			};
+		}
+
+		function notFighterShip(unit) {
+			return unit.type !== game.UnitType.Fighter && !unit.isDamageGhost;
 		}
 	})();
 })(typeof exports === 'undefined' ? window : exports);
