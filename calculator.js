@@ -357,6 +357,26 @@
 		}
 
 		function initPrebattleActions() {
+			function EnsembleSplit(problemFactory) {
+				// Ok, this ensemble shit is complicated, and I don't know how to explain it succintly, so you'd be
+				// better off reading the code using it.
+				this.subproblems = {};
+				this.problemFactory = problemFactory;
+			}
+
+			EnsembleSplit.prototype.increment = function (subproblemKey, row, column, value) {
+				if (value === 0) return;
+				if (!this.subproblems[subproblemKey])
+					this.subproblems[subproblemKey] = this.problemFactory(subproblemKey);
+				this.subproblems[subproblemKey].distribution[row][column] += value;
+			};
+			EnsembleSplit.prototype.getSubproblems = function () {
+				var subproblems = this.subproblems;
+				return Object.keys(this.subproblems).map(function (key) {
+					return subproblems[key];
+				});
+			};
+
 			return [
 				{
 					name: 'Space Cannon -> Ships',
@@ -430,103 +450,98 @@
 					name: 'Assault Cannon',
 					appliesTo: game.BattleType.Space,
 					execute: function (problemArray, attackerFull, defenderFull, options) {
+						if (!options.attacker.assaultCannon && !options.defender.assaultCannon) {
+							return problemArray;
+						}
+						var nullVictim = { spliceCode: '', spliced: 0 };
 
 						var result = [];
-
 						problemArray.forEach(function (problem) {
-							if (!options.attacker.assaultCannon && !options.defender.assaultCannon) {
-								result.push(problem);
-								return;
-							}
 
-							var attackerTransitions = createAssaultCannonTransitions(problem.attacker, options.attacker.assaultCannon);
-							var defenderTransitions = createAssaultCannonTransitions(problem.defender, options.defender.assaultCannon);
+							var ensemble = new EnsembleSplit(function (subproblemKey) {
+								var keyRx = /^a(?:(\d+)(?:,(\d+))?)?d(?:(\d+)(?:,(\d+))?)?$/;
+								var match = subproblemKey.match(keyRx);
+								var attackerSplice1 = match[1];
+								var attackerSplice2 = match[2];
+								var defenderSplice1 = match[3];
+								var defenderSplice2 = match[4];
+								var attackerDeficit = deficit(attackerSplice1) + deficit(attackerSplice2);
+								var defenderDeficit = deficit(defenderSplice1) + deficit(defenderSplice2);
+								var distribution = structs.createMatrix(problem.distribution.rows - attackerDeficit, problem.distribution.columns - defenderDeficit, 0);
+								var attaker = splice(problem.attacker, attackerSplice1, attackerSplice2);
+								var defender = splice(problem.defender, defenderSplice1, defenderSplice2);
+								return new structs.Problem(distribution, attaker, defender);
 
-							// little optimization, less subproblems will be created if one or both sides cannot inflict damage
-							var attackerCanInflictDamage = attackerTransitions.some(canInflictDamage);
-							var defenderCanInflictDamage = defenderTransitions.some(canInflictDamage);
-
-							var attackerVulnerable = getVulnerableUnitsRange(problem.attacker, (defenderCanInflictDamage ? notFighterShip : falsePredicate));
-							var defenderVulnerable = getVulnerableUnitsRange(problem.defender, (attackerCanInflictDamage ? notFighterShip : falsePredicate));
-
-							var subproblems = interSplit(problem, attackerVulnerable, defenderVulnerable, attackerTransitions, defenderTransitions, options);
-
-							// now, if damageable ship was killed off - remove the damage ghost as well
-							for (var i = 0; i < subproblems.length; i++) {
-								var subproblem = subproblems[i];
-								var attackerIndex = findOrphanDamageGhostIndex(subproblem.attacker, problem.attacker);
-								var defenderIndex = findOrphanDamageGhostIndex(subproblem.defender, problem.defender);
-								if (attackerIndex !== null) {
-									for (var d = 0; d <= subproblem.defender.length; d++) {
-										subproblem.distribution[attackerIndex][d] += subproblem.distribution[attackerIndex + 1][d];
-									}
-									subproblem.distribution.splice(attackerIndex + 1, 1);
-									subproblem.distribution.rows--;
-									subproblem.attacker.splice(attackerIndex, 1);
+								function deficit(value) {
+									return isNaN(value) ? 0 : 1;
 								}
-								if (defenderIndex !== null) {
-									for (var a = 0; a <= subproblem.attacker.length; a++) {
-										subproblem.distribution[a][defenderIndex] += subproblem.distribution[a][defenderIndex + 1];
-										subproblem.distribution[a].splice(defenderIndex + 1, 1);
+
+								function splice(fleet, splice1, splice2) {
+									if (isNaN(splice1) && isNaN(splice2))
+										return fleet;
+									else {
+										var result = fleet.slice();
+										result.splice(splice1, 1);
+										if (!isNaN(splice2))
+											result.splice(splice2, 1);
+										return result;
 									}
-									subproblem.distribution.columns--;
-									subproblem.defender.splice(defenderIndex, 1);
+								}
+							});
+							var attackerThreshold = findAssaultCannonThreshold(problem.attacker, options.attacker.assaultCannon);
+							var defenderThreshold = findAssaultCannonThreshold(problem.defender, options.defender.assaultCannon);
+							var attackerVictims = calculateVictims(problem.attacker, defenderThreshold < problem.defender.length);
+							var defenderVictims = calculateVictims(problem.defender, attackerThreshold < problem.attacker.length);
+
+							var distribution = problem.distribution;
+							for (var a = 0; a < distribution.rows; a++) {
+								for (var d = 0; d < distribution.columns; d++) {
+									if (distribution[a][d] === 0) continue;
+									var attackerSplice = defenderThreshold < d ? attackerVictims[a] : nullVictim;
+									var defenderSplice = attackerThreshold < a ? defenderVictims[d] : nullVictim;
+									ensemble.increment('a' + attackerSplice.spliceCode + 'd' + defenderSplice.spliceCode, a - attackerSplice.spliced, d - defenderSplice.spliced, distribution[a][d]);
 								}
 							}
-
-							result.push.apply(result, subproblems);
+							result.push.apply(result, ensemble.getSubproblems());
 						});
-
 						return result;
 
-						function createAssaultCannonTransitions(fleet, assaultCannon) {
-							var result = [[1]];
+						function findAssaultCannonThreshold(fleet, assaultCannon) {
 							var nonFightersFound = 0;
 							for (var i = 0; i < fleet.length; i++) {
 								if (notFighterShip(fleet[i]))
 									nonFightersFound++;
 								if (nonFightersFound >= 3 && assaultCannon)
-									result.push([0, 1]);
-								else
-									result.push([1]);
+									return i;
+							}
+							return i;
+						}
+
+						function calculateVictims(fleet, victimsNeeded) {
+							var result = new Array(fleet.length + 1);
+							if (!victimsNeeded)
+								result.fill(nullVictim);
+							else {
+								result[0] = nullVictim;
+								var victim = null;
+								var splice1 = null;
+								var splice2 = null;
+								for (var i = 0; i < fleet.length; ++i) {
+									if (notFighterShip(fleet[i])) {
+										victim = fleet[i];
+										splice1 = i;
+										splice2 = null;
+									} else if (victim && fleet[i].damageCorporeal === victim) {
+										splice2 = i;
+									}
+									result[i + 1] = {
+										spliceCode: splice1 === null ? '' : (splice1 + (splice2 === null ? '' : ',' + splice2)),
+										spliced: splice1 === null ? 0 : (1 + (splice2 === null ? 0 : 1)),
+									};
+								}
 							}
 							return result;
 						}
-
-						function findOrphanDamageGhostIndex(fleet, originalFleet) {
-							if (fleet.length == originalFleet.length) {
-								// No units died
-								return null;
-							}
-							var killedUnit;
-							for (var a = 0; a < fleet.length; a++) {
-								if (fleet[a] !== originalFleet[a]) {
-									killedUnit = originalFleet[a];
-									break;
-								}
-							}
-							if (!killedUnit) {
-								// This means either that
-								// 1. the unit from the end of the array was killed,
-								//    which implies that it didn't have damage ghost anyway,
-								//    because damage ghosts come after corporeal units
-								// 2. this is the subproblem that doesn't have higher units at all
-								return null;
-							}
-							if (killedUnit.sustainDamageHits === 0) {
-								// Not damageable unit - no problems once again
-								return null;
-							}
-							var ghostIndex = fleet.findIndex(function (unit) {
-								return killedUnit === unit.damageCorporeal;
-							});
-							if (ghostIndex < 0) {
-								// For some reason the killed ship was damaged already. All fine
-								return null;
-							}
-							return ghostIndex;
-						}
-
 					},
 				},
 				{

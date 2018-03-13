@@ -709,7 +709,23 @@ exports.fireTeamMagenDefenseGround = function (test) {
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
 
-exports.assaultCannonNonDagameable = function (test) {
+exports.assaultCannonSimple = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Cruiser] = { count: 3 };
+
+	defender[game.UnitType.Cruiser] = { count: 3 };
+
+	var options = {
+		attacker: { assaultCannon: true },
+		defender: { assaultCannon: true },
+	};
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.assaultCannonNonDamageable = function (test) {
 
 	var attacker = {};
 	var defender = {};
@@ -767,11 +783,9 @@ exports.assaultCannonNotEnoughShips = function (test) {
 
 	var attacker = {};
 	var defender = {};
-	attacker[game.UnitType.Dreadnought] = { count: 2 };
-	attacker[game.UnitType.Fighter] = { count: 3 };
+	attacker[game.UnitType.Cruiser] = { count: 1 };
 
-	defender[game.UnitType.Dreadnought] = { count: 3 };
-	defender[game.UnitType.Fighter] = { count: 3 };
+	defender[game.UnitType.Cruiser] = { count: 3 };
 
 	var options = {
 		attacker: { assaultCannon: true },
@@ -800,18 +814,93 @@ exports.assaultCannonPds = function (test) {
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
 
-exports.assaultCannonMorePds = function (test) {
+exports.assaultCannonMorePdsNoDirectHit = function (test) {
 
 	var attacker = {};
 	var defender = {};
+	attacker[game.UnitType.Flagship] = { count: 1 };
+	attacker[game.UnitType.WarSun] = { count: 1 };
 	attacker[game.UnitType.Dreadnought] = { count: 1 };
+	attacker[game.UnitType.PDS] = { count: 6 };
+
+	defender[game.UnitType.Flagship] = { count: 1 };
+	defender[game.UnitType.WarSun] = { count: 1 };
+	defender[game.UnitType.Dreadnought] = { count: 1 };
+	defender[game.UnitType.Fighter] = { count: 1 };
+	defender[game.UnitType.PDS] = { count: 6 };
+
+	var options = {
+		attacker: { assaultCannon: true, riskDirectHit: false },
+		defender: { assaultCannon: true, riskDirectHit: false },
+	};
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.assaultCannonPdsBarrage = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Dreadnought] = { count: 2 };
+	attacker[game.UnitType.Destroyer] = { count: 1 };
+	attacker[game.UnitType.Fighter] = { count: 1 };
 	attacker[game.UnitType.PDS] = { count: 4 };
 
-	defender[game.UnitType.Destroyer] = { count: 3 };
+	defender[game.UnitType.Dreadnought] = { count: 2 };
+	defender[game.UnitType.Destroyer] = { count: 1 };
 	defender[game.UnitType.Fighter] = { count: 1 };
-	defender[game.UnitType.PDS] = { count: 1 };
+	defender[game.UnitType.PDS] = { count: 4 };
 
-	var options = { attacker: {}, defender: { assaultCannon: true, }, };
+	var options = {
+		attacker: { assaultCannon: true, },
+		defender: { assaultCannon: true, },
+	};
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.assaultCannonPdsBarrageGravitonLaser = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Dreadnought] = { count: 2 };
+	attacker[game.UnitType.Destroyer] = { count: 1 };
+	attacker[game.UnitType.Fighter] = { count: 1 };
+	attacker[game.UnitType.PDS] = { count: 4 };
+
+	defender[game.UnitType.Dreadnought] = { count: 2 };
+	defender[game.UnitType.Destroyer] = { count: 1 };
+	defender[game.UnitType.Fighter] = { count: 1 };
+	defender[game.UnitType.PDS] = { count: 4 };
+
+	var options = {
+		attacker: { assaultCannon: true, gravitonLaser: true },
+		defender: { assaultCannon: true, gravitonLaser: true },
+	};
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.assaultCannonNoRiskDirectHit = function (test) {
+	var attacker = {};
+	var defender = {};
+
+	attacker[game.UnitType.WarSun] = { count: 1 };
+	attacker[game.UnitType.Dreadnought] = { count: 1 };
+
+	defender[game.UnitType.Destroyer] = { count: 3 };
+
+	var options = { attacker: { riskDirectHit: false, }, defender: { assaultCannon: true, } };
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.assaultCannonNoSplit = function (test) {
+	var attacker = {};
+	var defender = {};
+
+	attacker[game.UnitType.WarSun] = { count: 1 };
+	attacker[game.UnitType.Dreadnought] = { count: 1 };
+
+	defender[game.UnitType.Destroyer] = { count: 3 };
+
+	var options = { attacker: {}, defender: { assaultCannon: true, } };
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
 
@@ -1436,7 +1525,7 @@ exports.sardakkRacialValkyrieParticleWeaveSpace = function (test) {
 
 	defender[game.UnitType.Cruiser] = { count: 1 };
 
-	var options = { attacker: { race: 'Sardakk', valkyrieParticleWeave: true }, defender: { } };
+	var options = { attacker: { race: 'Sardakk', valkyrieParticleWeave: true }, defender: {} };
 
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
@@ -1566,15 +1655,19 @@ function chaoticTest(test) {
 exports.chaoticReproduce = function (test) {
 	var battleType = game.BattleType.Space;
 	var attacker = {
-		'Flagship': { 'count': 1 },
-		'PDS': { 'count': 1 },
+		WarSun: { count: 1 },
+		Dreadnought: { count: 1 },
 	};
 	var defender = {
-		'Cruiser': { 'count': 1 },
+		Destroyer: { count: 3 },
 	};
 	var options = {
-		'attacker': {},
-		'defender': {},
+		attacker: {
+			riskDirectHit: false,
+		},
+		defender: {
+			assaultCannon: true,
+		}
 	};
 	testBattle(test, attacker, defender, battleType, options);
 };
@@ -1593,6 +1686,10 @@ function group(exports, testGroup) {
 	}
 	return result;
 }
+
+//var barrageGroup = group(exports, 'barrage');
+//delete barrageGroup[''];
+//Object.assign(exports.barrage, barrageGroup);
 
 //exports.plasmaScoring = group(exports, 'plasmaScoring');
 //exports.magenDefense = group(exports, 'magenDefense');
