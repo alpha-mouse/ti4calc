@@ -183,7 +183,7 @@
 
 	root.Victim.prototype.addRange = function (from, to) {
 		var ranges = this.ranges;
-		if (!isNaN(from)) {
+		if (!isNaN(from) && from !== to) {
 			if (ranges.length) {
 				if (ranges[ranges.length - 1] === from) {
 					ranges[ranges.length - 1] = to === undefined ? from + 1 : to;

@@ -374,27 +374,26 @@
 					appliesTo: game.BattleType.Space,
 					execute: function (problemArray, attackerFull, defenderFull, options) {
 						var result = [];
+
 						problemArray.forEach(function (problem) {
 							var attackerTransitionsVector = getSpaceCannonTransitionsVector(attackerFull, options.attacker, options.defender);
 							var defenderTransitionsVector = getSpaceCannonTransitionsVector(defenderFull, options.defender, options.attacker);
 
 							if (options.attacker.gravitonLaser || options.defender.gravitonLaser) {
-								var ensemble = new EnsembleSplit(problem);
+								var ensemble = new structs.EnsembleSplit(problem);
 
 								var distribution = problem.distribution;
 								for (var a = 0; a < distribution.rows; a++) {
 									for (var d = 0; d < distribution.columns; d++) {
 										if (distribution[a][d] === 0) continue;
 
-										var adjustedAttackerTransitionsVector = adjustForNonEuclidean(attackerTransitionsVector, problem.defender, d - 1, options.defender);
-										var adjustedDefenderTransitionsVector = adjustForNonEuclidean(defenderTransitionsVector, problem.attacker, a - 1, options.attacker);
-										var transitionMatrix = orthogonalMultiply(adjustedAttackerTransitionsVector, adjustedDefenderTransitionsVector, d + 1, a + 1);
+										var transitionMatrix = unconstrainedOrthogonalMultiply(attackerTransitionsVector, defenderTransitionsVector);
 
 										for (var attackerInflicted = 0; attackerInflicted < transitionMatrix.rows; attackerInflicted++) {
 											for (var defenderInflicted = 0; defenderInflicted < transitionMatrix.columns; defenderInflicted++) {
-												//var attackerVictims = victims(problem.attacker, a, defenderInflicted);
-												//var defenderVictims = victims(problem.defender, d, attackerInflicted);
-												//ensemble.increment('a' + attackerVictims.code + 'd' + defenderVictims.code, a - defenderInflicted, d - attackerInflicted, transitionMatrix.at(attackerInflicted, defenderInflicted) * distribution[a][d]);
+												var attackerVictims = gravitonLaserVictims(problem.attacker, a, defenderInflicted, options.attacker, options.defender);
+												var defenderVictims = gravitonLaserVictims(problem.defender, d, attackerInflicted, options.defender, options.attacker);
+												ensemble.increment(attackerVictims, defenderVictims, a, d, transitionMatrix.at(attackerInflicted, defenderInflicted) * distribution[a][d]);
 											}
 										}
 									}
@@ -423,6 +422,55 @@
 
 						function hasSpaceCannon(unit) {
 							return unit.spaceCannonDice !== 0;
+						}
+
+						function gravitonLaserVictims(fleet, index, hits, thisSideOptions, opposingSideOptions) {
+							if (hits === 0 || index === 0)
+								return structs.Victim.Null;
+							if (!opposingSideOptions.gravitonLaser) {
+								var result = new structs.Victim();
+								result._dead = Math.min(hits, fleet.map(absorbsHits).reduce(sum));
+								return result;
+							}
+
+							var result = new structs.Victim();
+							var lowerRange = []; // ships more expensive than fighters
+							var middleRange = []; // affected Fighters
+							var upperRange = [index, index]; // ships cheaper than Fighters (damage ghosts most likely)
+							var currentRange = upperRange;
+							// try to hit non-fighters
+							for (var i = index - 1; 0 <= i && 0 < hits; --i) {
+								if (fleet[i].type === game.UnitType.Fighter) {
+									middleRange = [i + 1, i + 1];
+									do {
+										i--;
+									} while (0 <= i && fleet[i].type === game.UnitType.Fighter);
+									if (i < 0)
+										break;
+									currentRange = lowerRange = [i + 1, i + 1];
+								}
+								currentRange[0]--;
+								hits -= absorbsHits(fleet[i]);
+							}
+							// now hit Fighters if needed
+							for (var i = index - 1; 0 <= i && 0 < hits; --i) {
+								if (fleet[i].type === game.UnitType.Fighter) {
+									middleRange[0]--;
+									hits -= absorbsHits(fleet[i]); // will always be the same as hits--
+								}
+							}
+							result.addRange(lowerRange[0], lowerRange[1]);
+							result.addRange(middleRange[0], middleRange[1]);
+							result.addRange(upperRange[0], upperRange[1]);
+							return result;
+
+							function absorbsHits(unit) {
+								return (unit.isDamageGhost && thisSideOptions.nonEuclidean) ? 2 : 1;
+							}
+
+							function sum(a, b) {
+								return a + b;
+							}
 						}
 					},
 				},
@@ -469,7 +517,6 @@
 						if (!options.attacker.assaultCannon && !options.defender.assaultCannon) {
 							return problemArray;
 						}
-						var nullVictim = structs.Victim.Null;
 
 						var result = [];
 						problemArray.forEach(function (problem) {
@@ -484,9 +531,9 @@
 							for (var a = 0; a < distribution.rows; a++) {
 								for (var d = 0; d < distribution.columns; d++) {
 									if (distribution[a][d] === 0) continue;
-									var attackerVictim = defenderThreshold < d ? attackerVictims[a] : nullVictim;
-									var defenderVictim = attackerThreshold < a ? defenderVictims[d] : nullVictim;
-									ensemble.increment(attackerVictim, defenderVictim, a - attackerVictim.dead(), d - defenderVictim.dead(), distribution[a][d]);
+									var attackerVictim = defenderThreshold < d ? attackerVictims[a] : structs.Victim.Null;
+									var defenderVictim = attackerThreshold < a ? defenderVictims[d] : structs.Victim.Null;
+									ensemble.increment(attackerVictim, defenderVictim, a, d, distribution[a][d]);
 								}
 							}
 							result.push.apply(result, ensemble.getSubproblems());
@@ -507,9 +554,9 @@
 						function calculateVictims(fleet, victimsNeeded) {
 							var result = new Array(fleet.length + 1);
 							if (!victimsNeeded)
-								result.fill(nullVictim);
+								result.fill(structs.Victim.Null);
 							else {
-								result[0] = nullVictim;
+								result[0] = structs.Victim.Null;
 								var victim = undefined;
 								var splice1 = undefined;
 								var splice2 = undefined;

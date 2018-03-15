@@ -957,6 +957,23 @@ exports.gravitonLaserSpace = function (test) {
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
 
+exports.gravitonLaserPureFighters = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Fighter] = { count: 3 };
+
+	defender[game.UnitType.Cruiser] = { count: 1 };
+	defender[game.UnitType.PDS] = { count: 4 };
+
+	var options = {
+		attacker: {},
+		defender: { gravitonLaser: true },
+	};
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
 exports.gravitonLaserNonEuclidean = function (test) {
 
 	var attacker = {};
@@ -969,6 +986,24 @@ exports.gravitonLaserNonEuclidean = function (test) {
 
 	var options = {
 		attacker: { race: 'Letnev', nonEuclidean: true },
+		defender: { gravitonLaser: true },
+	};
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.gravitonLaserManyPds = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Dreadnought] = { count: 1 };
+	attacker[game.UnitType.Fighter] = { count: 1 };
+
+	defender[game.UnitType.Cruiser] = { count: 1 };
+	defender[game.UnitType.PDS] = { count: 4 };
+
+	var options = {
+		attacker: { },
 		defender: { gravitonLaser: true },
 	};
 
@@ -1624,9 +1659,6 @@ function chaoticTest(test) {
 	options.attacker.duraniumArmor = false;
 	options.defender.duraniumArmor = false;
 
-	options.attacker.gravitonLaser = false;
-	options.defender.gravitonLaser = false;
-
 	for (var actionCard in game.ActionCards) {
 		options.attacker[actionCard] = Math.random() < .2;
 		options.defender[actionCard] = Math.random() < .2;
@@ -1723,5 +1755,5 @@ function group(exports, testGroup) {
 //exports.harrow = group(exports, 'harrow');
 //exports.nonEuclidean = group(exports, 'nonEuclidean');
 //exports.valkyrieParticleWeave = group(exports, 'valkyrieParticleWeave');
-exports.gravitonLaser = group(exports, 'gravitonLaser');
+//exports.gravitonLaser = group(exports, 'gravitonLaser');
 //exports.winnu = group(exports, 'winnuFlagship');

@@ -189,7 +189,7 @@
 					hits--;
 				}
 			}
-			if (softPredicate && hits > 0 && fleet.length > 0) {
+			if (softPredicate) {
 				for (var i = fleet.length - 1; 0 <= i && 0 < hits; i--) {
 					var killed = fleet.splice(i, 1)[0];
 					if (killed.isDamageGhost) {
