@@ -19,7 +19,11 @@
 			estimateProbabilities: estimateProbabilities,
 		};
 
-		function estimateProbabilities(attacker, defender, battleType, options) {
+		function estimateProbabilities(input) {
+			var battleType = input.battleType;
+			var options = input.options || { attacker: {}, defender: {} };
+			var attacker = game.expandFleet(input, game.BattleSide.attacker);
+			var defender = game.expandFleet(input, game.BattleSide.defender);
 
 			options = options || { attacker: {}, defender: {} };
 

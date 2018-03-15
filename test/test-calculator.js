@@ -6,7 +6,7 @@ var imitatorModule = require('../imitator');
 var im = imitatorModule.imitator;
 imitatorModule.imitationIterations = 30000;
 var defaultRace = 'Muaat';
-
+var accuracy = 0.01;
 
 function distributionsEqual(distr1, distr2) {
 	var min = Math.min(distr1.min, distr2.min);
@@ -36,17 +36,10 @@ function invertDistribution(distr) {
 }
 
 function testBattle(test, attacker, defender, battleType, options) {
-	options = options || { attacker: {}, defender: {} };
+	var input = new Input(attacker, defender, battleType, options);
 
-	var attackerRiskDirectHit = typeof options.attacker.riskDirectHit === 'boolean' ? options.attacker.riskDirectHit : true;
-	var defenderRiskDirectHit = typeof options.defender.riskDirectHit === 'boolean' ? options.defender.riskDirectHit : true;
-	var attackerBattlestation = options.attacker.experimentalBattlestation && battleType === game.BattleType.Space;
-	var defenderBattlestation = options.defender.experimentalBattlestation && battleType === game.BattleType.Space;
-	var attackerExpanded = game.expandFleet(options.attacker.race || defaultRace, attacker, attackerRiskDirectHit, attackerBattlestation);
-	var defenderExpanded = game.expandFleet(options.defender.race || defaultRace, defender, defenderRiskDirectHit, defenderBattlestation);
-
-	var got = calc.computeProbabilities(attackerExpanded, defenderExpanded, battleType, options).distribution;
-	var expected = im.estimateProbabilities(attackerExpanded, defenderExpanded, battleType, options).distribution;
+	var got = calc.computeProbabilities(input).distribution;
+	var expected = im.estimateProbabilities(input).distribution;
 
 	//console.log('i', expected.toString());
 	//console.log('c', got.toString());
@@ -56,16 +49,66 @@ function testBattle(test, attacker, defender, battleType, options) {
 	test.done();
 }
 
-var accuracy = 0.01;
+exports.expansionDefault = function (test) {
+	var unit = game.UnitType;
+	var fleet = {};
+	fleet[unit.Flagship] = { count: 1 };
+	fleet[unit.WarSun] = { count: 1 };
+	fleet[unit.Dreadnought] = { count: 1 };
+	fleet[unit.Cruiser] = { count: 1 };
+	fleet[unit.Destroyer] = { count: 1 };
+	fleet[unit.Carrier] = { count: 1 };
+	fleet[unit.Ground] = { count: 1 };
+	fleet[unit.Fighter] = { count: 1 };
+	fleet[unit.PDS] = { count: 1 };
+	var expansion = game.expandFleet(new Input(fleet, null, game.BattleType.Space, {
+		attacker: { race: defaultRace, riskDirectHit: true, experimentalBattlestation: true },
+	}), game.BattleSide.attacker);
 
-/** test unit counts expansion into ship units */
+	var units = Object.assign({}, game.RaceSpecificUnits[defaultRace], game.StandardUnits);
+
+	var expected = [
+		units[unit.Flagship],
+		units[unit.WarSun],
+		units[unit.Dreadnought],
+		units[unit.Cruiser],
+		units[unit.Destroyer],
+		units[unit.Carrier],
+		units[unit.Fighter],
+		units[unit.Ground],
+		units[unit.PDS],
+		units[unit.Flagship].toDamageGhost(),
+		units[unit.WarSun].toDamageGhost(),
+		units[unit.Dreadnought].toDamageGhost(),
+		game.StandardUnits.ExperimentalBattlestation,
+	];
+	test.equal(expected.length, expansion.length, 'wrong length');
+	var fleetTypesToString = function (fleet) {
+		return fleet.map(function (u) {
+			return u.shortType;
+		}).reduce(function (prev, current) {
+			return prev + current;
+		}, '');
+	};
+	for (var i = 0; i < expansion.length; i++) {
+		if (!(expected[i].type === expansion[i].type && expected[i].isDamageGhost === expansion[i].isDamageGhost)) {
+			test.ok(false, 'Wrong sort. Got ' + fleetTypesToString(expansion));
+			break;
+		}
+	}
+
+	test.done();
+};
+
 exports.expansionRiskDirectHit = function (test) {
 	var fleet = {};
 	fleet[game.UnitType.Dreadnought] = { count: 4 };
 	fleet[game.UnitType.Cruiser] = { count: 3 };
 	fleet[game.UnitType.PDS] = { count: 2 };
 
-	var expansion = game.expandFleet(defaultRace, fleet, true);
+	var expansion = game.expandFleet(new Input(fleet, null, game.BattleType.Space, {
+		attacker: { race: defaultRace, riskDirectHit: true },
+	}), game.BattleSide.attacker);
 
 	var u = game.UnitType;
 	var expected = [game.StandardUnits[u.Dreadnought],
@@ -92,7 +135,6 @@ exports.expansionRiskDirectHit = function (test) {
 	test.done();
 };
 
-/** test unit counts expansion into ship units */
 exports.expansionNoRiskDirectHit = function (test) {
 	var fleet = {};
 	fleet[game.UnitType.WarSun] = { count: 1 };
@@ -100,7 +142,9 @@ exports.expansionNoRiskDirectHit = function (test) {
 	fleet[game.UnitType.Cruiser] = { count: 3 };
 	fleet[game.UnitType.PDS] = { count: 2 };
 
-	var expansion = game.expandFleet(defaultRace, fleet, false);
+	var expansion = game.expandFleet(new Input(fleet, null, game.BattleType.Space, {
+		attacker: { race: defaultRace, riskDirectHit: false },
+	}), game.BattleSide.attacker);
 
 	var u = game.UnitType;
 	var expected = [
@@ -138,7 +182,9 @@ exports.expansionWithUpgrades = function (test) {
 	fleet[game.UnitType.Cruiser] = { count: 3, upgraded: true };
 	fleet[game.UnitType.PDS] = { count: 2, upgraded: true };
 
-	var expansion = game.expandFleet('Sol', fleet, true);
+	var expansion = game.expandFleet(new Input(fleet, null, game.BattleType.Space, {
+		attacker: { race: 'Sol', riskDirectHit: true, },
+	}), game.BattleSide.attacker);
 
 	var u = game.UnitType;
 	var expected = [
@@ -171,57 +217,47 @@ exports.expansionWithUpgrades = function (test) {
 	test.done();
 };
 
-/** test default ship sort */
-exports.defaultSort = function (test) {
-	var unit = game.UnitType;
-	var fleet = {};
-	fleet[unit.Flagship] = { count: 1 };
-	fleet[unit.WarSun] = { count: 1 };
-	fleet[unit.Dreadnought] = { count: 1 };
-	fleet[unit.Cruiser] = { count: 1 };
-	fleet[unit.Destroyer] = { count: 1 };
-	fleet[unit.Carrier] = { count: 1 };
-	fleet[unit.Ground] = { count: 1 };
-	fleet[unit.Fighter] = { count: 1 };
-	fleet[unit.PDS] = { count: 1 };
-	var expansion = game.expandFleet(defaultRace, fleet, true, true);
+exports.expansionMentakFlagship = function (test) {
+	var attacker = {};
+	attacker[game.UnitType.Flagship] = { count: 1 };
+	attacker[game.UnitType.WarSun] = { count: 2 };
+	attacker[game.UnitType.Dreadnought] = { count: 2 };
 
-	var units = Object.assign({}, game.RaceSpecificUnits[defaultRace], game.StandardUnits);
+	var defender = {};
+	defender[game.UnitType.Flagship] = { count: 1 };
 
+	var expansion = game.expandFleet(new Input(attacker, defender, game.BattleType.Space, {
+		attacker: { race: defaultRace },
+		defender: { race: 'Mentak' },
+	}), game.BattleSide.attacker);
+
+	var u = game.UnitType;
 	var expected = [
-		units[unit.Flagship],
-		units[unit.WarSun],
-		units[unit.Dreadnought],
-		units[unit.Cruiser],
-		units[unit.Destroyer],
-		units[unit.Carrier],
-		units[unit.Fighter],
-		units[unit.Ground],
-		units[unit.PDS],
-		units[unit.Flagship].toDamageGhost(),
-		units[unit.WarSun].toDamageGhost(),
-		units[unit.Dreadnought].toDamageGhost(),
-		game.StandardUnits.ExperimentalBattlestation,
+		game.RaceSpecificUnits[defaultRace][u.Flagship],
+		game.StandardUnits[u.WarSun],
+		game.StandardUnits[u.WarSun],
+		game.StandardUnits[u.Dreadnought],
+		game.StandardUnits[u.Dreadnought],
 	];
-	test.equal(expected.length, expansion.length, 'wrong length');
-	var fleetTypesToString = function (fleet) {
-		return fleet.map(function (u) {
-			return u.shortType;
-		}).reduce(function (prev, current) {
-			return prev + current;
-		}, '');
-	};
+
+	test.ok(expansion, 'no expansion');
+	test.equal(expansion.length, expected.length, 'wrong length');
 	for (var i = 0; i < expansion.length; i++) {
-		if (!(expected[i].type === expansion[i].type && expected[i].isDamageGhost === expansion[i].isDamageGhost)) {
-			test.ok(false, 'Wrong sort. Got ' + fleetTypesToString(expansion));
-			break;
+		test.equal(expansion[i].type, expected[i].type, 'wrong ship at ' + i);
+
+		test.equal(expansion[i].isDamageGhost, expected[i].isDamageGhost, 'isDamageGhost wrong at ' + i);
+		if (expected[i].type === u.PDS) {
+			test.equal(expansion[i].spaceCannonValue, expected[i].spaceCannonValue, 'wrong space cannon at ' + i);
+		} else if (expected[i].isDamageGhost) {
+			test.ok(isNaN(expansion[i].battleValue), 'battleValue not NaN for damage ghost at ' + i);
+		} else {
+			test.equal(expansion[i].battleValue, expected[i].battleValue, 'wrong battleValue at ' + i);
 		}
 	}
 
 	test.done();
 };
 
-/** test symmetric battle by imitator */
 exports.symmetricImitator = function (test) {
 	var fleet = {};
 	fleet[game.UnitType.Dreadnought] = 2;
@@ -229,15 +265,13 @@ exports.symmetricImitator = function (test) {
 	fleet[game.UnitType.Cruiser] = 2;
 	fleet[game.UnitType.PDS] = 1;
 	fleet[game.UnitType.Fighter] = 3;
-	var attacker = game.expandFleet(defaultRace, fleet, true);
-	var defender = game.expandFleet(defaultRace, fleet, true);
-	var distr = im.estimateProbabilities(attacker, defender, game.BattleType.Space).distribution;
+	var input = new Input(fleet, fleet, game.BattleType.Space);
+	var distr = im.estimateProbabilities(input).distribution;
 	var inverse = invertDistribution(distr);
 	test.ok(distributionsEqual(distr, inverse), 'got asymmetric distribution');
 	test.done();
 };
 
-/** test symmetric battle by calculator */
 exports.symmetricCalculator = function (test) {
 	var fleet = {};
 	fleet[game.UnitType.WarSun] = 1;
@@ -247,9 +281,8 @@ exports.symmetricCalculator = function (test) {
 	fleet[game.UnitType.PDS] = 1;
 	fleet[game.UnitType.Carrier] = 2;
 	fleet[game.UnitType.Fighter] = 3;
-	var attacker = game.expandFleet(defaultRace, fleet, true);
-	var defender = game.expandFleet(defaultRace, fleet, true);
-	var distr = calc.computeProbabilities(attacker, defender, game.BattleType.Space).distribution;
+	var input = new Input(fleet, fleet, game.BattleType.Space);
+	var distr = calc.computeProbabilities(input).distribution;
 	var inverse = invertDistribution(distr);
 	test.ok(distributionsEqual(distr, inverse), 'got asymmetric distribution');
 	test.done();
@@ -354,12 +387,10 @@ exports.spacePerformance = function (test) {
 	defender[game.UnitType.Carrier] = { count: 5 };
 	defender[game.UnitType.Fighter] = { count: 20 };
 
-	var attackerExpanded = game.expandFleet(defaultRace, attacker, true);
-	var defenderExpanded = game.expandFleet(defaultRace, defender, true);
-
+	var input = new Input(attacker, defender, game.BattleType.Space);
 	var s = new Date();
 	for (var i = 0; i < 100; ++i)
-		calc.computeProbabilities(attackerExpanded, defenderExpanded, game.BattleType.Space);
+		calc.computeProbabilities(input);
 	var elapsed = new Date() - s;
 
 	s = new Date();
@@ -525,7 +556,6 @@ exports.groundPds = function (test) {
 	defender[game.UnitType.PDS] = { count: 2 };
 
 	testBattle(test, attacker, defender, game.BattleType.Ground);
-
 };
 
 exports.groundPlanetaryShield = function (test) {
@@ -537,20 +567,16 @@ exports.groundPlanetaryShield = function (test) {
 	defender[game.UnitType.Ground] = { count: 6 };
 	defender[game.UnitType.PDS] = { count: 2 };
 
-	var attackerExpanded = game.expandFleet(defaultRace, attacker);
-	var defenderExpanded = game.expandFleet(defaultRace, defender);
-
-	var noDreadnoughts = calc.computeProbabilities(attackerExpanded, defenderExpanded, game.BattleType.Ground).distribution;
+	var input = new Input(attacker, defender, game.BattleType.Ground);
+	var noDreadnoughts = calc.computeProbabilities(input).distribution;
 	//console.log(noDreadnoughts.toString());
 
 	attacker[game.UnitType.Dreadnought] = { count: 6 };
-	attackerExpanded = game.expandFleet(defaultRace, attacker);
-	var withDreadnoughts = calc.computeProbabilities(attackerExpanded, defenderExpanded, game.BattleType.Ground).distribution;
+	var withDreadnoughts = calc.computeProbabilities(input).distribution;
 	//console.log(withDreadnoughts.toString());
 	test.ok(distributionsEqual(noDreadnoughts, withDreadnoughts), 'Dreadnoughts bombarded over Planetary Shield');
 
 	test.done();
-
 };
 
 exports.groundPlanetaryShieldWarSun = function (test) {
@@ -562,15 +588,12 @@ exports.groundPlanetaryShieldWarSun = function (test) {
 	defender[game.UnitType.Ground] = { count: 6 };
 	defender[game.UnitType.PDS] = { count: 2 };
 
-	var attackerExpanded = game.expandFleet(defaultRace, attacker);
-	var defenderExpanded = game.expandFleet(defaultRace, defender);
-
-	var noWarSun = calc.computeProbabilities(attackerExpanded, defenderExpanded, game.BattleType.Ground).distribution;
+	var input = new Input(attacker, defender, game.BattleType.Ground);
+	var noWarSun = calc.computeProbabilities(input).distribution;
 	//console.log(noWarSun.toString());
 
 	attacker[game.UnitType.WarSun] = { count: 1 };
-	attackerExpanded = game.expandFleet(defaultRace, attacker);
-	var withWarSun = calc.computeProbabilities(attackerExpanded, defenderExpanded, game.BattleType.Ground).distribution;
+	var withWarSun = calc.computeProbabilities(input).distribution;
 	//console.log(withWarSun.toString());
 	test.ok(!distributionsEqual(noWarSun, withWarSun), 'War Sun didn\'t negate Planetary Shield');
 
@@ -1136,19 +1159,18 @@ exports.magenDefenseGroundWithoutPds = function (test) {
 
 	defender[game.UnitType.Ground] = { count: 5 };
 
-	var attackerExpanded = game.expandFleet(defaultRace, attacker);
-	var defenderExpanded = game.expandFleet(defaultRace, defender);
-
 	var options = {
 		attacker: {},
 		defender: {},
 	};
 
-	var noMagenDefense = calc.computeProbabilities(attackerExpanded, defenderExpanded, game.BattleType.Ground, options).distribution;
+	var input = new Input(attacker, defender, game.BattleType.Ground, options);
+
+	var noMagenDefense = calc.computeProbabilities(input).distribution;
 	//console.log(noMagenDefense.toString());
 
 	options.defender.magenDefense = true;
-	var withMagenDefense = calc.computeProbabilities(attackerExpanded, defenderExpanded, game.BattleType.Ground, options).distribution;
+	var withMagenDefense = calc.computeProbabilities(input).distribution;
 	//console.log(withMagenDefense.toString());
 	test.ok(distributionsEqual(noMagenDefense, withMagenDefense), 'Magen Defense activated without PDS');
 
@@ -1190,10 +1212,7 @@ exports.duraniumArmor = function (test) {
 		defender: { duraniumArmor: true },
 	};
 
-	var attackerExpanded = game.expandFleet(defaultRace, attacker, true);
-	var defenderExpanded = game.expandFleet(defaultRace, defender, true);
-
-	var distribution = im.estimateProbabilities(attackerExpanded, defenderExpanded, game.BattleType.Space, options).distribution;
+	var distribution = im.estimateProbabilities(new Input(attacker, defender, game.BattleType.Space, options)).distribution;
 	//console.log(distribution.toString());
 	var inverse = invertDistribution(distribution);
 	test.ok(!distributionsEqual(distribution, inverse), 'Duranium Armor not applied');
@@ -1741,22 +1760,24 @@ function chaoticTest(test) {
 		options.defender[actionCard] = Math.random() < .2;
 	}
 
-	var battleType = Math.random() < .8 ? game.BattleType.Space : game.BattleType.Ground;
+	var input = {
+		attackerUnits: attacker,
+		defenderUnits: defender,
+		battleType: Math.random() < .8 ? game.BattleType.Space : game.BattleType.Ground,
+		options: options
+	};
 
 	var showInput = false;
 	try {
-		var attackerExpanded = game.expandFleet(options.attacker.race, attacker, options.attacker.riskDirectHit);
-		var defenderExpanded = game.expandFleet(options.defender.race, defender, options.defender.riskDirectHit);
-
-		var expected = im.estimateProbabilities(attackerExpanded, defenderExpanded, battleType, options).distribution;
-		var got = calc.computeProbabilities(attackerExpanded, defenderExpanded, battleType, options).distribution;
+		var expected = im.estimateProbabilities(input).distribution;
+		var got = calc.computeProbabilities(input).distribution;
 		var testPassed = distributionsEqual(expected, got);
 		if (!testPassed) {
 			//try two more times in case of false positives
-			expected = im.estimateProbabilities(attackerExpanded, defenderExpanded, battleType, options).distribution;
+			expected = im.estimateProbabilities(input).distribution;
 			if (distributionsEqual(expected, got)) {
 				// third round to break the tie
-				expected = im.estimateProbabilities(attackerExpanded, defenderExpanded, battleType, options).distribution;
+				expected = im.estimateProbabilities(input).distribution;
 				testPassed = distributionsEqual(expected, got);
 			}
 		}
@@ -1809,6 +1830,16 @@ exports.chaoticReproduce = function (test) {
 };
 
 //exports.chaoticMonkey = new Array(20).fill(chaoticTest);
+
+function Input(attacker, defender, battleType, options) {
+	this.attackerUnits = attacker;
+	this.defenderUnits = defender;
+	this.battleType = battleType;
+	this.options = {
+		attacker: Object.assign({ race: defaultRace, riskDirectHit: true }, options && options.attacker),
+		defender: Object.assign({ race: defaultRace, riskDirectHit: true }, options && options.defender),
+	};
+}
 
 /** used to group tests for easier selective running */
 function group(exports, testGroup) {

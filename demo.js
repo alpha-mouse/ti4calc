@@ -11,13 +11,10 @@ fleet1[game.UnitType.Dreadnought] = { count: 1 };
 
 fleet2[game.UnitType.Fighter] = { count: 1 };
 
-var options = null;
+var input = { attackerUnits: fleet1, defenderUnits: fleet2, battleType: game.BattleType.Space };
 
-fleet1 = game.expandFleet('Sardakk', fleet1, true);
-fleet2 = game.expandFleet('Sardakk', fleet2, true);
-
-var expected = im.estimateProbabilities(fleet1, fleet2, game.BattleType.Space, options).distribution;
+var expected = im.estimateProbabilities(input).distribution;
 console.log(expected.toString());
-var got = calc.computeProbabilities(fleet1, fleet2, game.BattleType.Space, options).distribution;
+var got = calc.computeProbabilities(input).distribution;
 console.log(got.toString());
 

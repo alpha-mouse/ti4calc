@@ -19,9 +19,11 @@
 		};
 
 		/** Compute survival probabilities of each subset of attacker and defender */
-		function computeProbabilities(attackerFull, defenderFull, battleType, options) {
-
-			options = options || { attacker: {}, defender: {} };
+		function computeProbabilities(input) {
+			var battleType = input.battleType;
+			var options = input.options || { attacker: {}, defender: {} };
+			var attackerFull = game.expandFleet(input, game.BattleSide.attacker);
+			var defenderFull = game.expandFleet(input, game.BattleSide.defender);
 
 			var attacker = attackerFull.filter(game.unitBattleFilter(battleType));
 			var defender = defenderFull.filter(game.unitBattleFilter(battleType));

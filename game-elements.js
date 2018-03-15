@@ -85,7 +85,7 @@
 	root.RaceSpecificTechnologies = {
 		Letnev: {
 			nonEuclidean: new Option('Non-Euclidean Shielding', 'Sustain Damage absorbs 2 hits'),
-			l4Disruptors: new Option('L4 Disruptors','During an Invasion units cannot use Space Cannon against you', 'attacker'),
+			l4Disruptors: new Option('L4 Disruptors', 'During an Invasion units cannot use Space Cannon against you', 'attacker'),
 		},
 		Sardakk: {
 			valkyrieParticleWeave: new Option('Valkyrie Particle Weave', 'If opponent produces at least one hit in Ground combat, you produce one additional hit'),
@@ -375,6 +375,17 @@
 		},
 	};
 
+	root.BattleSide = {
+		attacker: 'attacker',
+		defender: 'defender',
+		opponent: function (battleSide) {
+			return {
+				attacker: 'defender',
+				defender: 'attacker',
+			}[battleSide];
+		}
+	};
+
 	/** Make an array of units in their reversed order of dying
 	 * @param {string} race - one of 'Sardakk', 'JolNar', etc.
 	 * @param {object} counters - object of the form
@@ -384,29 +395,33 @@
 	 *       ..
 	 *     }
 	 */
-	root.expandFleet = function (race, counters, riskDirectHit, experimentalBattlestation) {
+	root.expandFleet = function (input, battleSide) {
+		var options = input.options || { attacker: {}, defender: {} };
 
-		var standardUnits = Object.assign({}, root.StandardUnits, root.RaceSpecificUnits[race]);
-		var upgradedUnits = Object.assign({}, root.StandardUpgrades, root.RaceSpecificUpgrades[race]);
+		var standardUnits = Object.assign({}, root.StandardUnits, root.RaceSpecificUnits[options[battleSide].race]);
+		var upgradedUnits = Object.assign({}, root.StandardUpgrades, root.RaceSpecificUpgrades[options[battleSide].race]);
+		var opponentMentakWithFlagship = input.battleType === root.BattleType.Space && options[root.BattleSide.opponent(battleSide)].race === 'Mentak' &&
+			(input[root.BattleSide.opponent(battleSide) + 'Units'][UnitType.Flagship] || { count: 0 }).count !== 0;
+
 		var result = [];
 		var damageGhosts = [];
 		for (var unitType in UnitType) {
-			var counter = counters[unitType] || { count: 0 };
+			var counter = input[battleSide + 'Units'][unitType] || { count: 0 };
 			for (var i = 0; i < counter.count; i++) {
 				var unit = (counter.upgraded ? upgradedUnits : standardUnits)[unitType];
 				var addedUnit = unit.clone();
 				result.push(addedUnit);
-				if (unit.sustainDamageHits > 0) {
+				if (unit.sustainDamageHits > 0 && !opponentMentakWithFlagship) {
 					damageGhosts.push(addedUnit.toDamageGhost());
 				}
 			}
-			if (!riskDirectHit) {
+			if (!options[battleSide].riskDirectHit) {
 				result = result.concat(damageGhosts);
 				damageGhosts = [];
 			}
 		}
 		result = result.concat(damageGhosts);
-		if (experimentalBattlestation)
+		if (input.battleType === root.BattleType.Space && options[battleSide].experimentalBattlestation)
 			result.push(root.StandardUnits.ExperimentalBattlestation);
 		return result;
 	};
@@ -457,20 +472,10 @@
 	};
 
 //todo check all racial abilities
-//todo Sardakk Valkyrie tech
 //todo Sardakk Tekklar promisory
 //todo Mentak racial take into account when estimating Direct Hit
 //todo How the hell to take Nekro racial tech taking into account
 //todo Letnev promisary
-//todo Letnev Non-Euclidean Shielding
-//todo Letnev L4 disruptors
-//todo Sardakk racial
-//todo Yin Brotherhood racial abilities ignored
-//todo JolNar racial
-//todo L1Z1X racial Harrow
-
-//todo Letnev racial
-//todo generic tech
 
 	function createUnitOrder() {
 		var result = [];

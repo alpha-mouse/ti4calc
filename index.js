@@ -36,21 +36,15 @@
 			recompute: function () {
 				persistInput();
 
-				var attackerBattlestation = this.options.attacker.experimentalBattlestation && this.battleType === BattleType.Space;
-				var defenderBattlestation = this.options.defender.experimentalBattlestation && this.battleType === BattleType.Space;
-				var attacker = expandFleet(this.options.attacker.race, this.attackerUnits, this.options.attacker.riskDirectHit, attackerBattlestation);
-				var defender = expandFleet(this.options.defender.race, this.defenderUnits, this.options.defender.riskDirectHit, defenderBattlestation);
 				var computed;
-
 				// unfortunately Duranium Armor cannot be handled by the calculator
 				var duraniumArmor = this.options.attacker.duraniumArmor || this.options.defender.duraniumArmor;
 				if (duraniumArmor && this.battleType === BattleType.Space)
-					computed = imitator.estimateProbabilities(attacker, defender, this.battleType, this.options);
+					computed = imitator.estimateProbabilities(this);
 				else
-					computed = calculator.computeProbabilities(attacker, defender, this.battleType, this.options);
+					computed = calculator.computeProbabilities(this);
 
 				this.displayDistribution(computed);
-				//console.log(computed.distribution.toString());
 			},
 			displayDistribution: function (solution) {
 
