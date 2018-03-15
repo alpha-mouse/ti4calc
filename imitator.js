@@ -110,7 +110,7 @@
 				!attackerFull.some(unitIs(game.UnitType.WarSun));
 
 			function winnuFlagships(fleet, sideOptions, opposingFleet) {
-				if (battleType === game.BattleType.Space && sideOptions.race === 'Winnu'){
+				if (battleType === game.BattleType.Space && sideOptions.race === 'Winnu') {
 					var battleDice = opposingFleet.filter(notFighterShip).length;
 					// In the game there could be only one flagship, but why the hell not)
 					fleet.filter(unitIs(game.UnitType.Flagship)).forEach(function (flagship) {
@@ -173,12 +173,24 @@
 			return { attacker: attacker, defender: defender };
 		}
 
-		function applyDamage(fleet, hits, sideOptions, hittable) {
+		function applyDamage(fleet, hits, sideOptions, hittable, softPredicate) {
 			hittable = hittable || function (unit) {
 				return true;
 			};
 			for (var i = fleet.length - 1; 0 <= i && 0 < hits; i--) {
 				if (hittable(fleet[i])) {
+					var killed = fleet.splice(i, 1)[0];
+					if (killed.isDamageGhost) {
+						killed.damageCorporeal.damaged = true;
+						killed.damageCorporeal.damagedThisRound = true;
+						if (sideOptions.nonEuclidean)
+							hits--;
+					}
+					hits--;
+				}
+			}
+			if (softPredicate && hits > 0 && fleet.length > 0) {
+				for (var i = fleet.length - 1; 0 <= i && 0 < hits; i--) {
 					var killed = fleet.splice(i, 1)[0];
 					if (killed.isDamageGhost) {
 						killed.damageCorporeal.damaged = true;
@@ -262,8 +274,8 @@
 						if (options.defender.maneuveringJets && attackerInflicted > 0)
 							attackerInflicted--;
 
-						applyDamage(attacker, defenderInflicted, options.attacker, gravitonLaserUnitHittable(options.defender));
-						applyDamage(defender, attackerInflicted, options.defender, gravitonLaserUnitHittable(options.attacker));
+						applyDamage(attacker, defenderInflicted, options.attacker, gravitonLaserUnitHittable(options.defender), true);
+						applyDamage(defender, attackerInflicted, options.defender, gravitonLaserUnitHittable(options.attacker), true);
 
 						function hasSpaceCannon(unit) {
 							return unit.spaceCannonDice !== 0;
@@ -391,7 +403,7 @@
 						if (options.attacker.maneuveringJets && defenderInflicted > 0)
 							defenderInflicted--;
 
-						applyDamage(attacker, defenderInflicted, options.attacker, unitIs(game.UnitType.Ground));
+						applyDamage(attacker, defenderInflicted, options.attacker);
 					},
 				},
 			];

@@ -104,18 +104,20 @@
 				attackerReroll || defenderReroll // re-rolls apply to the first round
 			) {
 				//need to make one round of propagation with either altered probabilities or attacker not firing
+				var attackerTransitionsFactory;
 				if (magenDefenseActivated)
-					effectsFlags.attackerTransitionsFactory = function () {
+					attackerTransitionsFactory = function () {
 						return scale([1], problem.attacker.length + 1); // attacker does not fire
 					};
 				else
-					effectsFlags.attackerTransitionsFactory = function () {
+					attackerTransitionsFactory = function () {
 						return computeFleetTransitions(problem.attacker, game.ThrowType.Battle, attackerBoost, attackerReroll);
 					};
-				effectsFlags.defenderTransitionsFactory = function () {
+				var defenderTransitionsFactory = function () {
 					return computeFleetTransitions(problem.defender, game.ThrowType.Battle, defenderBoost, defenderReroll);
 				};
-				applyTransitions(problem, effectsFlags.attackerTransitionsFactory(), effectsFlags.defenderTransitionsFactory(), options, 0, 0, effectsFlags);
+
+				applyTransitions(problem, attackerTransitionsFactory, defenderTransitionsFactory, options, 0, 0, effectsFlags);
 				if (options.attacker.race === 'L1Z1X' && battleType === game.BattleType.Ground) { // Harrow
 					prebattleActions.find(function (action) {
 						return action.name === 'Bombardment';
@@ -126,13 +128,13 @@
 			if (magenDefenseActivated && (attackerBoost || attackerReroll)) {
 				// damn it, one more round of propagation with altered probabilities, but just for attacker
 				// Harrow ignored, because Magen Defense implies Planetary Shield and no Bombardment.
-				effectsFlags.attackerTransitionsFactory = function () {
+				var attackerTransitionsFactory = function () {
 					return computeFleetTransitions(problem.attacker, game.ThrowType.Battle, attackerBoost, attackerReroll);
 				};
-				effectsFlags.defenderTransitionsFactory = function () {
+				var defenderTransitionsFactory = function () {
 					return computeFleetTransitions(problem.defender, game.ThrowType.Battle, boost(battleType, options.defender, false));
 				};
-				applyTransitions(problem, effectsFlags.attackerTransitionsFactory(), effectsFlags.defenderTransitionsFactory(), options, 0, 0, effectsFlags);
+				applyTransitions(problem, attackerTransitionsFactory, defenderTransitionsFactory, options, 0, 0, effectsFlags);
 			}
 
 			propagateProbabilityUpLeft(problem, battleType, attackerFull, defenderFull, options);
@@ -183,10 +185,10 @@
 
 					// transitions for everything except for attackerInflicted===0&&defenderInflicted===0
 					var attackerInflicted = 0;
-					for (var defenderInflicted = 1; defenderInflicted < transitionMatrix.columns && defenderInflicted <= a; defenderInflicted++) {
+					for (var defenderInflicted = 1; defenderInflicted < transitionMatrix.columns; defenderInflicted++) {
 						distr[a - defenderInflicted][d - attackerInflicted] += transitionMatrix.at(attackerInflicted, defenderInflicted) * k;
 					}
-					for (var attackerInflicted = 1; attackerInflicted < transitionMatrix.rows && attackerInflicted <= d; attackerInflicted++) {
+					for (var attackerInflicted = 1; attackerInflicted < transitionMatrix.rows; attackerInflicted++) {
 						for (var defenderInflicted = 0; defenderInflicted < transitionMatrix.columns && defenderInflicted <= a; defenderInflicted++) {
 							distr[a - defenderInflicted][d - attackerInflicted] += transitionMatrix.at(attackerInflicted, defenderInflicted) * k;
 						}
@@ -322,6 +324,10 @@
 			var distribution = problem.distribution;
 			attackerVulnerableFrom = attackerVulnerableFrom || 0;
 			defenderVulnerableFrom = defenderVulnerableFrom || 0;
+			if (effectsFlags && !(effectsFlags.winnuFlagship && options.attacker.race === 'Winnu'))
+				attackerTransitions = attackerTransitions();
+			if (effectsFlags && !(effectsFlags.winnuFlagship && options.defender.race === 'Winnu'))
+				defenderTransitions = defenderTransitions();
 			effectsFlags = effectsFlags || {};
 
 			for (var a = 0; a < distribution.rows; a++) {
@@ -329,18 +335,22 @@
 
 					if (distribution[a][d] === 0) continue;
 
+					var computedAttackerTransitions = attackerTransitions;
+					var computedDefenderTransitions = defenderTransitions;
 					if (effectsFlags.winnuFlagship) {
-						if (options.attacker.race === 'Winnu' && modifyWinnuFlagship(problem.attacker, problem.defender, d)) {
-							attackerTransitions = effectsFlags.attackerTransitionsFactory();
+						if (options.attacker.race === 'Winnu') {
+							modifyWinnuFlagship(problem.attacker, problem.defender, d);
+							computedAttackerTransitions = attackerTransitions();
 						}
-						if (options.defender.race === 'Winnu' && modifyWinnuFlagship(problem.defender, problem.attacker, a)) {
-							defenderTransitions = effectsFlags.defenderTransitionsFactory();
+						if (options.defender.race === 'Winnu') {
+							modifyWinnuFlagship(problem.defender, problem.attacker, a);
+							computedDefenderTransitions = defenderTransitions();
 						}
 					}
 					var maxAttackerDamage = Math.max(0, a - attackerVulnerableFrom);
 					var maxDefenderDamage = Math.max(0, d - defenderVulnerableFrom);
-					var attackerTransitionsVector = adjustForNonEuclidean(attackerTransitions[a], problem.defender, d - 1, options.defender);
-					var defenderTransitionsVector = adjustForNonEuclidean(defenderTransitions[d], problem.attacker, a - 1, options.attacker);
+					var attackerTransitionsVector = adjustForNonEuclidean(computedAttackerTransitions[a], problem.defender, d - 1, options.defender);
+					var defenderTransitionsVector = adjustForNonEuclidean(computedDefenderTransitions[d], problem.attacker, a - 1, options.attacker);
 					var transitionMatrix = orthogonalMultiply(attackerTransitionsVector, defenderTransitionsVector, maxDefenderDamage + 1, maxAttackerDamage + 1);
 					if (effectsFlags.valkyrieParticleWeave)
 						transitionMatrix = adjustForValkyrieParticleWeave(transitionMatrix, options, maxDefenderDamage + 1, maxAttackerDamage + 1); // no Sustain Damage assumption. Otherwise Valkyrie should be taken into account before Non-Euclidean Shielding somehow
@@ -357,53 +367,59 @@
 		}
 
 		function initPrebattleActions() {
-			function EnsembleSplit(problemFactory) {
-				// Ok, this ensemble shit is complicated, and I don't know how to explain it succintly, so you'd be
-				// better off reading the code using it.
-				this.subproblems = {};
-				this.problemFactory = problemFactory;
-			}
-
-			EnsembleSplit.prototype.increment = function (subproblemKey, row, column, value) {
-				if (value === 0) return;
-				if (!this.subproblems[subproblemKey])
-					this.subproblems[subproblemKey] = this.problemFactory(subproblemKey);
-				this.subproblems[subproblemKey].distribution[row][column] += value;
-			};
-			EnsembleSplit.prototype.getSubproblems = function () {
-				var subproblems = this.subproblems;
-				return Object.keys(this.subproblems).map(function (key) {
-					return subproblems[key];
-				});
-			};
 
 			return [
 				{
 					name: 'Space Cannon -> Ships',
 					appliesTo: game.BattleType.Space,
 					execute: function (problemArray, attackerFull, defenderFull, options) {
+						var result = [];
 						problemArray.forEach(function (problem) {
-							var attackerModifier = options.defender.antimassDeflectors ? -1 : 0;
-							var spaceCannonAttacker = attackerFull.filter(hasSpaceCannon);
-							var attackerTransitionsVector;
-							if (options.attacker.plasmaScoring)
-								attackerTransitionsVector = fleetTransitionsVectorWithPlasmaScoring(spaceCannonAttacker, game.ThrowType.SpaceCannon, attackerModifier);
-							else
-								attackerTransitionsVector = fleetTransitionsVector(spaceCannonAttacker, game.ThrowType.SpaceCannon, attackerModifier);
-							var attackerTransitions = scale(cancelHits(attackerTransitionsVector, options.defender.maneuveringJets ? 1 : 0), problem.attacker.length + 1);
+							var attackerTransitionsVector = getSpaceCannonTransitionsVector(attackerFull, options.attacker, options.defender);
+							var defenderTransitionsVector = getSpaceCannonTransitionsVector(defenderFull, options.defender, options.attacker);
 
-							var defenderModifier = options.attacker.antimassDeflectors ? -1 : 0;
-							var spaceCannonDefender = defenderFull.filter(hasSpaceCannon);
-							var defenderTransitionsVector;
-							if (options.defender.plasmaScoring)
-								defenderTransitionsVector = fleetTransitionsVectorWithPlasmaScoring(spaceCannonDefender, game.ThrowType.SpaceCannon, defenderModifier);
-							else
-								defenderTransitionsVector = fleetTransitionsVector(spaceCannonDefender, game.ThrowType.SpaceCannon, defenderModifier);
-							var defenderTransitions = scale(cancelHits(defenderTransitionsVector, options.attacker.maneuveringJets ? 1 : 0), problem.defender.length + 1);
+							if (options.attacker.gravitonLaser || options.defender.gravitonLaser) {
+								var ensemble = new EnsembleSplit(problem);
 
-							applyTransitions(problem, attackerTransitions, defenderTransitions, options);
+								var distribution = problem.distribution;
+								for (var a = 0; a < distribution.rows; a++) {
+									for (var d = 0; d < distribution.columns; d++) {
+										if (distribution[a][d] === 0) continue;
+
+										var adjustedAttackerTransitionsVector = adjustForNonEuclidean(attackerTransitionsVector, problem.defender, d - 1, options.defender);
+										var adjustedDefenderTransitionsVector = adjustForNonEuclidean(defenderTransitionsVector, problem.attacker, a - 1, options.attacker);
+										var transitionMatrix = orthogonalMultiply(adjustedAttackerTransitionsVector, adjustedDefenderTransitionsVector, d + 1, a + 1);
+
+										for (var attackerInflicted = 0; attackerInflicted < transitionMatrix.rows; attackerInflicted++) {
+											for (var defenderInflicted = 0; defenderInflicted < transitionMatrix.columns; defenderInflicted++) {
+												//var attackerVictims = victims(problem.attacker, a, defenderInflicted);
+												//var defenderVictims = victims(problem.defender, d, attackerInflicted);
+												//ensemble.increment('a' + attackerVictims.code + 'd' + defenderVictims.code, a - defenderInflicted, d - attackerInflicted, transitionMatrix.at(attackerInflicted, defenderInflicted) * distribution[a][d]);
+											}
+										}
+									}
+								}
+
+								result.push.apply(result, ensemble.getSubproblems());
+							} else {
+
+								var attackerTransitions = scale(cancelHits(attackerTransitionsVector, options.defender.maneuveringJets ? 1 : 0), problem.attacker.length + 1);
+								var defenderTransitions = scale(cancelHits(defenderTransitionsVector, options.attacker.maneuveringJets ? 1 : 0), problem.defender.length + 1);
+								applyTransitions(problem, attackerTransitions, defenderTransitions, options);
+								result.push(problem);
+							}
 						});
-						return problemArray;
+						return result;
+
+						function getSpaceCannonTransitionsVector(fleetFull, thisSideOptions, opponentSideOptions) {
+							var modifier = opponentSideOptions.antimassDeflectors ? -1 : 0;
+							var spaceCannonFleet = fleetFull.filter(hasSpaceCannon);
+							if (thisSideOptions.plasmaScoring)
+								return fleetTransitionsVectorWithPlasmaScoring(spaceCannonFleet, game.ThrowType.SpaceCannon, modifier);
+							else
+								return fleetTransitionsVector(spaceCannonFleet, game.ThrowType.SpaceCannon, modifier);
+
+						}
 
 						function hasSpaceCannon(unit) {
 							return unit.spaceCannonDice !== 0;
@@ -453,41 +469,12 @@
 						if (!options.attacker.assaultCannon && !options.defender.assaultCannon) {
 							return problemArray;
 						}
-						var nullVictim = { spliceCode: '', spliced: 0 };
+						var nullVictim = structs.Victim.Null;
 
 						var result = [];
 						problemArray.forEach(function (problem) {
 
-							var ensemble = new EnsembleSplit(function (subproblemKey) {
-								var keyRx = /^a(?:(\d+)(?:,(\d+))?)?d(?:(\d+)(?:,(\d+))?)?$/;
-								var match = subproblemKey.match(keyRx);
-								var attackerSplice1 = match[1];
-								var attackerSplice2 = match[2];
-								var defenderSplice1 = match[3];
-								var defenderSplice2 = match[4];
-								var attackerDeficit = deficit(attackerSplice1) + deficit(attackerSplice2);
-								var defenderDeficit = deficit(defenderSplice1) + deficit(defenderSplice2);
-								var distribution = structs.createMatrix(problem.distribution.rows - attackerDeficit, problem.distribution.columns - defenderDeficit, 0);
-								var attaker = splice(problem.attacker, attackerSplice1, attackerSplice2);
-								var defender = splice(problem.defender, defenderSplice1, defenderSplice2);
-								return new structs.Problem(distribution, attaker, defender);
-
-								function deficit(value) {
-									return isNaN(value) ? 0 : 1;
-								}
-
-								function splice(fleet, splice1, splice2) {
-									if (isNaN(splice1) && isNaN(splice2))
-										return fleet;
-									else {
-										var result = fleet.slice();
-										result.splice(splice1, 1);
-										if (!isNaN(splice2))
-											result.splice(splice2, 1);
-										return result;
-									}
-								}
-							});
+							var ensemble = new structs.EnsembleSplit(problem);
 							var attackerThreshold = findAssaultCannonThreshold(problem.attacker, options.attacker.assaultCannon);
 							var defenderThreshold = findAssaultCannonThreshold(problem.defender, options.defender.assaultCannon);
 							var attackerVictims = calculateVictims(problem.attacker, defenderThreshold < problem.defender.length);
@@ -497,9 +484,9 @@
 							for (var a = 0; a < distribution.rows; a++) {
 								for (var d = 0; d < distribution.columns; d++) {
 									if (distribution[a][d] === 0) continue;
-									var attackerSplice = defenderThreshold < d ? attackerVictims[a] : nullVictim;
-									var defenderSplice = attackerThreshold < a ? defenderVictims[d] : nullVictim;
-									ensemble.increment('a' + attackerSplice.spliceCode + 'd' + defenderSplice.spliceCode, a - attackerSplice.spliced, d - defenderSplice.spliced, distribution[a][d]);
+									var attackerVictim = defenderThreshold < d ? attackerVictims[a] : nullVictim;
+									var defenderVictim = attackerThreshold < a ? defenderVictims[d] : nullVictim;
+									ensemble.increment(attackerVictim, defenderVictim, a - attackerVictim.dead(), d - defenderVictim.dead(), distribution[a][d]);
 								}
 							}
 							result.push.apply(result, ensemble.getSubproblems());
@@ -523,21 +510,24 @@
 								result.fill(nullVictim);
 							else {
 								result[0] = nullVictim;
-								var victim = null;
-								var splice1 = null;
-								var splice2 = null;
+								var victim = undefined;
+								var splice1 = undefined;
+								var splice2 = undefined;
 								for (var i = 0; i < fleet.length; ++i) {
 									if (notFighterShip(fleet[i])) {
 										victim = fleet[i];
 										splice1 = i;
-										splice2 = null;
+										splice2 = undefined;
 									} else if (victim && fleet[i].damageCorporeal === victim) {
 										splice2 = i;
 									}
-									result[i + 1] = {
-										spliceCode: splice1 === null ? '' : (splice1 + (splice2 === null ? '' : ',' + splice2)),
-										spliced: splice1 === null ? 0 : (1 + (splice2 === null ? 0 : 1)),
-									};
+									var v = new structs.Victim();
+									if (splice1 !== undefined) {
+										v.addRange(splice1, undefined);
+										if (splice2 !== undefined)
+											v.addRange(splice2, undefined);
+									}
+									result[i + 1] = v;
 								}
 							}
 							return result;
@@ -548,6 +538,9 @@
 					name: 'Anti-Fighter Barrage',
 					appliesTo: game.BattleType.Space,
 					execute: function (problemArray, attackerFull, defenderFull, options) {
+
+						// NOTE: barrage could have been implemented using problem ensembles, but was implemented as it
+						// is now before the mechanism of ensembles was added. And I was lazy to switch to new mechanism
 
 						//Barrage prevents main optimisation trick from being used, namely strict ordering of units deaths.
 						//With barrage Fighters die earlier than Warsun and Dreadnoughts are damaged.
@@ -896,6 +889,9 @@
 		function adjustForNonEuclidean(fleetTransitionsVector, opposingFleet, opposingIndex, opposingSideOptions) {
 			if (opposingSideOptions.nonEuclidean && fleetTransitionsVector.length > 2) {
 				var result = fleetTransitionsVector.slice();
+				// as it is implemented, if the fleet is [D, d, C], and two hits are produced against it, then both
+				// the Cruiser will be killed and the Dreadnought damaged. Though it suffices to only damage the Dreadnought,
+				// because non-euclidean will absorb both hits.
 				for (var dmg = 1; dmg < result.length && 0 < opposingIndex; dmg++) {
 					if (opposingFleet[opposingIndex].isDamageGhost) {
 						cancelHits(result, 1, dmg);

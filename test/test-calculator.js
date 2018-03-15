@@ -40,8 +40,8 @@ function testBattle(test, attacker, defender, battleType, options) {
 
 	var attackerRiskDirectHit = typeof options.attacker.riskDirectHit === 'boolean' ? options.attacker.riskDirectHit : true;
 	var defenderRiskDirectHit = typeof options.defender.riskDirectHit === 'boolean' ? options.defender.riskDirectHit : true;
-	var attackerBattlestation = options.attacker.experimentalBattlestation && battleType === BattleType.Space;
-	var defenderBattlestation = options.defender.experimentalBattlestation && battleType === BattleType.Space;
+	var attackerBattlestation = options.attacker.experimentalBattlestation && battleType === game.BattleType.Space;
+	var defenderBattlestation = options.defender.experimentalBattlestation && battleType === game.BattleType.Space;
 	var attackerExpanded = game.expandFleet(options.attacker.race || defaultRace, attacker, attackerRiskDirectHit, attackerBattlestation);
 	var defenderExpanded = game.expandFleet(options.defender.race || defaultRace, defender, defenderRiskDirectHit, defenderBattlestation);
 
@@ -943,14 +943,32 @@ exports.gravitonLaserSpace = function (test) {
 
 	var attacker = {};
 	var defender = {};
-	attacker[game.UnitType.Cruiser] = { count: 3 };
+	attacker[game.UnitType.Cruiser] = { count: 2 };
 	attacker[game.UnitType.Fighter] = { count: 3 };
 
-	defender[game.UnitType.Cruiser] = { count: 3 };
+	defender[game.UnitType.Cruiser] = { count: 2 };
 	defender[game.UnitType.PDS] = { count: 3 };
 
 	var options = {
 		attacker: {},
+		defender: { gravitonLaser: true },
+	};
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.gravitonLaserNonEuclidean = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Dreadnought] = { count: 2 };
+	attacker[game.UnitType.Fighter] = { count: 1 };
+
+	defender[game.UnitType.Cruiser] = { count: 2 };
+	defender[game.UnitType.PDS] = { count: 3 };
+
+	var options = {
+		attacker: { race: 'Letnev', nonEuclidean: true },
 		defender: { gravitonLaser: true },
 	};
 
@@ -1705,4 +1723,5 @@ function group(exports, testGroup) {
 //exports.harrow = group(exports, 'harrow');
 //exports.nonEuclidean = group(exports, 'nonEuclidean');
 //exports.valkyrieParticleWeave = group(exports, 'valkyrieParticleWeave');
+exports.gravitonLaser = group(exports, 'gravitonLaser');
 //exports.winnu = group(exports, 'winnuFlagship');
