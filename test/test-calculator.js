@@ -1010,6 +1010,22 @@ exports.gravitonLaserManyPds = function (test) {
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
 
+exports.gravitonLaserManeuveringJets = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.PDS] = { count: 1 };
+
+	defender[game.UnitType.Carrier] = { count: 1 };
+
+	var options = {
+		attacker: {},
+		defender: { gravitonLaser: true, maneuveringJets: true },
+	};
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
 exports.plasmaScoringBombardmentGround = function (test) {
 
 	var attacker = {};

@@ -398,8 +398,8 @@
 								result.push.apply(result, ensemble.getSubproblems());
 							} else {
 
-								var attackerTransitions = scale(cancelHits(attackerTransitionsVector, options.defender.maneuveringJets ? 1 : 0), problem.attacker.length + 1);
-								var defenderTransitions = scale(cancelHits(defenderTransitionsVector, options.attacker.maneuveringJets ? 1 : 0), problem.defender.length + 1);
+								var attackerTransitions = scale(attackerTransitionsVector, problem.attacker.length + 1);
+								var defenderTransitions = scale(defenderTransitionsVector, problem.defender.length + 1);
 								applyTransitions(problem, attackerTransitions, defenderTransitions, options);
 								result.push(problem);
 							}
@@ -409,11 +409,12 @@
 						function getSpaceCannonTransitionsVector(fleetFull, thisSideOptions, opponentSideOptions) {
 							var modifier = opponentSideOptions.antimassDeflectors ? -1 : 0;
 							var spaceCannonFleet = fleetFull.filter(hasSpaceCannon);
+							var vector;
 							if (thisSideOptions.plasmaScoring)
-								return fleetTransitionsVectorWithPlasmaScoring(spaceCannonFleet, game.ThrowType.SpaceCannon, modifier);
+								vector =  fleetTransitionsVectorWithPlasmaScoring(spaceCannonFleet, game.ThrowType.SpaceCannon, modifier);
 							else
-								return fleetTransitionsVector(spaceCannonFleet, game.ThrowType.SpaceCannon, modifier);
-
+								vector = fleetTransitionsVector(spaceCannonFleet, game.ThrowType.SpaceCannon, modifier);
+							return cancelHits(vector, opponentSideOptions.maneuveringJets ? 1 : 0)
 						}
 
 						function hasSpaceCannon(unit) {
