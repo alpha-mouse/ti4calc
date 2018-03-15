@@ -101,13 +101,18 @@
 	};
 
 
+	/** Problem ensembles are needed when linear units dying order is violated.
+	 * E.g.
+	 * 	Barrage - only Fighters die
+	 * 	Assault Cannon - only non Fighters die
+	 * 	Graviton Lazer - preferably non Fighters die
+	 *
+	 * So original problem is split into several subproblems, depending on which units died.
+	 */
 	root.EnsembleSplit = function (parentProblem) {
-		// Problem ensembles are needed when
-		// Ok, this ensemble shit is complicated, and I don't know how to explain it succintly, so you'd be
-		// better off reading the code using it.
 		this.subproblems = {};
 		this.parentProblem = parentProblem;
-	}
+	};
 
 	root.EnsembleSplit.prototype.increment = function (attackerVictims, defenderVictims, fromRow, fromColumn, value) {
 		if (value === 0) return;
