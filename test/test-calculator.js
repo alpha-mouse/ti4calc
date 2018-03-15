@@ -1003,7 +1003,7 @@ exports.gravitonLaserManyPds = function (test) {
 	defender[game.UnitType.PDS] = { count: 4 };
 
 	var options = {
-		attacker: { },
+		attacker: {},
 		defender: { gravitonLaser: true },
 	};
 
@@ -1674,6 +1674,15 @@ function chaoticTest(test) {
 		var expected = im.estimateProbabilities(attackerExpanded, defenderExpanded, battleType, options).distribution;
 		var got = calc.computeProbabilities(attackerExpanded, defenderExpanded, battleType, options).distribution;
 		var testPassed = distributionsEqual(expected, got);
+		if (!testPassed) {
+			//try two more times in case of false positives
+			expected = im.estimateProbabilities(attackerExpanded, defenderExpanded, battleType, options).distribution;
+			if (distributionsEqual(expected, got)) {
+				// third round to break the tie
+				expected = im.estimateProbabilities(attackerExpanded, defenderExpanded, battleType, options).distribution;
+				testPassed = distributionsEqual(expected, got);
+			}
+		}
 		if (!testPassed) {
 			showInput = true;
 		}
