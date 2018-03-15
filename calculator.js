@@ -123,11 +123,14 @@
 						return action.name === 'Bombardment';
 					}).execute([problem], attackerFull, defenderFull, options)
 				}
+				if (battleType === game.BattleType.Space)
+					collapseYinFlagship(problem, options);
 			}
 
 			if (magenDefenseActivated && (attackerBoost || attackerReroll)) {
 				// damn it, one more round of propagation with altered probabilities, but just for attacker
 				// Harrow ignored, because Magen Defense implies Planetary Shield and no Bombardment.
+				// Yin Flagship ignored, because Magen Defense implies Ground combat
 				var attackerTransitionsFactory = function () {
 					return computeFleetTransitions(problem.attacker, game.ThrowType.Battle, attackerBoost, attackerReroll);
 				};
@@ -155,6 +158,14 @@
 			var winnuFlagshipRelevant = battleType === game.BattleType.Space &&
 				(options.attacker.race === 'Winnu' && problem.attacker.some(unitIs(game.UnitType.Flagship)) ||
 					options.defender.race === 'Winnu' && problem.defender.some(unitIs(game.UnitType.Flagship)));
+
+			var attackerFlagshipIndex = options.attacker.race === 'Yin' ?
+				findLastIndex(problem.attacker, unitIs(game.UnitType.Flagship)) + 1
+				: 0;
+			var defenderFlagshipIndex = options.defender.race === 'Yin' ?
+				findLastIndex(problem.defender, unitIs(game.UnitType.Flagship)) + 1
+				: 0;
+
 			//do propagation
 			for (var a = distr.rows - 1; 0 < a; a--) {
 				for (var d = distr.columns - 1; 0 < d; d--) {
@@ -184,13 +195,15 @@
 					}
 
 					// transitions for everything except for attackerInflicted===0&&defenderInflicted===0
-					var attackerInflicted = 0;
-					for (var defenderInflicted = 1; defenderInflicted < transitionMatrix.columns; defenderInflicted++) {
-						distr[a - defenderInflicted][d - attackerInflicted] += transitionMatrix.at(attackerInflicted, defenderInflicted) * k;
-					}
-					for (var attackerInflicted = 1; attackerInflicted < transitionMatrix.rows; attackerInflicted++) {
+					for (var attackerInflicted = 0; attackerInflicted < transitionMatrix.rows; attackerInflicted++) {
 						for (var defenderInflicted = 0; defenderInflicted < transitionMatrix.columns && defenderInflicted <= a; defenderInflicted++) {
-							distr[a - defenderInflicted][d - attackerInflicted] += transitionMatrix.at(attackerInflicted, defenderInflicted) * k;
+							if (attackerInflicted === 0 && defenderInflicted === 0) continue;
+							var targetA = a - defenderInflicted;
+							var targetD = d - attackerInflicted;
+							if (targetA < attackerFlagshipIndex || targetD < defenderFlagshipIndex) {
+								targetA = targetD = 0;
+							}
+							distr[targetA][targetD] += transitionMatrix.at(attackerInflicted, defenderInflicted) * k;
 						}
 					}
 					// all probability mass was moved from distr[a][d]
@@ -404,6 +417,9 @@
 								result.push(problem);
 							}
 						});
+						result.forEach(function (problem) {
+							collapseYinFlagship(problem, options);
+						});
 						return result;
 
 						function getSpaceCannonTransitionsVector(fleetFull, thisSideOptions, opponentSideOptions) {
@@ -411,7 +427,7 @@
 							var spaceCannonFleet = fleetFull.filter(hasSpaceCannon);
 							var vector;
 							if (thisSideOptions.plasmaScoring)
-								vector =  fleetTransitionsVectorWithPlasmaScoring(spaceCannonFleet, game.ThrowType.SpaceCannon, modifier);
+								vector = fleetTransitionsVectorWithPlasmaScoring(spaceCannonFleet, game.ThrowType.SpaceCannon, modifier);
 							else
 								vector = fleetTransitionsVector(spaceCannonFleet, game.ThrowType.SpaceCannon, modifier);
 							return cancelHits(vector, opponentSideOptions.maneuveringJets ? 1 : 0)
@@ -504,6 +520,9 @@
 								defenderTransitions = scale([1], problem.defender.length + 1);
 							applyTransitions(problem, attackerTransitions, defenderTransitions, options);
 						});
+						problemArray.forEach(function (problem) {
+							collapseYinFlagship(problem, options);
+						});
 						return problemArray;
 					},
 				},
@@ -534,6 +553,9 @@
 								}
 							}
 							result.push.apply(result, ensemble.getSubproblems());
+						});
+						result.forEach(function (problem) {
+							collapseYinFlagship(problem, options);
 						});
 						return result;
 
@@ -890,6 +912,29 @@
 			return battleDice !== null; // means flagship present
 		}
 
+		function collapseYinFlagship(problem, options) {
+			if (options.attacker.race === 'Yin' || options.defender.race === 'Yin') {
+				var attackerFlagshipIndex = options.attacker.race === 'Yin' ?
+					findLastIndex(problem.attacker, unitIs(game.UnitType.Flagship))
+					: -1;
+				var defenderFlagshipIndex = options.defender.race === 'Yin' ?
+					findLastIndex(problem.defender, unitIs(game.UnitType.Flagship))
+					: -1;
+				collapse(problem.distribution, attackerFlagshipIndex + 1, problem.distribution.columns);
+				collapse(problem.distribution, problem.distribution.rows, defenderFlagshipIndex + 1);
+			}
+
+			function collapse(distribution, toRow, toColumn) {
+				for (var a = 0; a < toRow; ++a) {
+					for (var d = 0; d < toColumn; ++d) {
+						if (a === 0 && d === 0) continue;
+						distribution[0][0] += distribution[a][d];
+						distribution[a][d] = 0;
+					}
+				}
+			}
+		}
+
 		function unitIs(unitType) {
 			return function (unit) {
 				return unit.type === unitType && !unit.isDamageGhost;
@@ -898,6 +943,14 @@
 
 		function notFighterShip(unit) {
 			return unit.type !== game.UnitType.Fighter && !unit.isDamageGhost;
+		}
+
+		function findLastIndex(array, predicate) {
+			for (var i = array.length - 1; 0 <= i; --i) {
+				if (predicate(array[i]))
+					return i;
+			}
+			return -1;
 		}
 	})();
 })(typeof exports === 'undefined' ? window : exports);

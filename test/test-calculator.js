@@ -1641,6 +1641,67 @@ exports.winnuFlagshipMoraleBoost = function (test) {
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
 
+exports.yinFlagship = function (test) {
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Flagship] = { count: 1 };
+
+	defender[game.UnitType.Destroyer] = { count: 3 };
+
+	var options = { attacker: { race: 'Yin', }, defender: {} };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.yinFlagshipPds = function (test) {
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Flagship] = { count: 1 };
+
+	defender[game.UnitType.Destroyer] = { count: 1 };
+	defender[game.UnitType.PDS] = { count: 1 };
+
+	var options = { attacker: { race: 'Yin', }, defender: {} };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.yinFlagshipAssaultCannon = function (test) {
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Flagship] = { count: 1 };
+
+	defender[game.UnitType.Destroyer] = { count: 3 };
+
+	var options = { attacker: { race: 'Yin', }, defender: { assaultCannon: true } };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.yinFlagshipMoraleBoost = function (test) {
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Flagship] = { count: 1 };
+
+	defender[game.UnitType.Cruiser] = { count: 2 };
+
+	var options = { attacker: { race: 'Yin', }, defender: { moraleBoost: true } };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.yinFlagshipMentakRacial = function (test) {
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Flagship] = { count: 1 };
+
+	defender[game.UnitType.Cruiser] = { count: 3 };
+
+	var options = { attacker: { race: 'Yin', }, defender: { race: 'Mentak' } };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
 /** Test some random battle. Because I couldn't have imagined all edge cases.
  * When this test fails - take input fleets and options from the console and reproduce the problem */
 function chaoticTest(test) {
@@ -1782,3 +1843,4 @@ function group(exports, testGroup) {
 //exports.valkyrieParticleWeave = group(exports, 'valkyrieParticleWeave');
 //exports.gravitonLaser = group(exports, 'gravitonLaser');
 //exports.winnu = group(exports, 'winnuFlagship');
+//exports.yin = group(exports, 'yinFlagship');

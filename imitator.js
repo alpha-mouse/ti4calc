@@ -155,8 +155,12 @@
 					defenderInflicted += defenderAdditional;
 				}
 
-				applyDamage(attacker, defenderInflicted, options.attacker);
-				applyDamage(defender, attackerInflicted, options.defender);
+				var attackerYinFlagshipDied = applyDamage(attacker, defenderInflicted, options.attacker);
+				var defenderYinFlagshipDied = applyDamage(defender, attackerInflicted, options.defender);
+				if (attackerYinFlagshipDied || defenderYinFlagshipDied) {
+					attacker.splice(0);
+					defender.splice(0);
+				}
 
 				if (options.attacker.duraniumArmor)
 					undamageUnit(attacker);
@@ -173,33 +177,37 @@
 			return { attacker: attacker, defender: defender };
 		}
 
+		/** returns true if Yin flagship was killed */
 		function applyDamage(fleet, hits, sideOptions, hittable, softPredicate) {
 			hittable = hittable || function (unit) {
 				return true;
 			};
 			for (var i = fleet.length - 1; 0 <= i && 0 < hits; i--) {
 				if (hittable(fleet[i])) {
-					var killed = fleet.splice(i, 1)[0];
-					if (killed.isDamageGhost) {
-						killed.damageCorporeal.damaged = true;
-						killed.damageCorporeal.damagedThisRound = true;
-						if (sideOptions.nonEuclidean)
-							hits--;
-					}
-					hits--;
+					var killed = hit(i);
+					if (sideOptions.race === 'Yin' && unitIs(game.UnitType.Flagship)(killed))
+						return true;
 				}
 			}
 			if (softPredicate) {
 				for (var i = fleet.length - 1; 0 <= i && 0 < hits; i--) {
-					var killed = fleet.splice(i, 1)[0];
-					if (killed.isDamageGhost) {
-						killed.damageCorporeal.damaged = true;
-						killed.damageCorporeal.damagedThisRound = true;
-						if (sideOptions.nonEuclidean)
-							hits--;
-					}
-					hits--;
+					hit(i);
+					if (sideOptions.race === 'Yin' && unitIs(game.UnitType.Flagship)(killed))
+						return true;
 				}
+			}
+			return false;
+
+			function hit(i) {
+				var killed = fleet.splice(i, 1)[0];
+				if (killed.isDamageGhost) {
+					killed.damageCorporeal.damaged = true;
+					killed.damageCorporeal.damagedThisRound = true;
+					if (sideOptions.nonEuclidean)
+						hits--;
+				}
+				hits--;
+				return killed;
 			}
 		}
 
@@ -274,8 +282,12 @@
 						if (options.defender.maneuveringJets && attackerInflicted > 0)
 							attackerInflicted--;
 
-						applyDamage(attacker, defenderInflicted, options.attacker, gravitonLaserUnitHittable(options.defender), true);
-						applyDamage(defender, attackerInflicted, options.defender, gravitonLaserUnitHittable(options.attacker), true);
+						var attackerYinFlagshipDied = applyDamage(attacker, defenderInflicted, options.attacker, gravitonLaserUnitHittable(options.defender), true);
+						var defenderYinFlagshipDied = applyDamage(defender, attackerInflicted, options.defender, gravitonLaserUnitHittable(options.attacker), true);
+						if (attackerYinFlagshipDied || defenderYinFlagshipDied) {
+							attacker.splice(0);
+							defender.splice(0);
+						}
 
 						function hasSpaceCannon(unit) {
 							return unit.spaceCannonDice !== 0;
@@ -308,8 +320,12 @@
 							attackerInflicted = getInflicted(attacker);
 						if (options.defender.race === 'Mentak')
 							defenderInflicted = getInflicted(defender);
-						applyDamage(attacker, defenderInflicted, options.attacker);
-						applyDamage(defender, attackerInflicted, options.defender);
+						var attackerYinFlagshipDied = applyDamage(attacker, defenderInflicted, options.attacker);
+						var defenderYinFlagshipDied = applyDamage(defender, attackerInflicted, options.defender);
+						if (attackerYinFlagshipDied || defenderYinFlagshipDied) {
+							attacker.splice(0);
+							defender.splice(0);
+						}
 					},
 				},
 				{
@@ -320,10 +336,17 @@
 						var attackerDestroys = options.attacker.assaultCannon && attacker.filter(notFighterShip).length >= 3;
 						var defenderDestroys = options.defender.assaultCannon && defender.filter(notFighterShip).length >= 3;
 
+						var attackerVictim;
+						var defenderVictim;
 						if (attackerDestroys)
-							killOffNonFighter(defender);
+							defenderVictim = killOffNonFighter(defender);
 						if (defenderDestroys)
-							killOffNonFighter(attacker);
+							attackerVictim = killOffNonFighter(attacker);
+						if (options.attacker.race === 'Yin' && attackerVictim && unitIs(game.UnitType.Flagship)(attackerVictim) ||
+							options.defender.race === 'Yin' && defenderVictim && unitIs(game.UnitType.Flagship)(defenderVictim)) {
+							attacker.splice(0);
+							defender.splice(0);
+						}
 
 						function killOffNonFighter(fleet) {
 							for (var i = fleet.length - 1; i >= 0; i--) {
@@ -338,7 +361,7 @@
 											fleet.splice(damageGhostIndex, 1);
 										}
 									}
-									return;
+									return unit;
 								}
 							}
 						}
