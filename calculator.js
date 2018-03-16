@@ -101,7 +101,7 @@
 				winnuFlagship: battleType === game.BattleType.Space,
 			};
 
-			if (attackerBoost || defenderBoost || // boosts apply to the first round only
+			if (attackerBoost !== undefined || defenderBoost !== undefined || // boosts apply to the first round only
 				magenDefenseActivated || // Magen Defence applies to the first round
 				attackerReroll || defenderReroll // re-rolls apply to the first round
 			) {
@@ -120,7 +120,7 @@
 				};
 
 				applyTransitions(problem, attackerTransitionsFactory, defenderTransitionsFactory, options, effectsFlags);
-				if (options.attacker.race === 'L1Z1X' && battleType === game.BattleType.Ground) { // Harrow
+				if (options.attacker.race === game.Race.L1Z1X && battleType === game.BattleType.Ground) { // Harrow
 					prebattleActions.find(function (action) {
 						return action.name === 'Bombardment';
 					}).execute([problem], attackerFull, defenderFull, options)
@@ -129,7 +129,7 @@
 					collapseYinFlagship(problem, options);
 			}
 
-			if (magenDefenseActivated && (attackerBoost || attackerReroll)) {
+			if (magenDefenseActivated && (attackerBoost !== undefined || attackerReroll)) {
 				// damn it, one more round of propagation with altered probabilities, but just for attacker
 				// Harrow ignored, because Magen Defense implies Planetary Shield and no Bombardment.
 				// Yin Flagship ignored, because Magen Defense implies Ground combat
@@ -150,7 +150,7 @@
 			// evaluate probabilities of transitions for each fleet
 			var attackerTransitions = computeFleetTransitions(problem.attacker, game.ThrowType.Battle, boost(battleType, options.attacker, false));
 			var defenderTransitions = computeFleetTransitions(problem.defender, game.ThrowType.Battle, boost(battleType, options.defender, false));
-			if (options.attacker.race === 'L1Z1X' && battleType === game.BattleType.Ground) {
+			if (options.attacker.race === game.Race.L1Z1X && battleType === game.BattleType.Ground) {
 				var harrowTransitions = bombardmentTransitionsVector(attackerFull, defenderFull, options);
 				if (harrowTransitions.length === 1) //means no bombardment
 					harrowTransitions = undefined;
@@ -158,13 +158,13 @@
 			else
 				var harrowTransitions = undefined;
 			var winnuFlagshipRelevant = battleType === game.BattleType.Space &&
-				(options.attacker.race === 'Winnu' && problem.attacker.some(unitIs(game.UnitType.Flagship)) ||
-					options.defender.race === 'Winnu' && problem.defender.some(unitIs(game.UnitType.Flagship)));
+				(options.attacker.race === game.Race.Winnu && problem.attacker.some(unitIs(game.UnitType.Flagship)) ||
+					options.defender.race === game.Race.Winnu && problem.defender.some(unitIs(game.UnitType.Flagship)));
 
-			var attackerFlagshipIndex = options.attacker.race === 'Yin' ?
+			var attackerFlagshipIndex = options.attacker.race === game.Race.Yin ?
 				findLastIndex(problem.attacker, unitIs(game.UnitType.Flagship)) + 1
 				: 0;
-			var defenderFlagshipIndex = options.defender.race === 'Yin' ?
+			var defenderFlagshipIndex = options.defender.race === game.Race.Yin ?
 				findLastIndex(problem.defender, unitIs(game.UnitType.Flagship)) + 1
 				: 0;
 
@@ -173,10 +173,10 @@
 				for (var d = distr.columns - 1; 0 < d; d--) {
 
 					if (winnuFlagshipRelevant) {
-						if (options.attacker.race === 'Winnu' && modifyWinnuFlagship(problem.attacker, problem.defender, d)) {
+						if (options.attacker.race === game.Race.Winnu && modifyWinnuFlagship(problem.attacker, problem.defender, d)) {
 							attackerTransitions = computeFleetTransitions(problem.attacker, game.ThrowType.Battle, boost(battleType, options.attacker, false));
 						}
-						if (options.defender.race === 'Winnu' && modifyWinnuFlagship(problem.defender, problem.attacker, a)) {
+						if (options.defender.race === game.Race.Winnu && modifyWinnuFlagship(problem.defender, problem.attacker, a)) {
 							defenderTransitions = computeFleetTransitions(problem.defender, game.ThrowType.Battle, boost(battleType, options.defender, false));
 						}
 					}
@@ -254,14 +254,29 @@
 			var modifierFunction = typeof modifier === 'function' ? modifier : function (unit) {
 				return modifier;
 			};
-			var singleRoll = [];
-			singleRoll[0] = Math.max(Math.min((battleValue - 1 - modifierFunction(unit)) / game.dieSides, 1), 0);
-			if (reroll)
-				singleRoll[0] = singleRoll[0] * singleRoll[0];
-			singleRoll[1] = 1 - singleRoll[0];
-			var result = singleRoll;
-			for (var i = 1; i < diceCount; i++)
-				result = slideMultiply(result, singleRoll);
+			var singleDie = [];
+			var oneRollMiss = Math.max(Math.min((battleValue - 1 - modifierFunction(unit)) / game.dieSides, 1), 0);
+			if (unit.type === game.UnitType.Flagship && unit.race === game.Race.JolNar && throwType === game.ThrowType.Battle) {
+				var oneRollHit = 1 - oneRollMiss;
+				var oneRollZeroHit = Math.min(0.8, oneRollMiss);
+				var oneRollOneHit = Math.max(0, (oneRollHit - 0.2)); // hit, but not 9 or 0 on the die
+				var oneRollTwoHit = Math.max(0, 0.2 - oneRollHit); // +2 hits, but not a regular hit somehow.
+				var oneRollThreeHit = Math.min(0.2, oneRollHit);
+
+				singleDie[0] = oneRollZeroHit * (reroll ? oneRollZeroHit : 1); // miss both on first roll and reroll
+				singleDie[1] = oneRollOneHit + (reroll ? oneRollMiss * oneRollOneHit : 0); // hit on first roll or hit on reroll
+				singleDie[2] = oneRollTwoHit + (reroll ? oneRollMiss * oneRollTwoHit : 0);
+				singleDie[3] = oneRollThreeHit + (reroll ? oneRollMiss * oneRollThreeHit : 0);
+			} else {
+				singleDie[0] = oneRollMiss;
+				if (reroll)
+					singleDie[0] = singleDie[0] * singleDie[0];
+				singleDie[1] = 1 - singleDie[0];
+			}
+			var result = singleDie;
+			for (var i = 1; i < diceCount; i++) {
+				result = slideMultiply(result, singleDie);
+			}
 
 			return result;
 		}
@@ -337,9 +352,9 @@
 		 * attackerVulnerableFrom and defenderVulnerableFrom could be used*/
 		function applyTransitions(problem, attackerTransitions, defenderTransitions, options, effectsFlags) {
 			var distribution = problem.distribution;
-			if (effectsFlags && !(effectsFlags.winnuFlagship && options.attacker.race === 'Winnu'))
+			if (effectsFlags && !(effectsFlags.winnuFlagship && options.attacker.race === game.Race.Winnu))
 				attackerTransitions = attackerTransitions();
-			if (effectsFlags && !(effectsFlags.winnuFlagship && options.defender.race === 'Winnu'))
+			if (effectsFlags && !(effectsFlags.winnuFlagship && options.defender.race === game.Race.Winnu))
 				defenderTransitions = defenderTransitions();
 			effectsFlags = effectsFlags || {};
 
@@ -351,11 +366,11 @@
 					var computedAttackerTransitions = attackerTransitions;
 					var computedDefenderTransitions = defenderTransitions;
 					if (effectsFlags.winnuFlagship) {
-						if (options.attacker.race === 'Winnu') {
+						if (options.attacker.race === game.Race.Winnu) {
 							modifyWinnuFlagship(problem.attacker, problem.defender, d);
 							computedAttackerTransitions = attackerTransitions();
 						}
-						if (options.defender.race === 'Winnu') {
+						if (options.defender.race === game.Race.Winnu) {
 							modifyWinnuFlagship(problem.defender, problem.attacker, a);
 							computedDefenderTransitions = defenderTransitions();
 						}
@@ -494,7 +509,7 @@
 					appliesTo: game.BattleType.Space,
 					execute: function (problemArray, attackerFull, defenderFull, options) {
 						problemArray.forEach(function (problem) {
-							if (options.attacker.race !== 'Mentak' && options.defender.race !== 'Mentak')
+							if (options.attacker.race !== game.Race.Mentak && options.defender.race !== game.Race.Mentak)
 								return;
 
 							function createMentakTransitions(fleet) {
@@ -512,11 +527,11 @@
 
 							var attackerTransitions;
 							var defenderTransitions;
-							if (options.attacker.race === 'Mentak')
+							if (options.attacker.race === game.Race.Mentak)
 								attackerTransitions = createMentakTransitions(problem.attacker);
 							else
 								attackerTransitions = scale([1], problem.attacker.length + 1);
-							if (options.defender.race === 'Mentak')
+							if (options.defender.race === game.Race.Mentak)
 								defenderTransitions = createMentakTransitions(problem.defender);
 							else
 								defenderTransitions = scale([1], problem.defender.length + 1);
@@ -715,7 +730,7 @@
 		}
 
 		function boost(battleType, sideOptions, firstRound) {
-			var result = 0;
+			var result = undefined;
 			for (var i = 0; i < boosts.length; i++) {
 				if (!firstRound && boosts[i].firstRoundOnly) continue;
 
@@ -765,13 +780,13 @@
 				name: 'Sardakk',
 				firstRoundOnly: false,
 				apply: function (battleType, sideOptions) {
-					return sideOptions.race === 'Sardakk' ? 1 : 0;
+					return sideOptions.race === game.Race.Sardakk ? 1 : 0;
 				}
 			}, {
 				name: 'JolNar',
 				firstRoundOnly: false,
 				apply: function (battleType, sideOptions) {
-					return sideOptions.race === 'JolNar' ? -1 : 0;
+					return sideOptions.race === game.Race.JolNar ? -1 : 0;
 				}
 			},];
 		}
@@ -915,11 +930,11 @@
 		}
 
 		function collapseYinFlagship(problem, options) {
-			if (options.attacker.race === 'Yin' || options.defender.race === 'Yin') {
-				var attackerFlagshipIndex = options.attacker.race === 'Yin' ?
+			if (options.attacker.race === game.Race.Yin || options.defender.race === game.Race.Yin) {
+				var attackerFlagshipIndex = options.attacker.race === game.Race.Yin ?
 					findLastIndex(problem.attacker, unitIs(game.UnitType.Flagship))
 					: -1;
-				var defenderFlagshipIndex = options.defender.race === 'Yin' ?
+				var defenderFlagshipIndex = options.defender.race === game.Race.Yin ?
 					findLastIndex(problem.defender, unitIs(game.UnitType.Flagship))
 					: -1;
 				collapse(problem.distribution, attackerFlagshipIndex + 1, problem.distribution.columns);

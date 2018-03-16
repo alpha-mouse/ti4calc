@@ -5,7 +5,7 @@ var calc = require('../calculator').calculator;
 var imitatorModule = require('../imitator');
 var im = imitatorModule.imitator;
 imitatorModule.imitationIterations = 30000;
-var defaultRace = 'Muaat';
+var defaultRace = game.Race.Muaat;
 var accuracy = 0.01;
 
 function distributionsEqual(distr1, distr2) {
@@ -183,7 +183,7 @@ exports.expansionWithUpgrades = function (test) {
 	fleet[game.UnitType.PDS] = { count: 2, upgraded: true };
 
 	var expansion = game.expandFleet(new Input(fleet, null, game.BattleType.Space, {
-		attacker: { race: 'Sol', riskDirectHit: true, },
+		attacker: { race: game.Race.Sol, riskDirectHit: true, },
 	}), game.BattleSide.attacker);
 
 	var u = game.UnitType;
@@ -228,7 +228,7 @@ exports.expansionMentakFlagship = function (test) {
 
 	var expansion = game.expandFleet(new Input(attacker, defender, game.BattleType.Space, {
 		attacker: { race: defaultRace },
-		defender: { race: 'Mentak' },
+		defender: { race: game.Race.Mentak },
 	}), game.BattleSide.attacker);
 
 	var u = game.UnitType;
@@ -611,7 +611,7 @@ exports.mentakRacial = function (test) {
 	defender[game.UnitType.Cruiser] = { count: 1 };
 	defender[game.UnitType.Destroyer] = { count: 1 };
 
-	var options = { attacker: { race: 'Mentak' }, defender: { race: defaultRace } };
+	var options = { attacker: { race: game.Race.Mentak }, defender: { race: defaultRace } };
 
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 
@@ -630,7 +630,7 @@ exports.mentakRacialWithBarrageAndPds = function (test) {
 	defender[game.UnitType.Destroyer] = { count: 1 };
 	defender[game.UnitType.Fighter] = { count: 1 };
 	defender[game.UnitType.PDS] = { count: 2 };
-	var options = { attacker: { race: 'Mentak' }, defender: { race: defaultRace } };
+	var options = { attacker: { race: game.Race.Mentak }, defender: { race: defaultRace } };
 
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 
@@ -1008,7 +1008,7 @@ exports.gravitonLaserNonEuclidean = function (test) {
 	defender[game.UnitType.PDS] = { count: 3 };
 
 	var options = {
-		attacker: { race: 'Letnev', nonEuclidean: true },
+		attacker: { race: game.Race.Letnev, nonEuclidean: true },
 		defender: { gravitonLaser: true },
 	};
 
@@ -1095,7 +1095,7 @@ exports.plasmaScoringSpaceCannonXxcha = function (test) {
 
 
 	var options = {
-		attacker: { race: 'Xxcha', plasmaScoring: true },
+		attacker: { race: game.Race.Xxcha, plasmaScoring: true },
 		defender: {},
 	};
 
@@ -1378,7 +1378,7 @@ exports.sardakkRacial = function (test) {
 	defender[game.UnitType.Fighter] = { count: 3 };
 	defender[game.UnitType.PDS] = { count: 3 };
 
-	var options = { attacker: { race: 'Sardakk' }, defender: { race: 'Sardakk' } };
+	var options = { attacker: { race: game.Race.Sardakk }, defender: { race: game.Race.Sardakk } };
 
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
@@ -1396,8 +1396,8 @@ exports.sardakkFighterPrototypeMoraleBoost = function (test) {
 	defender[game.UnitType.PDS] = { count: 3 };
 
 	var options = {
-		attacker: { race: 'Sardakk', moraleBoost: true },
-		defender: { race: 'Sardakk', fighterPrototype: true }
+		attacker: { race: game.Race.Sardakk, moraleBoost: true },
+		defender: { race: game.Race.Sardakk, fighterPrototype: true }
 	};
 
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
@@ -1415,7 +1415,19 @@ exports.jolNarRacial = function (test) {
 	defender[game.UnitType.Fighter] = { count: 3 };
 	defender[game.UnitType.PDS] = { count: 3 };
 
-	var options = { attacker: { race: 'JolNar' }, defender: { race: 'JolNar' } };
+	var options = { attacker: { race: game.Race.JolNar }, defender: { race: game.Race.JolNar } };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.jolNarRacialMoraleBoost = function (test) {
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Dreadnought] = { count: 1 };
+
+	defender[game.UnitType.Cruiser] = { count: 1 };
+
+	var options = { attacker: { race: game.Race.JolNar, moraleBoost: true }, defender: { } };
 
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
@@ -1429,7 +1441,7 @@ exports.l1z1xRacialHarrow = function (test) {
 
 	defender[game.UnitType.Ground] = { count: 2 };
 
-	var options = { attacker: { race: 'L1Z1X' }, defender: {} };
+	var options = { attacker: { race: game.Race.L1Z1X }, defender: {} };
 
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
@@ -1443,7 +1455,7 @@ exports.l1z1xRacialHarrowMoraleBoost = function (test) {
 
 	defender[game.UnitType.Ground] = { count: 2 };
 
-	var options = { attacker: { race: 'L1Z1X' }, defender: { moraleBoost: true } };
+	var options = { attacker: { race: game.Race.L1Z1X }, defender: { moraleBoost: true } };
 
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
@@ -1457,7 +1469,7 @@ exports.l1z1xRacialHarrowBunker = function (test) {
 
 	defender[game.UnitType.Ground] = { count: 4 };
 
-	var options = { attacker: { race: 'L1Z1X' }, defender: { bunker: true } };
+	var options = { attacker: { race: game.Race.L1Z1X }, defender: { bunker: true } };
 
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
@@ -1474,7 +1486,7 @@ exports.l1z1xRacialHarrowMagenDefense = function (test) {
 	defender[game.UnitType.Ground] = { count: 4 };
 	defender[game.UnitType.PDS] = { count: 1 };
 
-	var options = { attacker: { race: 'L1Z1X' }, defender: { magenDefense: true } };
+	var options = { attacker: { race: game.Race.L1Z1X }, defender: { magenDefense: true } };
 
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
@@ -1488,7 +1500,7 @@ exports.l1z1xRacialHarrowPlasmaScoring = function (test) {
 
 	defender[game.UnitType.Ground] = { count: 4 };
 
-	var options = { attacker: { race: 'L1Z1X', plasmaScoring: true }, defender: {} };
+	var options = { attacker: { race: game.Race.L1Z1X, plasmaScoring: true }, defender: {} };
 
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
@@ -1501,7 +1513,7 @@ exports.l4Disruptors = function (test) {
 	defender[game.UnitType.Ground] = { count: 2 };
 	defender[game.UnitType.PDS] = { count: 2 };
 
-	var options = { attacker: { race: 'Letnev', l4Disruptors: true }, defender: {} };
+	var options = { attacker: { race: game.Race.Letnev, l4Disruptors: true }, defender: {} };
 
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
@@ -1513,7 +1525,7 @@ exports.letnevRacialNonEuclideanSimple = function (test) {
 
 	defender[game.UnitType.Dreadnought] = { count: 3 };
 
-	var options = { attacker: { race: 'Letnev', nonEuclidean: true }, defender: {} };
+	var options = { attacker: { race: game.Race.Letnev, nonEuclidean: true }, defender: {} };
 
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
@@ -1526,7 +1538,7 @@ exports.letnevRacialNonEuclideanDontRiskDirectHit = function (test) {
 
 	defender[game.UnitType.Dreadnought] = { count: 3 };
 
-	var options = { attacker: { race: 'Letnev', nonEuclidean: true, riskDirectHit: false }, defender: {} };
+	var options = { attacker: { race: game.Race.Letnev, nonEuclidean: true, riskDirectHit: false }, defender: {} };
 
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
@@ -1540,7 +1552,7 @@ exports.letnevRacialNonEuclideanMoraleBoost = function (test) {
 	defender[game.UnitType.Dreadnought] = { count: 3 };
 
 	var options = {
-		attacker: { race: 'Letnev', nonEuclidean: true, riskDirectHit: false },
+		attacker: { race: game.Race.Letnev, nonEuclidean: true, riskDirectHit: false },
 		defender: { moraleBoost: true }
 	};
 
@@ -1555,7 +1567,7 @@ exports.sardakkRacialValkyrieParticleWeave = function (test) {
 
 	defender[game.UnitType.Ground] = { count: 1 };
 
-	var options = { attacker: { race: 'Sardakk', valkyrieParticleWeave: true }, defender: {} };
+	var options = { attacker: { race: game.Race.Sardakk, valkyrieParticleWeave: true }, defender: {} };
 
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
@@ -1570,8 +1582,8 @@ exports.sardakkRacialValkyrieParticleWeaveBoth = function (test) {
 
 	// yes, this cannot happen in the actual game, but anyway
 	var options = {
-		attacker: { race: 'Sardakk', valkyrieParticleWeave: true },
-		defender: { race: 'Sardakk', valkyrieParticleWeave: true }
+		attacker: { race: game.Race.Sardakk, valkyrieParticleWeave: true },
+		defender: { race: game.Race.Sardakk, valkyrieParticleWeave: true }
 	};
 
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
@@ -1586,7 +1598,7 @@ exports.sardakkRacialValkyrieParticleWeaveHarrow = function (test) {
 
 	defender[game.UnitType.Ground] = { count: 3 };
 
-	var options = { attacker: { race: 'L1Z1X', }, defender: { race: 'Sardakk', valkyrieParticleWeave: true } };
+	var options = { attacker: { race: game.Race.L1Z1X, }, defender: { race: game.Race.Sardakk, valkyrieParticleWeave: true } };
 
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
@@ -1600,7 +1612,7 @@ exports.sardakkRacialValkyrieParticleWeaveMagenDefense = function (test) {
 	defender[game.UnitType.Ground] = { count: 1 };
 	defender[game.UnitType.PDS] = { count: 1 };
 
-	var options = { attacker: { race: 'Sardakk', valkyrieParticleWeave: true }, defender: { magenDefense: true } };
+	var options = { attacker: { race: game.Race.Sardakk, valkyrieParticleWeave: true }, defender: { magenDefense: true } };
 
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
@@ -1613,7 +1625,7 @@ exports.sardakkRacialValkyrieParticleWeaveSpace = function (test) {
 
 	defender[game.UnitType.Cruiser] = { count: 1 };
 
-	var options = { attacker: { race: 'Sardakk', valkyrieParticleWeave: true }, defender: {} };
+	var options = { attacker: { race: game.Race.Sardakk, valkyrieParticleWeave: true }, defender: {} };
 
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
@@ -1625,7 +1637,7 @@ exports.winnuFlagship = function (test) {
 
 	defender[game.UnitType.Destroyer] = { count: 1 };
 
-	var options = { attacker: { race: 'Winnu', }, defender: {} };
+	var options = { attacker: { race: game.Race.Winnu, }, defender: {} };
 
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
@@ -1640,7 +1652,7 @@ exports.winnuFlagshipMany = function (test) {
 	defender[game.UnitType.Destroyer] = { count: 3 };
 	defender[game.UnitType.Fighter] = { count: 2 };
 
-	var options = { attacker: { race: 'Winnu', }, defender: {} };
+	var options = { attacker: { race: game.Race.Winnu, }, defender: {} };
 
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
@@ -1655,7 +1667,7 @@ exports.winnuFlagshipMoraleBoost = function (test) {
 	defender[game.UnitType.Destroyer] = { count: 3 };
 	defender[game.UnitType.Fighter] = { count: 2 };
 
-	var options = { attacker: { race: 'Winnu', moraleBoost: true }, defender: {} };
+	var options = { attacker: { race: game.Race.Winnu, moraleBoost: true }, defender: {} };
 
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
@@ -1667,7 +1679,7 @@ exports.yinFlagship = function (test) {
 
 	defender[game.UnitType.Destroyer] = { count: 3 };
 
-	var options = { attacker: { race: 'Yin', }, defender: {} };
+	var options = { attacker: { race: game.Race.Yin, }, defender: {} };
 
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
@@ -1680,7 +1692,7 @@ exports.yinFlagshipPds = function (test) {
 	defender[game.UnitType.Destroyer] = { count: 1 };
 	defender[game.UnitType.PDS] = { count: 1 };
 
-	var options = { attacker: { race: 'Yin', }, defender: {} };
+	var options = { attacker: { race: game.Race.Yin, }, defender: {} };
 
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
@@ -1692,7 +1704,7 @@ exports.yinFlagshipAssaultCannon = function (test) {
 
 	defender[game.UnitType.Destroyer] = { count: 3 };
 
-	var options = { attacker: { race: 'Yin', }, defender: { assaultCannon: true } };
+	var options = { attacker: { race: game.Race.Yin, }, defender: { assaultCannon: true } };
 
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
@@ -1704,7 +1716,7 @@ exports.yinFlagshipMoraleBoost = function (test) {
 
 	defender[game.UnitType.Cruiser] = { count: 2 };
 
-	var options = { attacker: { race: 'Yin', }, defender: { moraleBoost: true } };
+	var options = { attacker: { race: game.Race.Yin, }, defender: { moraleBoost: true } };
 
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
@@ -1716,7 +1728,31 @@ exports.yinFlagshipMentakRacial = function (test) {
 
 	defender[game.UnitType.Cruiser] = { count: 3 };
 
-	var options = { attacker: { race: 'Yin', }, defender: { race: 'Mentak' } };
+	var options = { attacker: { race: game.Race.Yin, }, defender: { race: game.Race.Mentak } };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.jolNarFlagship = function (test) {
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Flagship] = { count: 1 };
+
+	defender[game.UnitType.Destroyer] = { count: 3 };
+
+	var options = { attacker: { race: game.Race.JolNar, }, defender: { } };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.jolNarFlagshipMoraleBoost = function (test) {
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Flagship] = { count: 1 };
+
+	defender[game.UnitType.Destroyer] = { count: 3 };
+
+	var options = { attacker: { race: game.Race.JolNar, moraleBoost: true }, defender: { } };
 
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
@@ -1739,10 +1775,10 @@ function chaoticTest(test) {
 
 	var options = {
 		attacker: {
-			race: pickRandom(Object.keys(game.Races)),
+			race: pickRandom(Object.keys(game.Race)),
 		},
 		defender: {
-			race: pickRandom(Object.keys(game.Races)),
+			race: pickRandom(Object.keys(game.Race)),
 		},
 	};
 
@@ -1875,3 +1911,4 @@ function group(exports, testGroup) {
 //exports.gravitonLaser = group(exports, 'gravitonLaser');
 //exports.winnu = group(exports, 'winnuFlagship');
 //exports.yin = group(exports, 'yinFlagship');
+//exports.jolNar = group(exports, 'jolNar');

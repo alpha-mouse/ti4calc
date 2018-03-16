@@ -114,7 +114,7 @@
 				!attackerFull.some(unitIs(game.UnitType.WarSun));
 
 			function winnuFlagships(fleet, sideOptions, opposingFleet) {
-				if (battleType === game.BattleType.Space && sideOptions.race === 'Winnu') {
+				if (battleType === game.BattleType.Space && sideOptions.race === game.Race.Winnu) {
 					var battleDice = opposingFleet.filter(notFighterShip).length;
 					// In the game there could be only one flagship, but why the hell not)
 					fleet.filter(unitIs(game.UnitType.Flagship)).forEach(function (flagship) {
@@ -171,7 +171,7 @@
 				if (options.defender.duraniumArmor)
 					undamageUnit(defender);
 
-				if (options.attacker.race === 'L1Z1X' && battleType === game.BattleType.Ground) { // Harrow
+				if (options.attacker.race === game.Race.L1Z1X && battleType === game.BattleType.Ground) { // Harrow
 					prebattleActions.find(function (a) {
 						return a.name === 'Bombardment';
 					}).execute(attacker, defender, attackerFull, defenderFull, options);
@@ -189,14 +189,14 @@
 			for (var i = fleet.length - 1; 0 <= i && 0 < hits; i--) {
 				if (hittable(fleet[i])) {
 					var killed = hit(i);
-					if (sideOptions.race === 'Yin' && unitIs(game.UnitType.Flagship)(killed))
+					if (sideOptions.race === game.Race.Yin && unitIs(game.UnitType.Flagship)(killed))
 						return true;
 				}
 			}
 			if (softPredicate) {
 				for (var i = fleet.length - 1; 0 <= i && 0 < hits; i--) {
 					hit(i);
-					if (sideOptions.race === 'Yin' && unitIs(game.UnitType.Flagship)(killed))
+					if (sideOptions.race === game.Race.Yin && unitIs(game.UnitType.Flagship)(killed))
 						return true;
 				}
 			}
@@ -225,10 +225,20 @@
 				var unit = fleet[i];
 				var battleValue = unit[throwType + 'Value'];
 				var diceCount = unit[throwType + 'Dice'];
-				for (var die = 0; die < diceCount; ++die)
-					if (battleValue <= rollDie() + modifierFunction(unit)
-						|| reroll && (battleValue <= rollDie() + modifierFunction(unit)))
+				for (var die = 0; die < diceCount; ++die) {
+					var rollResult = rollDie();
+					if (unit.type === game.UnitType.Flagship && unit.race === game.Race.JolNar && 8 < rollResult)
+						totalRoll += 2;
+					if (battleValue <= rollResult + modifierFunction(unit))
 						totalRoll++;
+					else if (reroll) {
+						rollResult = rollDie();
+						if (unit.type === game.UnitType.Flagship && unit.race === game.Race.JolNar && 8 < rollResult)
+							totalRoll += 2;
+						if (battleValue <= rollResult + modifierFunction(unit))
+							totalRoll++;
+					}
+				}
 			}
 			return totalRoll;
 		}
@@ -320,9 +330,9 @@
 
 						var attackerInflicted = 0;
 						var defenderInflicted = 0;
-						if (options.attacker.race === 'Mentak')
+						if (options.attacker.race === game.Race.Mentak)
 							attackerInflicted = getInflicted(attacker);
-						if (options.defender.race === 'Mentak')
+						if (options.defender.race === game.Race.Mentak)
 							defenderInflicted = getInflicted(defender);
 						var attackerYinFlagshipDied = applyDamage(attacker, defenderInflicted, options.attacker);
 						var defenderYinFlagshipDied = applyDamage(defender, attackerInflicted, options.defender);
@@ -346,8 +356,8 @@
 							defenderVictim = killOffNonFighter(defender);
 						if (defenderDestroys)
 							attackerVictim = killOffNonFighter(attacker);
-						if (options.attacker.race === 'Yin' && attackerVictim && unitIs(game.UnitType.Flagship)(attackerVictim) ||
-							options.defender.race === 'Yin' && defenderVictim && unitIs(game.UnitType.Flagship)(defenderVictim)) {
+						if (options.attacker.race === game.Race.Yin && attackerVictim && unitIs(game.UnitType.Flagship)(attackerVictim) ||
+							options.defender.race === game.Race.Yin && defenderVictim && unitIs(game.UnitType.Flagship)(defenderVictim)) {
 							attacker.splice(0);
 							defender.splice(0);
 						}
@@ -504,12 +514,12 @@
 			}, {
 				name: 'Sardakk',
 				apply: function (battleType, round, sideOptions) {
-					return sideOptions.race === 'Sardakk' ? 1 : 0;
+					return sideOptions.race === game.Race.Sardakk ? 1 : 0;
 				}
 			}, {
 				name: 'JolNar',
 				apply: function (battleType, round, sideOptions) {
-					return sideOptions.race === 'JolNar' ? -1 : 0;
+					return sideOptions.race === game.Race.JolNar ? -1 : 0;
 				}
 			},];
 		}

@@ -33,7 +33,27 @@
 		PDS: 'P',
 	};
 
-	root.Races = {
+	root.Race = {
+		Sardakk: 'Sardakk',
+		JolNar: 'JolNar',
+		Winnu: 'Winnu',
+		Xxcha: 'Xxcha',
+		Yin: 'Yin',
+		Yssaril: 'Yssaril',
+		Sol: 'Sol',
+		Creuss: 'Creuss',
+		L1Z1X: 'L1Z1X',
+		Mentak: 'Mentak',
+		Naalu: 'Naalu',
+		Virus: 'Virus',
+		Arborec: 'Arborec',
+		Letnev: 'Letnev',
+		Saar: 'Saar',
+		Muaat: 'Muaat',
+		Hacan: 'Hacan',
+	};
+
+	root.RacesDisplayNames = {
 		Sardakk: 'Sardakk N\'orr',
 		JolNar: 'Jol-Nar',
 		Winnu: 'Winnu',
@@ -195,6 +215,7 @@
 				sustainDamageHits: 1,
 				battleValue: 6, //todo special racial ability
 				battleDice: 2,
+				race: root.Race.Sardakk,
 			}),
 			Dreadnought: new root.UnitInfo(UnitType.Dreadnought, {
 				sustainDamageHits: 1,
@@ -208,13 +229,15 @@
 				sustainDamageHits: 1,
 				battleValue: 6, //todo special racial ability
 				battleDice: 2,
+				race: root.Race.JolNar,
 			}),
 		},
 		Winnu: {
 			Flagship: new root.UnitInfo(UnitType.Flagship, {
 				sustainDamageHits: 1,
-				battleValue: 7, //todo special racial ability
+				battleValue: 7,
 				battleDice: undefined,
+				race: root.Race.Winnu,
 			}),
 		},
 		Xxcha: {
@@ -224,13 +247,15 @@
 				battleDice: 2,
 				spaceCannonValue: 5,
 				spaceCannonDice: 3,
+				race: root.Race.Xxcha,
 			}),
 		},
 		Yin: {
 			Flagship: new root.UnitInfo(UnitType.Flagship, {
 				sustainDamageHits: 1,
-				battleValue: 9, //todo special racial ability
+				battleValue: 9,
 				battleDice: 2,
+				race: root.Race.Yin,
 			}),
 		},
 		Yssaril: {
@@ -238,6 +263,7 @@
 				sustainDamageHits: 1,
 				battleValue: 5,
 				battleDice: 2,
+				race: root.Race.Yssaril,
 			}),
 		},
 		Sol: {
@@ -245,6 +271,7 @@
 				sustainDamageHits: 1,
 				battleValue: 5,
 				battleDice: 2,
+				race: root.Race.Sol,
 			}),
 			Ground: new root.UnitInfo(UnitType.Ground, {
 				battleValue: 7,
@@ -255,6 +282,7 @@
 				sustainDamageHits: 1,
 				battleValue: 5,
 				battleDice: 1,
+				race: root.Race.Creuss,
 			}),
 		},
 		L1z1x: {
@@ -262,13 +290,15 @@
 				sustainDamageHits: 1,
 				battleValue: 5, //todo special racial ability
 				battleDice: 2,
+				race: root.Race.L1Z1X,
 			}),
 		},
 		Mentak: {
 			Flagship: new root.UnitInfo(UnitType.Flagship, {
 				sustainDamageHits: 1,
-				battleValue: 7, //todo special racial ability
+				battleValue: 7,
 				battleDice: 2,
+				race: root.Race.Mentak,
 			}),
 		},
 		Naalu: {
@@ -276,6 +306,7 @@
 				sustainDamageHits: 1,
 				battleValue: 9, //todo special racial ability
 				battleDice: 2,
+				race: root.Race.Naalu,
 			}),
 			Fighter: new root.UnitInfo(UnitType.Fighter, {
 				battleValue: 8,
@@ -286,6 +317,7 @@
 				sustainDamageHits: 1,
 				battleValue: 9, //todo special racial ability
 				battleDice: 2,
+				race: root.Race.Virus,
 			}),
 		},
 		Arborec: {
@@ -293,6 +325,7 @@
 				sustainDamageHits: 1,
 				battleValue: 7,
 				battleDice: 2,
+				race: root.Race.Arborec,
 			}),
 		},
 		Letnev: {
@@ -302,6 +335,7 @@
 				battleDice: 2,
 				bombardmentValue: 5,
 				bombardmentDice: 3,
+				race: root.Race.Letnev,
 			}),
 		},
 		Saar: {
@@ -311,6 +345,7 @@
 				battleDice: 2,
 				barrageValue: 6,
 				barrageDice: 4,
+				race: root.Race.Saar,
 			}),
 		},
 		Muaat: {
@@ -318,6 +353,7 @@
 				sustainDamageHits: 1,
 				battleValue: 5,
 				battleDice: 2,
+				race: root.Race.Muaat,
 			}),
 		},
 		Hacan: {
@@ -325,6 +361,7 @@
 				sustainDamageHits: 1,
 				battleValue: 7, //todo special racial ability
 				battleDice: 2,
+				race: root.Race.Hacan,
 			}),
 		},
 	};
@@ -386,21 +423,13 @@
 		}
 	};
 
-	/** Make an array of units in their reversed order of dying
-	 * @param {string} race - one of 'Sardakk', 'JolNar', etc.
-	 * @param {object} counters - object of the form
-	 *     { Flagship: { count: 0, upgraded: false },
-	 *       ..
-	 *       Cruiser: { count: 3, upgraded: true }
-	 *       ..
-	 *     }
-	 */
+	/** Make an array of units in their reversed order of dying */
 	root.expandFleet = function (input, battleSide) {
 		var options = input.options || { attacker: {}, defender: {} };
 
 		var standardUnits = Object.assign({}, root.StandardUnits, root.RaceSpecificUnits[options[battleSide].race]);
 		var upgradedUnits = Object.assign({}, root.StandardUpgrades, root.RaceSpecificUpgrades[options[battleSide].race]);
-		var opponentMentakWithFlagship = input.battleType === root.BattleType.Space && options[root.BattleSide.opponent(battleSide)].race === 'Mentak' &&
+		var opponentMentakWithFlagship = input.battleType === root.BattleType.Space && options[root.BattleSide.opponent(battleSide)].race === root.Race.Mentak &&
 			(input[root.BattleSide.opponent(battleSide) + 'Units'][UnitType.Flagship] || { count: 0 }).count !== 0;
 
 		var result = [];
