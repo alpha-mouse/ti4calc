@@ -56,8 +56,8 @@ exports.expansionDefault = function (test) {
 	fleet[unit.WarSun] = { count: 1 };
 	fleet[unit.Dreadnought] = { count: 1 };
 	fleet[unit.Cruiser] = { count: 1 };
-	fleet[unit.Destroyer] = { count: 1 };
 	fleet[unit.Carrier] = { count: 1 };
+	fleet[unit.Destroyer] = { count: 1 };
 	fleet[unit.Ground] = { count: 1 };
 	fleet[unit.Fighter] = { count: 1 };
 	fleet[unit.PDS] = { count: 1 };
@@ -72,8 +72,8 @@ exports.expansionDefault = function (test) {
 		units[unit.WarSun],
 		units[unit.Dreadnought],
 		units[unit.Cruiser],
-		units[unit.Destroyer],
 		units[unit.Carrier],
+		units[unit.Destroyer],
 		units[unit.Fighter],
 		units[unit.Ground],
 		units[unit.PDS],

@@ -12,8 +12,8 @@
 		WarSun: 'WarSun',
 		Dreadnought: 'Dreadnought',
 		Cruiser: 'Cruiser',
-		Destroyer: 'Destroyer',
 		Carrier: 'Carrier',
+		Destroyer: 'Destroyer',
 		Fighter: 'Fighter',
 		Ground: 'Ground',
 		PDS: 'PDS',
@@ -165,13 +165,13 @@
 		Cruiser: new root.UnitInfo(UnitType.Cruiser, {
 			battleValue: 7,
 		}),
+		Carrier: new root.UnitInfo(UnitType.Carrier, {
+			battleValue: 9,
+		}),
 		Destroyer: new root.UnitInfo(UnitType.Destroyer, {
 			battleValue: 9,
 			barrageValue: 9,
 			barrageDice: 2,
-		}),
-		Carrier: new root.UnitInfo(UnitType.Carrier, {
-			battleValue: 9,
 		}),
 		Fighter: new root.UnitInfo(UnitType.Fighter, {
 			battleValue: 9,
@@ -352,12 +352,12 @@
 
 	root.RaceSpecificUpgrades = {
 		Sol: {
-			Ground: new root.UnitInfo(UnitType.Ground, {
-				battleValue: 6,
-			}),
 			Carrier: new root.UnitInfo(UnitType.Carrier, {
 				sustainDamageHits: 1,
 				battleValue: 9,
+			}),
+			Ground: new root.UnitInfo(UnitType.Ground, {
+				battleValue: 6,
 			}),
 		},
 		L1z1x: {

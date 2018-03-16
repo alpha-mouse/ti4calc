@@ -168,12 +168,12 @@
 				<td>Cruiser</td>
 			</tr>
 			<tr>
-				<td class="letter">+</td>
-				<td>Destroyer</td>
-			</tr>
-			<tr>
 				<td class="letter">V</td>
 				<td>Carrier</td>
+			</tr>
+			<tr>
+				<td class="letter">+</td>
+				<td>Destroyer</td>
 			</tr>
 			<tr>
 				<td class="letter">F</td>
@@ -214,7 +214,7 @@
 			<li><strong>Ghosts of Creuss</strong> <strong>Dimensional Splicer</strong> technology,</li>
 			<li><strong>Emirates of Hacan</strong> flagship ability adding 1 to die result,</li>
 		</ul>
-		<p>Some other notes:</p>
+		<p>Some other notes and limitations:</p>
 		<ul>
 			<li>If defender activates <strong>Magen Defense</strong> Grid while <strong>Morale Boost</strong> is selected for the attacker,
 				card effect is applied to the second round. Fire Team is handled the same way,
@@ -223,7 +223,10 @@
 				When "Risk Direct Hit" is not selected, damageable units take hits only after all "cheaper" units are dead.
 				This is questionable, but I don't know any better clear-cut approach,
 			</li>
-			<li>When <strong>Duranium Armor</strong> is active, battles are calculated much slower, as another algorithm is used.
+			<li>When <strong>Duranium Armor</strong> is active, battles are calculated much slower, as another algorithm is used.</li>
+			<li>As it is implemented at the moment, when <strong>Graviton Laser</strong> is active, PDS might kill a
+				Carrier, because it's "less valuable" than other units. But if there are Fighters in this Carrier, they
+				participate in the battle, though according to the rules, they should have died before the battle.
 			</li>
 		</ul>
 		</p>
