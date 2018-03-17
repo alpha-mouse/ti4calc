@@ -22,31 +22,23 @@
 		function estimateProbabilities(input) {
 			var battleType = input.battleType;
 			var options = input.options || { attacker: {}, defender: {} };
-			var attacker = game.expandFleet(input, game.BattleSide.attacker);
-			var defender = game.expandFleet(input, game.BattleSide.defender);
 
 			options = options || { attacker: {}, defender: {} };
 
 			var result = new structs.EmpiricalDistribution();
-			var finalAttacker = game.filterFleet(attacker, battleType, options.attacker)
+			var finalAttacker = game.expandFleet(input, game.BattleSide.attacker).filterForBattle()
 				.map(function (unit) {
 					return [unit.shortType];
 				});
-			var finalDefender = game.filterFleet(defender, battleType, options.defender)
+			var finalDefender = game.expandFleet(input, game.BattleSide.defender).filterForBattle()
 				.map(function (unit) {
 					return [unit.shortType];
 				});
 			for (var i = 0; i < root.imitationIterations; ++i) {
-				var tmpAttacker = attacker.map(function (unit) {
-					return unit.clone();
-				});
-				var tmpDefender = defender.map(function (unit) {
-					return unit.clone();
-				});
-				relinkDamageGhosts(tmpAttacker, attacker);
-				relinkDamageGhosts(tmpDefender, defender);
+				var attacker = game.expandFleet(input, game.BattleSide.attacker);
+				var defender = game.expandFleet(input, game.BattleSide.defender);
 
-				var survivors = imitateBattle(tmpAttacker, tmpDefender, battleType, options);
+				var survivors = imitateBattle(attacker, defender, battleType, options);
 
 				if (survivors.attacker.length !== 0) {
 					result.increment(-survivors.attacker.length);
@@ -83,21 +75,11 @@
 					});
 				}),
 			};
-
-			function relinkDamageGhosts(cloneFleet, originalFleet) {
-				for (var i = 0; i < cloneFleet.length; i++) {
-					var unit = cloneFleet[i];
-					if (unit.isDamageGhost) {
-						var corporealIndex = originalFleet.indexOf(unit.damageCorporeal);
-						unit.damageCorporeal = cloneFleet[corporealIndex];
-					}
-				}
-			}
 		}
 
 		function imitateBattle(attackerFull, defenderFull, battleType, options) {
-			var attacker = game.filterFleet(attackerFull, battleType, options.attacker);
-			var defender = game.filterFleet(defenderFull, battleType, options.defender);
+			var attacker = attackerFull.filterForBattle();
+			var defender = defenderFull.filterForBattle();
 
 			for (var i = 0; i < prebattleActions.length; i++) {
 				var action = prebattleActions[i];
@@ -261,7 +243,7 @@
 						if (!somethingRepaired) {
 							var damageGhost = unit.toDamageGhost();
 							// find proper place for the new damage ghost
-							var index = structs.binarySearch(fleet, damageGhost, fleet.unitComparer);
+							var index = structs.binarySearch(fleet, damageGhost, fleet.comparer);
 							if (index < 0)
 								index = -index - 1;
 							fleet.splice(index, 0, damageGhost);

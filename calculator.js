@@ -25,8 +25,8 @@
 			var attackerFull = game.expandFleet(input, game.BattleSide.attacker);
 			var defenderFull = game.expandFleet(input, game.BattleSide.defender);
 
-			var attacker = game.filterFleet(attackerFull, battleType, options.attacker);
-			var defender = game.filterFleet(defenderFull, battleType, options.defender);
+			var attacker = attackerFull.filterForBattle();
+			var defender = defenderFull.filterForBattle();
 
 			//use upper left as an origin
 			//initially all the probability mass is concentrated at both fleets being unharmed

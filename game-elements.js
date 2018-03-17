@@ -426,11 +426,16 @@
 	/** Make an array of units in their reversed order of dying */
 	root.expandFleet = function (input, battleSide) {
 		var options = input.options || { attacker: {}, defender: {} };
+		var battleType = input.battleType;
+		var thisSideOptions = options[battleSide];
+		var opponentSide = root.BattleSide.opponent(battleSide);
+		var opponentSideOptions = options[opponentSide];
 
-		var standardUnits = Object.assign({}, root.StandardUnits, root.RaceSpecificUnits[options[battleSide].race]);
-		var upgradedUnits = Object.assign({}, root.StandardUpgrades, root.RaceSpecificUpgrades[options[battleSide].race]);
-		var opponentMentakWithFlagship = input.battleType === root.BattleType.Space && options[root.BattleSide.opponent(battleSide)].race === root.Race.Mentak &&
-			(input[root.BattleSide.opponent(battleSide) + 'Units'][UnitType.Flagship] || { count: 0 }).count !== 0;
+		var standardUnits = Object.assign({}, root.StandardUnits, root.RaceSpecificUnits[thisSideOptions.race]);
+		var upgradedUnits = Object.assign({}, root.StandardUpgrades, root.RaceSpecificUpgrades[thisSideOptions.race]);
+
+		var opponentMentakFlagship = battleType === root.BattleType.Space && opponentSideOptions.race === root.Race.Mentak &&
+			(input[opponentSide + 'Units'][UnitType.Flagship] || { count: 0 }).count !== 0;
 
 		var result = [];
 		var damageGhosts = [];
@@ -440,74 +445,59 @@
 				var unit = (counter.upgraded ? upgradedUnits : standardUnits)[unitType];
 				var addedUnit = unit.clone();
 				result.push(addedUnit);
-				if (unit.sustainDamageHits > 0 && !opponentMentakWithFlagship) {
+				if (unit.sustainDamageHits > 0 && !opponentMentakFlagship) {
 					damageGhosts.push(addedUnit.toDamageGhost());
 				}
 			}
-			if (!options[battleSide].riskDirectHit) {
+			if (!thisSideOptions.riskDirectHit) {
 				result = result.concat(damageGhosts);
 				damageGhosts = [];
 			}
 		}
 		result = result.concat(damageGhosts);
-		if (input.battleType === root.BattleType.Space && options[battleSide].experimentalBattlestation)
-			result.push(root.StandardUnits.ExperimentalBattlestation);
-		return result;
-	};
 
-	/** Check whether the unit can receive hits in the specific battle type.
-	 * E.g. Ground Forces don't receive hits in Space Battle */
-	root.belongsToBattle = function (unit, battleType, sideOptions, fleet) {
+		var ships = createShips();
+		var virusFlagship = battleType === root.BattleType.Space && thisSideOptions.race === root.Race.Virus &&
+			(input[battleSide + 'Units'][UnitType.Flagship] || { count: 0 }).count !== 0;
+		var naaluFlagship = battleType === root.BattleType.Ground && thisSideOptions.race === root.Race.Naalu &&
+			(input[battleSide + 'Units'][UnitType.Flagship] || { count: 0 }).count !== 0;
 
-		var ships = [
-			UnitType.Flagship,
-			UnitType.WarSun,
-			UnitType.Dreadnought,
-			UnitType.Cruiser,
-			UnitType.Destroyer,
-			UnitType.Carrier,
-			UnitType.Fighter,
-		];
-
-		var virusFlagship = battleType === root.BattleType.Space && sideOptions.race === root.Race.Virus &&
-			fleet.some(function (unit) {
-				return unit.type === root.UnitType.Flagship;
-			});
-		var naaluFlagship = battleType === root.BattleType.Ground && sideOptions.race === root.Race.Naalu &&
-			fleet.some(function (unit) {
-				return unit.type === root.UnitType.Flagship;
-			});
-
-		if (battleType === root.BattleType.Space)
-			return ships.indexOf(unit.type) >= 0 || virusFlagship && unit.type === root.UnitType.Ground;
-		else //battleType === root.BattleType.Ground
-			return unit.type === UnitType.Ground || naaluFlagship && unit.type === root.UnitType.Fighter;
-	};
-
-	root.filterFleet = function (fleet, battleType, sideOptions) {
-		var filtered = fleet.filter(function (unit) {
-			return root.belongsToBattle(unit, battleType, sideOptions, fleet);
-		});
-
-		var virusFlagship = battleType === root.BattleType.Space && sideOptions.race === root.Race.Virus &&
-			fleet.some(function (unit) {
-				return unit.type === root.UnitType.Flagship;
-			});
-		var naaluFlagship = battleType === root.BattleType.Ground && sideOptions.race === root.Race.Naalu &&
-			fleet.some(function (unit) {
-				return unit.type === root.UnitType.Flagship;
-			});
 		var unitOrder = createUnitOrder(virusFlagship);
+		var naaluGoundUnitOrder = {};
+		naaluGoundUnitOrder[UnitType.Ground] = 1;
+		naaluGoundUnitOrder[UnitType.Fighter] = 2;
 		var comparer;
+		var vipGround;
 		if (virusFlagship)
 			comparer = defaultComparer;
-		else if (naaluFlagship)
+		else if (naaluFlagship) {
+			// in case Fighters are stronger than Ground Forces, I'd like Ground Forces to die first, then sacrifice the
+			// Fighters. But, Fighters cannot take control of the planet, so I'd like to save one Ground Force
+			vipGround = (input[battleSide + 'Units'][UnitType.Fighter] || {}).upgraded &&
+				!(input[battleSide + 'Units'][UnitType.Ground] || {}).upgraded &&
+				result.find(function (unit) { return unit.type === UnitType.Ground; });
 			comparer = naaluComparer;
+		}
 		else
 			comparer = defaultComparer;
-		filtered.comparer = comparer;
-		filtered.sort(filtered.comparer);
-		return filtered;
+		result.sort(comparer);
+		if (battleType === root.BattleType.Space && thisSideOptions.experimentalBattlestation)
+			result.push(root.StandardUnits.ExperimentalBattlestation);
+		result.comparer = comparer;
+		result.filterForBattle = filterFleet;
+		return result;
+
+		function createShips() {
+			return [
+				UnitType.Flagship,
+				UnitType.WarSun,
+				UnitType.Dreadnought,
+				UnitType.Cruiser,
+				UnitType.Destroyer,
+				UnitType.Carrier,
+				UnitType.Fighter,
+			];
+		}
 
 		function createUnitOrder(virus) {
 			var result = [];
@@ -525,16 +515,50 @@
 
 		function defaultComparer(unit1, unit2) {
 			var typeOrder = unitOrder[unit1.type] - unitOrder[unit2.type];
-			if (unit1.isDamageGhost === unit2.isDamageGhost)
-				return typeOrder;
-			if (unit1.isDamageGhost)
-				return 1;
-			else
-				return -1;
+			if (thisSideOptions.riskDirectHit) {
+				// means damage ghosts will come last
+				if (unit1.isDamageGhost === unit2.isDamageGhost)
+					return typeOrder;
+				else if (unit1.isDamageGhost)
+					return 1;
+				else
+					return -1;
+			} else {
+				// means units are grouped with their damage ghosts
+				if (unit1.type === unit2.type) {
+					if (unit1.isDamageGhost)
+						return 1;
+					else
+						return -1;
+				} else
+					return typeOrder;
+			}
 		}
 
 		function naaluComparer(unit1, unit2) {
+			var typeOrder = naaluGoundUnitOrder[unit1.type] - naaluGoundUnitOrder[unit2.type];
+			if (vipGround) {
+				// Fighters are stronger than Ground
+				if (unit1 === vipGround)
+					return -1;
+				else if (unit2 === vipGround)
+					return 1;
+				else
+					return -typeOrder;
+			} else {
+				return typeOrder;
+			}
+		}
 
+		function filterFleet() {
+			var result = this.filter(function (unit) {
+				if (battleType === root.BattleType.Space)
+					return ships.indexOf(unit.type) >= 0 || virusFlagship && unit.type === root.UnitType.Ground;
+				else //battleType === root.BattleType.Ground
+					return unit.type === UnitType.Ground || naaluFlagship && unit.type === root.UnitType.Fighter;
+			});
+			result.comparer = this.comparer;
+			return result;
 		}
 	};
 

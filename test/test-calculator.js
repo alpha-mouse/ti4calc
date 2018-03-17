@@ -50,24 +50,61 @@ function testBattle(test, attacker, defender, battleType, options) {
 }
 
 function testExpansion(test, actual, expected) {
-	test.ok(actual, 'no expansion');
-	test.equal(actual.length, expected.length, 'wrong length');
-	for (var i = 0; i < actual.length; i++) {
-		var unit = actual[i];
-		var expectedUnit = expected[i];
-		test.equal(unit.type, expectedUnit.type, 'wrong ship at ' + i);
+	// test organised this way, because I hate how nodeunit reports errors
+	var result = false;
+	var message;
 
-		test.equal(unit.isDamageGhost, expectedUnit.isDamageGhost, 'isDamageGhost wrong at ' + i);
-		if (expectedUnit.type === game.UnitType.PDS || expectedUnit.type === 'Bloodthirsty Space Dock') {
-			test.equal(unit.spaceCannonValue, expectedUnit.spaceCannonValue, 'wrong space cannon at ' + i);
-		} else if (expectedUnit.isDamageGhost) {
-			test.ok(isNaN(unit.battleValue), 'battleValue not NaN for damage ghost at ' + i);
-		} else {
-			test.equal(unit.battleValue, expectedUnit.battleValue, 'wrong battleValue at ' + i);
+	test: do {
+		if (!actual) {
+			message = 'no expansion';
+			break test;
 		}
-	}
+		if (actual.length !== expected.length) {
+			message = format('wrong length', actual.length, expected.length);
+			break test;
+		}
+		for (var i = 0; i < actual.length; i++) {
+			var unit = actual[i];
+			var expectedUnit = expected[i];
 
+			if (unit.type !== expectedUnit.type) {
+				message = format('wrong ship at ' + i, unit.type, expectedUnit.type);
+				break test;
+			}
+
+			if (unit.isDamageGhost !== expectedUnit.isDamageGhost) {
+				message = format('isDamageGhost wrong at ' + i, unit.isDamageGhost, expectedUnit.isDamageGhost);
+				break test;
+			}
+			if (expectedUnit.type === game.UnitType.PDS || expectedUnit.type === 'Bloodthirsty Space Dock') {
+				if (unit.spaceCannonValue !== expectedUnit.spaceCannonValue) {
+					message = format('space cannon wrong at ' + i, unit.spaceCannonValue, expectedUnit.spaceCannonValue);
+					break test;
+				}
+			} else if (expectedUnit.isDamageGhost) {
+				if (!isNaN(unit.battleValue)) {
+					message = 'battleValue not NaN for damage ghost at ' + i;
+					break test;
+				}
+			} else {
+				if (unit.battleValue !== expectedUnit.battleValue) {
+					message = format('wrong battleValue at ' + i, unit.battleValue, expectedUnit.battleValue);
+					break test;
+				}
+			}
+		}
+		result = true;
+	} while (false);
+
+	if (!result) {
+		console.log(actual && actual.map(function (unit) {return unit.shortType;}).join());
+	}
+	test.ok(result, message);
 	test.done();
+
+	function format(text, actual, expected) {
+		return text + ', expected ' + expected + ', got ' + actual;
+	}
 }
 
 exports.expansionDefault = function (test) {
@@ -228,8 +265,7 @@ exports.expansionAndFilterVirusFlagship = function (test) {
 	attacker[game.UnitType.Ground] = { count: 2 };
 
 	var options = { attacker: { race: game.Race.Virus }, };
-	var expandedFleet = game.expandFleet(new Input(attacker, null, game.BattleType.Space, options), game.BattleSide.attacker);
-	var filteredFleet = game.filterFleet(expandedFleet, game.BattleType.Space, options.attacker);
+	var filteredFleet = game.expandFleet(new Input(attacker, null, game.BattleType.Space, options), game.BattleSide.attacker).filterForBattle();
 
 	var u = game.UnitType;
 	var expected = [
@@ -239,6 +275,46 @@ exports.expansionAndFilterVirusFlagship = function (test) {
 		game.StandardUnits[u.Fighter],
 		game.StandardUnits[u.Fighter],
 		game.RaceSpecificUnits[game.Race.Virus][u.Flagship].toDamageGhost(),
+	];
+
+	testExpansion(test, filteredFleet, expected);
+};
+
+exports.expansionAndFilterNaaluFlagshipFightersBetter = function (test) {
+	var attacker = {};
+	attacker[game.UnitType.Flagship] = { count: 1 };
+	attacker[game.UnitType.Fighter] = { count: 2, upgraded: true };
+	attacker[game.UnitType.Ground] = { count: 2 };
+
+	var options = { attacker: { race: game.Race.Naalu }, };
+	var filteredFleet = game.expandFleet(new Input(attacker, null, game.BattleType.Ground, options), game.BattleSide.attacker).filterForBattle();
+
+	var u = game.UnitType;
+	var expected = [
+		game.StandardUnits[u.Ground],
+		game.RaceSpecificUpgrades[game.Race.Naalu][u.Fighter],
+		game.RaceSpecificUpgrades[game.Race.Naalu][u.Fighter],
+		game.StandardUnits[u.Ground],
+	];
+
+	testExpansion(test, filteredFleet, expected);
+};
+
+exports.expansionAndFilterNaaluFlagshipGroundBetter = function (test) {
+	var attacker = {};
+	attacker[game.UnitType.Flagship] = { count: 1 };
+	attacker[game.UnitType.Fighter] = { count: 2 };
+	attacker[game.UnitType.Ground] = { count: 2 };
+
+	var options = { attacker: { race: game.Race.Naalu }, };
+	var filteredFleet = game.expandFleet(new Input(attacker, null, game.BattleType.Ground, options), game.BattleSide.attacker).filterForBattle();
+
+	var u = game.UnitType;
+	var expected = [
+		game.StandardUnits[u.Ground],
+		game.StandardUnits[u.Ground],
+		game.RaceSpecificUnits[game.Race.Naalu][u.Fighter],
+		game.RaceSpecificUnits[game.Race.Naalu][u.Fighter],
 	];
 
 	testExpansion(test, filteredFleet, expected);
@@ -1912,7 +1988,7 @@ function group(exports, testGroup) {
 //delete barrageGroup[''];
 //Object.assign(exports.barrage, barrageGroup);
 
-//exports.expansion = group(exports, 'expansion');
+exports.expansion = group(exports, 'expansion');
 //exports.plasmaScoring = group(exports, 'plasmaScoring');
 //exports.magenDefense = group(exports, 'magenDefense');
 //exports.ground = group(exports, 'ground');
