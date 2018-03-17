@@ -40,7 +40,7 @@
 		</select>
 		<div class="unit-name"></div>
 		<select v-model="options.defender.race" class="o-grid__cell c-field block">
-			<option v-for="(name, key) in Races" v-bind:value="key">
+			<option v-for="(name, key) in Race" v-bind:value="key">
 				{{ name }}
 			</option>
 		</select>
@@ -228,6 +228,8 @@
 				Carrier, because it's "less valuable" than other units. But if there are Fighters in this Carrier, they
 				participate in the battle, though according to the rules, they should have died before the battle.
 			</li>
+			<li>Although you can send multiple <strong>Sardakk</strong> <strong>Flagships</strong> into the battle
+				(in game there is maximum one, obviously), their +1 effects won't be stacked.</li>
 		</ul>
 		</p>
 		<p>Code and some more info could be found on <a

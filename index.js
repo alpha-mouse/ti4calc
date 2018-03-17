@@ -246,7 +246,7 @@
 			defenderUnits: {},
 			options: {
 				attacker: {
-					race: game.Race.Sardakk,
+					race: Race.Sardakk,
 				}, defender: null,
 			},
 		};

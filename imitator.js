@@ -125,8 +125,8 @@
 
 			while (hasUnits(attacker) && hasUnits(defender)) {
 				round++;
-				var attackerBoost = boost(battleType, round, options.attacker);
-				var defenderBoost = boost(battleType, round, options.defender);
+				var attackerBoost = boost(battleType, round, options.attacker, attacker);
+				var defenderBoost = boost(battleType, round, options.defender, defender);
 				var attackerReroll = false;
 				var defenderReroll = false;
 				if (round === 1) {
@@ -135,7 +135,7 @@
 				}
 				if (round === 2 && magenDefenseActivated) {
 					// if Magen Defense was activated - treat the second round as the first for the attacker
-					attackerBoost = boost(battleType, 1, options.attacker);
+					attackerBoost = boost(battleType, 1, options.attacker, attacker);
 					attackerReroll = options.attacker.fireTeam && battleType === game.BattleType.Ground;
 				}
 				winnuFlagships(attacker, options.attacker, defender);
@@ -468,10 +468,10 @@
 			}
 		}
 
-		function boost(battleType, round, sideOptions) {
+		function boost(battleType, round, sideOptions, fleet) {
 			var result = 0;
 			for (var i = 0; i < boosts.length; i++) {
-				var boost = boosts[i].apply(battleType, round, sideOptions);
+				var boost = boosts[i].apply(battleType, round, sideOptions, fleet);
 				if (boost && !result) {
 					result = boost;
 					continue;
@@ -498,30 +498,45 @@
 		}
 
 		function initBoosts() {
-			return [{
-				name: 'moraleBoost',
-				apply: function (battleType, round, sideOptions) {
-					return round === 1 && sideOptions.moraleBoost ? 1 : 0;
-				}
-			}, {
-				name: 'fighterPrototype',
-				apply: function (battleType, round, sideOptions) {
-					return round === 1 && battleType === game.BattleType.Space && sideOptions.fighterPrototype ?
-						function (unit) {
-							return unit.type === game.UnitType.Fighter ? 2 : 0;
-						} : 0;
-				}
-			}, {
-				name: 'Sardakk',
-				apply: function (battleType, round, sideOptions) {
-					return sideOptions.race === game.Race.Sardakk ? 1 : 0;
-				}
-			}, {
-				name: 'JolNar',
-				apply: function (battleType, round, sideOptions) {
-					return sideOptions.race === game.Race.JolNar ? -1 : 0;
-				}
-			},];
+			return [
+				{
+					name: 'moraleBoost',
+					apply: function (battleType, round, sideOptions) {
+						return round === 1 && sideOptions.moraleBoost ? 1 : 0;
+					}
+				},
+				{
+					name: 'fighterPrototype',
+					apply: function (battleType, round, sideOptions) {
+						return round === 1 && battleType === game.BattleType.Space && sideOptions.fighterPrototype ?
+							function (unit) {
+								return unit.type === game.UnitType.Fighter ? 2 : 0;
+							} : 0;
+					}
+				},
+				{
+					name: 'Sardakk',
+					apply: function (battleType, round, sideOptions) {
+						return sideOptions.race === game.Race.Sardakk ? 1 : 0;
+					}
+				},
+				{
+					name: 'Sardakk Flagship',
+					apply: function (battleType, round, sideOptions, fleet) {
+						return sideOptions.race === game.Race.Sardakk && battleType === game.BattleType.Space &&
+						fleet.some(unitIs(game.UnitType.Flagship))
+							? function (unit) {
+								return unit.type !== game.UnitType.Flagship ? 1 : 0;
+							} : 0;
+					}
+				},
+				{
+					name: 'JolNar',
+					apply: function (battleType, round, sideOptions) {
+						return sideOptions.race === game.Race.JolNar ? -1 : 0;
+					}
+				},
+			];
 		}
 
 		function unitIs(unitType) {
