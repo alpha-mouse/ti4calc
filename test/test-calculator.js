@@ -49,6 +49,27 @@ function testBattle(test, attacker, defender, battleType, options) {
 	test.done();
 }
 
+function testExpansion(test, actual, expected) {
+	test.ok(actual, 'no expansion');
+	test.equal(actual.length, expected.length, 'wrong length');
+	for (var i = 0; i < actual.length; i++) {
+		var unit = actual[i];
+		var expectedUnit = expected[i];
+		test.equal(unit.type, expectedUnit.type, 'wrong ship at ' + i);
+
+		test.equal(unit.isDamageGhost, expectedUnit.isDamageGhost, 'isDamageGhost wrong at ' + i);
+		if (expectedUnit.type === game.UnitType.PDS || expectedUnit.type === 'Bloodthirsty Space Dock') {
+			test.equal(unit.spaceCannonValue, expectedUnit.spaceCannonValue, 'wrong space cannon at ' + i);
+		} else if (expectedUnit.isDamageGhost) {
+			test.ok(isNaN(unit.battleValue), 'battleValue not NaN for damage ghost at ' + i);
+		} else {
+			test.equal(unit.battleValue, expectedUnit.battleValue, 'wrong battleValue at ' + i);
+		}
+	}
+
+	test.done();
+}
+
 exports.expansionDefault = function (test) {
 	var unit = game.UnitType;
 	var fleet = {};
@@ -82,22 +103,8 @@ exports.expansionDefault = function (test) {
 		units[unit.Dreadnought].toDamageGhost(),
 		game.StandardUnits.ExperimentalBattlestation,
 	];
-	test.equal(expected.length, expansion.length, 'wrong length');
-	var fleetTypesToString = function (fleet) {
-		return fleet.map(function (u) {
-			return u.shortType;
-		}).reduce(function (prev, current) {
-			return prev + current;
-		}, '');
-	};
-	for (var i = 0; i < expansion.length; i++) {
-		if (!(expected[i].type === expansion[i].type && expected[i].isDamageGhost === expansion[i].isDamageGhost)) {
-			test.ok(false, 'Wrong sort. Got ' + fleetTypesToString(expansion));
-			break;
-		}
-	}
 
-	test.done();
+	testExpansion(test, expansion, expected);
 };
 
 exports.expansionRiskDirectHit = function (test) {
@@ -125,14 +132,7 @@ exports.expansionRiskDirectHit = function (test) {
 		game.StandardUnits[u.Dreadnought].toDamageGhost(),
 		game.StandardUnits[u.Dreadnought].toDamageGhost()];
 
-	test.ok(expansion, 'no expansion');
-	test.equal(expansion.length, expected.length, 'wrong length');
-	for (var i = 0; i < expansion.length; i++) {
-		test.equal(expansion[i].type, expected[i].type, 'wrong ship at ' + i);
-		test.equal(expansion[i].isDamageGhost, expected[i].isDamageGhost, 'isDamageGhost wrong at ' + i);
-	}
-
-	test.done();
+	testExpansion(test, expansion, expected);
 };
 
 exports.expansionNoRiskDirectHit = function (test) {
@@ -165,14 +165,7 @@ exports.expansionNoRiskDirectHit = function (test) {
 		game.StandardUnits[u.PDS]
 	];
 
-	test.ok(expansion, 'no expansion');
-	test.equal(expansion.length, expected.length, 'wrong length');
-	for (var i = 0; i < expansion.length; i++) {
-		test.equal(expansion[i].type, expected[i].type, 'wrong ship at ' + i);
-		test.equal(expansion[i].isDamageGhost, expected[i].isDamageGhost, 'isDamageGhost wrong at ' + i);
-	}
-
-	test.done();
+	testExpansion(test, expansion, expected);
 };
 
 exports.expansionWithUpgrades = function (test) {
@@ -199,22 +192,7 @@ exports.expansionWithUpgrades = function (test) {
 		game.RaceSpecificUpgrades.Sol[u.Carrier].toDamageGhost(),
 	];
 
-	test.ok(expansion, 'no expansion');
-	test.equal(expansion.length, expected.length, 'wrong length');
-	for (var i = 0; i < expansion.length; i++) {
-		test.equal(expansion[i].type, expected[i].type, 'wrong ship at ' + i);
-
-		test.equal(expansion[i].isDamageGhost, expected[i].isDamageGhost, 'isDamageGhost wrong at ' + i);
-		if (expected[i].type === u.PDS) {
-			test.equal(expansion[i].spaceCannonValue, expected[i].spaceCannonValue, 'wrong space cannon at ' + i);
-		} else if (expected[i].isDamageGhost) {
-			test.ok(isNaN(expansion[i].battleValue), 'battleValue not NaN for damage ghost at ' + i);
-		} else {
-			test.equal(expansion[i].battleValue, expected[i].battleValue, 'wrong battleValue at ' + i);
-		}
-	}
-
-	test.done();
+	testExpansion(test, expansion, expected);
 };
 
 exports.expansionMentakFlagship = function (test) {
@@ -240,22 +218,30 @@ exports.expansionMentakFlagship = function (test) {
 		game.StandardUnits[u.Dreadnought],
 	];
 
-	test.ok(expansion, 'no expansion');
-	test.equal(expansion.length, expected.length, 'wrong length');
-	for (var i = 0; i < expansion.length; i++) {
-		test.equal(expansion[i].type, expected[i].type, 'wrong ship at ' + i);
+	testExpansion(test, expansion, expected);
+};
 
-		test.equal(expansion[i].isDamageGhost, expected[i].isDamageGhost, 'isDamageGhost wrong at ' + i);
-		if (expected[i].type === u.PDS) {
-			test.equal(expansion[i].spaceCannonValue, expected[i].spaceCannonValue, 'wrong space cannon at ' + i);
-		} else if (expected[i].isDamageGhost) {
-			test.ok(isNaN(expansion[i].battleValue), 'battleValue not NaN for damage ghost at ' + i);
-		} else {
-			test.equal(expansion[i].battleValue, expected[i].battleValue, 'wrong battleValue at ' + i);
-		}
-	}
+exports.expansionAndFilterVirusFlagship = function (test) {
+	var attacker = {};
+	attacker[game.UnitType.Flagship] = { count: 1 };
+	attacker[game.UnitType.Fighter] = { count: 2 };
+	attacker[game.UnitType.Ground] = { count: 2 };
 
-	test.done();
+	var options = { attacker: { race: game.Race.Virus }, };
+	var expandedFleet = game.expandFleet(new Input(attacker, null, game.BattleType.Space, options), game.BattleSide.attacker);
+	var filteredFleet = game.filterFleet(expandedFleet, game.BattleType.Space, options.attacker);
+
+	var u = game.UnitType;
+	var expected = [
+		game.RaceSpecificUnits[game.Race.Virus][u.Flagship],
+		game.StandardUnits[u.Ground],
+		game.StandardUnits[u.Ground],
+		game.StandardUnits[u.Fighter],
+		game.StandardUnits[u.Fighter],
+		game.RaceSpecificUnits[game.Race.Virus][u.Flagship].toDamageGhost(),
+	];
+
+	testExpansion(test, filteredFleet, expected);
 };
 
 exports.symmetricImitator = function (test) {
@@ -1427,7 +1413,7 @@ exports.jolNarRacialMoraleBoost = function (test) {
 
 	defender[game.UnitType.Cruiser] = { count: 1 };
 
-	var options = { attacker: { race: game.Race.JolNar, moraleBoost: true }, defender: { } };
+	var options = { attacker: { race: game.Race.JolNar, moraleBoost: true }, defender: {} };
 
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
@@ -1598,7 +1584,10 @@ exports.sardakkRacialValkyrieParticleWeaveHarrow = function (test) {
 
 	defender[game.UnitType.Ground] = { count: 3 };
 
-	var options = { attacker: { race: game.Race.L1Z1X, }, defender: { race: game.Race.Sardakk, valkyrieParticleWeave: true } };
+	var options = {
+		attacker: { race: game.Race.L1Z1X, },
+		defender: { race: game.Race.Sardakk, valkyrieParticleWeave: true }
+	};
 
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
@@ -1612,7 +1601,10 @@ exports.sardakkRacialValkyrieParticleWeaveMagenDefense = function (test) {
 	defender[game.UnitType.Ground] = { count: 1 };
 	defender[game.UnitType.PDS] = { count: 1 };
 
-	var options = { attacker: { race: game.Race.Sardakk, valkyrieParticleWeave: true }, defender: { magenDefense: true } };
+	var options = {
+		attacker: { race: game.Race.Sardakk, valkyrieParticleWeave: true },
+		defender: { magenDefense: true }
+	};
 
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
@@ -1740,7 +1732,7 @@ exports.jolNarFlagship = function (test) {
 
 	defender[game.UnitType.Destroyer] = { count: 3 };
 
-	var options = { attacker: { race: game.Race.JolNar, }, defender: { } };
+	var options = { attacker: { race: game.Race.JolNar, }, defender: {} };
 
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
@@ -1752,7 +1744,7 @@ exports.jolNarFlagshipMoraleBoost = function (test) {
 
 	defender[game.UnitType.Destroyer] = { count: 3 };
 
-	var options = { attacker: { race: game.Race.JolNar, moraleBoost: true }, defender: { } };
+	var options = { attacker: { race: game.Race.JolNar, moraleBoost: true }, defender: {} };
 
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
@@ -1765,7 +1757,7 @@ exports.sardakkFlagship = function (test) {
 
 	defender[game.UnitType.Cruiser] = { count: 3 };
 
-	var options = { attacker: { race: game.Race.Sardakk, }, defender: { } };
+	var options = { attacker: { race: game.Race.Sardakk, }, defender: {} };
 
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
@@ -1778,7 +1770,7 @@ exports.sardakkFlagshipMoraleBoost = function (test) {
 
 	defender[game.UnitType.Destroyer] = { count: 3 };
 
-	var options = { attacker: { race: game.Race.Sardakk, moraleBoost: true }, defender: { } };
+	var options = { attacker: { race: game.Race.Sardakk, moraleBoost: true }, defender: {} };
 
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
@@ -1920,6 +1912,7 @@ function group(exports, testGroup) {
 //delete barrageGroup[''];
 //Object.assign(exports.barrage, barrageGroup);
 
+//exports.expansion = group(exports, 'expansion');
 //exports.plasmaScoring = group(exports, 'plasmaScoring');
 //exports.magenDefense = group(exports, 'magenDefense');
 //exports.ground = group(exports, 'ground');

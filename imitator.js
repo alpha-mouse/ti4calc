@@ -28,13 +28,11 @@
 			options = options || { attacker: {}, defender: {} };
 
 			var result = new structs.EmpiricalDistribution();
-			var finalAttacker = attacker
-				.filter(game.unitBattleFilter(battleType))
+			var finalAttacker = game.filterFleet(attacker, battleType, options.attacker)
 				.map(function (unit) {
 					return [unit.shortType];
 				});
-			var finalDefender = defender
-				.filter(game.unitBattleFilter(battleType))
+			var finalDefender = game.filterFleet(defender, battleType, options.defender)
 				.map(function (unit) {
 					return [unit.shortType];
 				});
@@ -98,8 +96,8 @@
 		}
 
 		function imitateBattle(attackerFull, defenderFull, battleType, options) {
-			var attacker = attackerFull.filter(game.unitBattleFilter(battleType));
-			var defender = defenderFull.filter(game.unitBattleFilter(battleType));
+			var attacker = game.filterFleet(attackerFull, battleType, options.attacker);
+			var defender = game.filterFleet(defenderFull, battleType, options.defender);
 
 			for (var i = 0; i < prebattleActions.length; i++) {
 				var action = prebattleActions[i];
@@ -263,7 +261,7 @@
 						if (!somethingRepaired) {
 							var damageGhost = unit.toDamageGhost();
 							// find proper place for the new damage ghost
-							var index = structs.binarySearch(fleet, damageGhost, game.unitComparer);
+							var index = structs.binarySearch(fleet, damageGhost, fleet.unitComparer);
 							if (index < 0)
 								index = -index - 1;
 							fleet.splice(index, 0, damageGhost);

@@ -455,21 +455,9 @@
 		return result;
 	};
 
-	var unitOrder = createUnitOrder();
-
-	root.unitComparer = function (unit1, unit2) {
-		var typeOrder = unitOrder[unit1.type] - unitOrder[unit2.type];
-		if (unit1.isDamageGhost === unit2.isDamageGhost)
-			return typeOrder;
-		if (unit1.isDamageGhost)
-			return 1;
-		else
-			return -1;
-	};
-
 	/** Check whether the unit can receive hits in the specific battle type.
 	 * E.g. Ground Forces don't receive hits in Space Battle */
-	root.belongsToBattle = function (unit, battleType) {
+	root.belongsToBattle = function (unit, battleType, sideOptions, fleet) {
 
 		var ships = [
 			UnitType.Flagship,
@@ -481,16 +469,73 @@
 			UnitType.Fighter,
 		];
 
+		var virusFlagship = battleType === root.BattleType.Space && sideOptions.race === root.Race.Virus &&
+			fleet.some(function (unit) {
+				return unit.type === root.UnitType.Flagship;
+			});
+		var naaluFlagship = battleType === root.BattleType.Ground && sideOptions.race === root.Race.Naalu &&
+			fleet.some(function (unit) {
+				return unit.type === root.UnitType.Flagship;
+			});
+
 		if (battleType === root.BattleType.Space)
-			return ships.indexOf(unit.type) >= 0;
+			return ships.indexOf(unit.type) >= 0 || virusFlagship && unit.type === root.UnitType.Ground;
 		else //battleType === root.BattleType.Ground
-			return unit.type === UnitType.Ground;
+			return unit.type === UnitType.Ground || naaluFlagship && unit.type === root.UnitType.Fighter;
 	};
 
-	root.unitBattleFilter = function (battleType) {
-		return function (unit) {
-			return root.belongsToBattle(unit, battleType);
-		};
+	root.filterFleet = function (fleet, battleType, sideOptions) {
+		var filtered = fleet.filter(function (unit) {
+			return root.belongsToBattle(unit, battleType, sideOptions, fleet);
+		});
+
+		var virusFlagship = battleType === root.BattleType.Space && sideOptions.race === root.Race.Virus &&
+			fleet.some(function (unit) {
+				return unit.type === root.UnitType.Flagship;
+			});
+		var naaluFlagship = battleType === root.BattleType.Ground && sideOptions.race === root.Race.Naalu &&
+			fleet.some(function (unit) {
+				return unit.type === root.UnitType.Flagship;
+			});
+		var unitOrder = createUnitOrder(virusFlagship);
+		var comparer;
+		if (virusFlagship)
+			comparer = defaultComparer;
+		else if (naaluFlagship)
+			comparer = naaluComparer;
+		else
+			comparer = defaultComparer;
+		filtered.comparer = comparer;
+		filtered.sort(filtered.comparer);
+		return filtered;
+
+		function createUnitOrder(virus) {
+			var result = [];
+			var i = 0;
+			for (var unitType in UnitType) {
+				result[unitType] = i++;
+			}
+			if (virus) {
+				var tmp = result[UnitType.Ground]; // Virus will need Grounds to die after Fighters, as they are stronger
+				result[UnitType.Ground] = result[UnitType.Fighter];
+				result[UnitType.Fighter] = tmp;
+			}
+			return result;
+		}
+
+		function defaultComparer(unit1, unit2) {
+			var typeOrder = unitOrder[unit1.type] - unitOrder[unit2.type];
+			if (unit1.isDamageGhost === unit2.isDamageGhost)
+				return typeOrder;
+			if (unit1.isDamageGhost)
+				return 1;
+			else
+				return -1;
+		}
+
+		function naaluComparer(unit1, unit2) {
+
+		}
 	};
 
 	/** Check whether the race has an upgrade for the unit */
@@ -505,13 +550,4 @@
 //todo Mentak racial take into account when estimating Direct Hit
 //todo How the hell to take Nekro racial tech taking into account
 //todo Letnev promisary
-
-	function createUnitOrder() {
-		var result = [];
-		var i = 0;
-		for (var unitType in UnitType) {
-			result[unitType] = i++;
-		}
-		return result;
-	}
 })(typeof exports === 'undefined' ? window : exports);
