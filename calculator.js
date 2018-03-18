@@ -400,12 +400,18 @@
 					appliesTo: game.BattleType.Space,
 					execute: function (problemArray, attackerFull, defenderFull, options) {
 						var result = [];
+						var attackerVirusFlagship = options.attacker.race === game.Race.Virus &&
+							attackerFull.some(unitIs(game.UnitType.Flagship)) && attackerFull.some(unitIs(game.UnitType.Ground));
+						var defenderVirusFlagship = options.defender.race === game.Race.Virus &&
+							defenderFull.some(unitIs(game.UnitType.Flagship)) && defenderFull.some(unitIs(game.UnitType.Ground));
 
 						problemArray.forEach(function (problem) {
 							var attackerTransitionsVector = getSpaceCannonTransitionsVector(attackerFull, options.attacker, options.defender);
 							var defenderTransitionsVector = getSpaceCannonTransitionsVector(defenderFull, options.defender, options.attacker);
 
-							if (options.attacker.gravitonLaser || options.defender.gravitonLaser) {
+							if (options.attacker.gravitonLaser || options.defender.gravitonLaser ||
+								attackerVirusFlagship || defenderVirusFlagship
+							) {
 								var ensemble = new structs.EnsembleSplit(problem);
 
 								var distribution = problem.distribution;
@@ -457,41 +463,47 @@
 						function gravitonLaserVictims(fleet, index, hits, thisSideOptions, opposingSideOptions) {
 							if (hits === 0 || index === 0)
 								return structs.Victim.Null;
-							if (!opposingSideOptions.gravitonLaser) {
+							if (!opposingSideOptions.gravitonLaser && !fleet.some(unitIs(game.UnitType.Ground))) {
 								var result = new structs.Victim();
 								result._dead = Math.min(hits, fleet.map(absorbsHits).reduce(sum));
 								return result;
 							}
 
-							var result = new structs.Victim();
-							var lowerRange = []; // ships more expensive than fighters
-							var middleRange = []; // affected Fighters
-							var upperRange = [index, index]; // ships cheaper than Fighters (damage ghosts most likely)
-							var currentRange = upperRange;
-							// try to hit non-fighters
-							for (var i = index - 1; 0 <= i && 0 < hits; --i) {
-								if (fleet[i].type === game.UnitType.Fighter) {
-									middleRange = [i + 1, i + 1];
-									do {
-										i--;
-									} while (0 <= i && fleet[i].type === game.UnitType.Fighter);
-									if (i < 0)
-										break;
-									currentRange = lowerRange = [i + 1, i + 1];
+							var ranges = [];
+							var currentRange = null;
+							var i = index - 1;
+							while (0 <= i && 0 < hits) {
+								var unit = fleet[i];
+								if (unit.type === game.UnitType.Fighter && opposingSideOptions.gravitonLaser) {
+									currentRange = null;
+								} else if (unit.type === game.UnitType.Ground) {
+									currentRange = null;
+								} else {
+									if (currentRange === null) {
+										currentRange = [i + 1, i + 1];
+										ranges.push(currentRange);
+									}
+									currentRange[0]--;
+									hits -= absorbsHits(unit);
 								}
-								currentRange[0]--;
-								hits -= absorbsHits(fleet[i]);
+								i--;
 							}
+							var currentRange = null;
 							// now hit Fighters if needed
-							for (var i = index - 1; 0 <= i && 0 < hits; --i) {
-								if (fleet[i].type === game.UnitType.Fighter) {
-									middleRange[0]--;
-									hits -= absorbsHits(fleet[i]); // will always be the same as hits--
+							if (opposingSideOptions.gravitonLaser)
+								for (var i = index - 1; 0 <= i && 0 < hits; --i) {
+									if (fleet[i].type === game.UnitType.Fighter) {
+										if (currentRange === null) {
+											currentRange = [i + 1, i + 1];
+											ranges.push(currentRange);
+										}
+										currentRange[0]--;
+										hits -= absorbsHits(fleet[i]); // will always be the same as hits--
+									}
 								}
-							}
-							result.addRange(lowerRange[0], lowerRange[1]);
-							result.addRange(middleRange[0], middleRange[1]);
-							result.addRange(upperRange[0], upperRange[1]);
+							ranges.sort(function (r1, r2) { return r1[0] - r2[0]; });
+							var result = new structs.Victim();
+							ranges.forEach(function (range) { result.addRange(range[0], range[1]); });
 							return result;
 
 							function absorbsHits(unit) {
@@ -557,8 +569,8 @@
 							var ensemble = new structs.EnsembleSplit(problem);
 							var attackerThreshold = findAssaultCannonThreshold(problem.attacker, options.attacker.assaultCannon);
 							var defenderThreshold = findAssaultCannonThreshold(problem.defender, options.defender.assaultCannon);
-							var attackerVictims = calculateVictims(problem.attacker, defenderThreshold < problem.defender.length);
-							var defenderVictims = calculateVictims(problem.defender, attackerThreshold < problem.attacker.length);
+							var attackerVictims = calculateVictims(problem.attacker, defenderThreshold < problem.defender.length, true);
+							var defenderVictims = calculateVictims(problem.defender, attackerThreshold < problem.attacker.length, false);
 
 							var distribution = problem.distribution;
 							for (var a = 0; a < distribution.rows; a++) {
@@ -587,7 +599,7 @@
 							return i;
 						}
 
-						function calculateVictims(fleet, victimsNeeded) {
+						function calculateVictims(fleet, victimsNeeded, canTakeIntoGroundForces) {
 							var result = new Array(fleet.length + 1);
 							if (!victimsNeeded)
 								result.fill(structs.Victim.Null);
@@ -597,7 +609,7 @@
 								var splice1 = undefined;
 								var splice2 = undefined;
 								for (var i = 0; i < fleet.length; ++i) {
-									if (notFighterShip(fleet[i])) {
+									if ((canTakeIntoGroundForces ? notFighterShip : notFighterNorGroundForceShip)(fleet[i])) {
 										victim = fleet[i];
 										splice1 = i;
 										splice2 = undefined;
@@ -941,7 +953,8 @@
 			var battleDice = null;
 			fleet.filter(unitIs(game.UnitType.Flagship)).forEach(function (flagship) {
 				flagship.battleDice = battleDice === null ?
-					(battleDice = opposingFleet.slice(0, opposingFleetCount).filter(notFighterShip).length) :
+					// according to https://boardgamegeek.com/thread/1916774/nekrowinnu-flagship-interaction
+					(battleDice = opposingFleet.slice(0, opposingFleetCount).filter(notFighterNorGroundForceShip).length) :
 					battleDice;
 			});
 			return battleDice !== null; // means flagship present
@@ -978,6 +991,10 @@
 
 		function notFighterShip(unit) {
 			return unit.type !== game.UnitType.Fighter && !unit.isDamageGhost;
+		}
+
+		function notFighterNorGroundForceShip(unit) {
+			return unit.type !== game.UnitType.Fighter && unit.type !== game.UnitType.Ground && !unit.isDamageGhost;
 		}
 
 		function findLastIndex(array, predicate) {

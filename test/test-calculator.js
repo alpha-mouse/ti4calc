@@ -41,8 +41,8 @@ function testBattle(test, attacker, defender, battleType, options) {
 	var got = calc.computeProbabilities(input).distribution;
 	var expected = im.estimateProbabilities(input).distribution;
 
-	//console.log('i', expected.toString());
-	//console.log('c', got.toString());
+	console.log('i', expected.toString());
+	console.log('c', got.toString());
 
 	test.ok(distributionsEqual(expected, got), 'empirical differs from analytical');
 
@@ -1851,6 +1851,81 @@ exports.sardakkFlagshipMoraleBoost = function (test) {
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
 
+exports.virusFlagshipPds = function (test) {
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Flagship] = { count: 1 };
+	attacker[game.UnitType.Dreadnought] = { count: 1 };
+	attacker[game.UnitType.Ground] = { count: 1 };
+	attacker[game.UnitType.Fighter] = { count: 1 };
+
+	defender[game.UnitType.Cruiser] = { count: 3 };
+	defender[game.UnitType.PDS] = { count: 4 };
+
+	var options = { attacker: { race: game.Race.Virus, riskDirectHit: false, }, defender: {} };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.virusFlagshipPdsGravitonLaser = function (test) {
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Flagship] = { count: 1 };
+	attacker[game.UnitType.Dreadnought] = { count: 1 };
+	attacker[game.UnitType.Ground] = { count: 1 };
+	attacker[game.UnitType.Fighter] = { count: 1 };
+
+	defender[game.UnitType.Cruiser] = { count: 3 };
+	defender[game.UnitType.PDS] = { count: 4 };
+
+	var options = { attacker: { race: game.Race.Virus, riskDirectHit: false, }, defender: { gravitonLaser: true } };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.virusFlagshipAttackerAssaultCannon = function (test) {
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Flagship] = { count: 1 };
+	attacker[game.UnitType.Ground] = { count: 1 };
+	attacker[game.UnitType.Fighter] = { count: 1 };
+
+	defender[game.UnitType.Cruiser] = { count: 3 };
+
+	var options = { attacker: { race: game.Race.Virus, }, defender: { assaultCannon: true, } };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.virusFlagshipDefenderAssaultCannon = function (test) {
+	var attacker = {};
+	var defender = {};
+
+	attacker[game.UnitType.Cruiser] = { count: 3 };
+
+	defender[game.UnitType.Flagship] = { count: 1 };
+	defender[game.UnitType.Ground] = { count: 1 };
+	defender[game.UnitType.Fighter] = { count: 1 };
+
+	var options = { attacker: { assaultCannon: true, }, defender: { race: game.Race.Virus, } };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.virusFlagshipWinnuFlagship = function (test) {
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Flagship] = { count: 1 };
+	attacker[game.UnitType.Ground] = { count: 1 };
+	attacker[game.UnitType.Fighter] = { count: 1 };
+
+	defender[game.UnitType.Flagship] = { count: 1 };
+
+	var options = { attacker: { race: game.Race.Virus, }, defender: { race: game.Race.Winnu } };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
 /** Test some random battle. Because I couldn't have imagined all edge cases.
  * When this test fails - take input fleets and options from the console and reproduce the problem */
 function chaoticTest(test) {
@@ -2007,3 +2082,4 @@ exports.expansion = group(exports, 'expansion');
 //exports.winnu = group(exports, 'winnuFlagship');
 //exports.yin = group(exports, 'yinFlagship');
 //exports.jolNar = group(exports, 'jolNar');
+//exports.virus = group(exports, 'virus');

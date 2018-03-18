@@ -95,7 +95,8 @@
 
 			function winnuFlagships(fleet, sideOptions, opposingFleet) {
 				if (battleType === game.BattleType.Space && sideOptions.race === game.Race.Winnu) {
-					var battleDice = opposingFleet.filter(notFighterShip).length;
+					// according to https://boardgamegeek.com/thread/1916774/nekrowinnu-flagship-interaction
+					var battleDice = opposingFleet.filter(notFighterNorGroundForceShip).length;
 					// In the game there could be only one flagship, but why the hell not)
 					fleet.filter(unitIs(game.UnitType.Flagship)).forEach(function (flagship) {
 						flagship.battleDice = battleDice;
@@ -162,12 +163,12 @@
 		}
 
 		/** returns true if Yin flagship was killed */
-		function applyDamage(fleet, hits, sideOptions, hittable, softPredicate) {
-			hittable = hittable || function (unit) {
+		function applyDamage(fleet, hits, sideOptions, hardPredicate, softPredicate) {
+			hardPredicate = hardPredicate || function (unit) {
 				return true;
 			};
 			for (var i = fleet.length - 1; 0 <= i && 0 < hits; i--) {
-				if (hittable(fleet[i])) {
+				if (hardPredicate(fleet[i]) && (!softPredicate || softPredicate(fleet[i]))) {
 					var killed = hit(i);
 					if (sideOptions.race === game.Race.Yin && unitIs(game.UnitType.Flagship)(killed))
 						return true;
@@ -175,9 +176,11 @@
 			}
 			if (softPredicate) {
 				for (var i = fleet.length - 1; 0 <= i && 0 < hits; i--) {
-					hit(i);
-					if (sideOptions.race === game.Race.Yin && unitIs(game.UnitType.Flagship)(killed))
-						return true;
+					if (hardPredicate(fleet[i])) {
+						var killed = hit(i);
+						if (sideOptions.race === game.Race.Yin && unitIs(game.UnitType.Flagship)(killed))
+							return true;
+					}
 				}
 			}
 			return false;
@@ -276,8 +279,8 @@
 						if (options.defender.maneuveringJets && attackerInflicted > 0)
 							attackerInflicted--;
 
-						var attackerYinFlagshipDied = applyDamage(attacker, defenderInflicted, options.attacker, gravitonLaserUnitHittable(options.defender), true);
-						var defenderYinFlagshipDied = applyDamage(defender, attackerInflicted, options.defender, gravitonLaserUnitHittable(options.attacker), true);
+						var defenderYinFlagshipDied = applyDamage(defender, attackerInflicted, options.defender, notGroundForce, gravitonLaserUnitHittable(options.attacker));
+						var attackerYinFlagshipDied = applyDamage(attacker, defenderInflicted, options.attacker, notGroundForce, gravitonLaserUnitHittable(options.defender));
 						if (attackerYinFlagshipDied || defenderYinFlagshipDied) {
 							attacker.splice(0);
 							defender.splice(0);
@@ -291,6 +294,10 @@
 							return function (unit) {
 								return !(sideOptions.gravitonLaser && unit.type === game.UnitType.Fighter);
 							};
+						}
+
+						function notGroundForce(unit) {
+							return /*because Virus Flagship*/ unit.type !== game.UnitType.Ground;
 						}
 					},
 				},
@@ -333,19 +340,19 @@
 						var attackerVictim;
 						var defenderVictim;
 						if (attackerDestroys)
-							defenderVictim = killOffNonFighter(defender);
+							defenderVictim = killOffNonFighter(defender, false);
 						if (defenderDestroys)
-							attackerVictim = killOffNonFighter(attacker);
+							attackerVictim = killOffNonFighter(attacker, true);
 						if (options.attacker.race === game.Race.Yin && attackerVictim && unitIs(game.UnitType.Flagship)(attackerVictim) ||
 							options.defender.race === game.Race.Yin && defenderVictim && unitIs(game.UnitType.Flagship)(defenderVictim)) {
 							attacker.splice(0);
 							defender.splice(0);
 						}
 
-						function killOffNonFighter(fleet) {
+						function killOffNonFighter(fleet, canTakeIntoGroundForces) {
 							for (var i = fleet.length - 1; i >= 0; i--) {
 								var unit = fleet[i];
-								if (notFighterShip(unit)) {
+								if ((canTakeIntoGroundForces ? notFighterShip : notFighterNorGroundForceShip)(unit)) {
 									fleet.splice(i, 1);
 									if (unit.sustainDamageHits > 0) {
 										var damageGhostIndex = fleet.findIndex(function (ghostCandidate) {
@@ -527,6 +534,10 @@
 
 		function notFighterShip(unit) {
 			return unit.type !== game.UnitType.Fighter && !unit.isDamageGhost;
+		}
+
+		function notFighterNorGroundForceShip(unit) {
+			return unit.type !== game.UnitType.Fighter && unit.type !== game.UnitType.Ground && !unit.isDamageGhost;
 		}
 	})();
 })(typeof exports === 'undefined' ? window : exports);
