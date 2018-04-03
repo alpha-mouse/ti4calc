@@ -53,7 +53,7 @@
 			displayDistribution: function (solution) {
 
 				drawChart(solution);
-				drawTotalWinProbabilities(solution);
+				drawTotalWinProbabilities(solution.distribution);
 
 				return;
 
@@ -112,14 +112,15 @@
 					}
 				}
 
-				function drawTotalWinProbabilities(solution) {
+				function drawTotalWinProbabilities(distribution) {
 					var attackerWinProbability = 0;
 					var defenderWinProbability = 0;
-					for (var i = solution.distribution.min; i < 0; i++) {
-						attackerWinProbability += solution.distribution.at(i);
+					var drawProbability = distribution.at(0);
+					for (var i = distribution.min; i < 0; i++) {
+						attackerWinProbability += distribution.at(i);
 					}
-					for (var i = 1; i <= solution.distribution.max; i++) {
-						defenderWinProbability += solution.distribution.at(i);
+					for (var i = 1; i <= distribution.max; i++) {
+						defenderWinProbability += distribution.at(i);
 					}
 
 					var canvas = document.getElementById('chart-area-overlay');
@@ -132,6 +133,11 @@
 					context.fillText(Math.round(attackerWinProbability * 100) + '%', canvasWidth / 12, 3 * canvasHeight / 4);
 					context.fillStyle = 'rgba(100, 100, 256, 0.5)';
 					context.fillText(Math.round(defenderWinProbability * 100) + '%', 7 * canvasWidth / 12, 3 * canvasHeight / 4);
+					if (drawProbability > .03) {
+						context.font = 'bold 80px Arial';
+						context.fillStyle = 'rgba(160, 160, 160, 0.5)';
+						context.fillText(Math.round(drawProbability * 100) + '%', 5 * canvasWidth / 12, 3 * canvasHeight / 8);
+					}
 				}
 			},
 		},
