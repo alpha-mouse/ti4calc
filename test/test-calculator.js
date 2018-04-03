@@ -1,5 +1,3 @@
-// todo This tests suite is not paranoid enough. There are many more edge cases then those that are tested here.
-
 var game = require('../game-elements');
 var calc = require('../calculator').calculator;
 var imitatorModule = require('../imitator');
@@ -2096,7 +2094,7 @@ function chaoticTest(test) {
 	}
 
 	if (showInput) {
-		console.log('Battle type =', battleType);
+		console.log('Battle type =', input.battleType);
 		console.log(JSON.stringify(attacker));
 		console.log(JSON.stringify(defender));
 		console.log(JSON.stringify(options));

@@ -8,10 +8,11 @@ body {
 }
 
 .center-grid .unit-name {
-	text-align: center;
 	flex-basis: 10em;
 	flex-grow: 0;
-	align-self: center;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .center-grid .block {
@@ -139,6 +140,18 @@ input::-webkit-inner-spin-button {
 .c-input-group .c-button.hidden:first-child + .c-button {
 	border-left-width: 1px;
 	margin-left: -1px;
+}
+
+#counters .o-grid.attacker-participates.defender-participates .unit-name {
+	background: #f0f0ff;
+}
+
+#counters .o-grid.attacker-participates .unit-name {
+	background: linear-gradient(0.25turn, #f0f0ff, #f0f0ff 70%, white 90%, white);
+}
+
+#counters .o-grid.defender-participates .unit-name {
+	background: linear-gradient(-0.25turn, #f0f0ff, #f0f0ff 70%, white 90%, white);
 }
 
 #spinner-container {

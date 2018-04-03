@@ -63,10 +63,10 @@
 		Mentak: 'Mentak',
 		Muaat: 'Muaat',
 		Naalu: 'Naalu',
+		Virus: 'Nekro Virus',
 		Saar: 'Saar',
 		Sardakk: 'Sardakk N\'orr',
 		Sol: 'Sol',
-		Virus: 'Nekro Virus',
 		Winnu: 'Winnu',
 		Xxcha: 'Xxcha',
 		Yin: 'Yin',
@@ -213,7 +213,7 @@
 		Sardakk: {
 			Flagship: new root.UnitInfo(UnitType.Flagship, {
 				sustainDamageHits: 1,
-				battleValue: 6, //todo special racial ability
+				battleValue: 6,
 				battleDice: 2,
 				race: root.Race.Sardakk,
 			}),
@@ -227,7 +227,7 @@
 		JolNar: {
 			Flagship: new root.UnitInfo(UnitType.Flagship, {
 				sustainDamageHits: 1,
-				battleValue: 6, //todo special racial ability
+				battleValue: 6,
 				battleDice: 2,
 				race: root.Race.JolNar,
 			}),
@@ -304,7 +304,7 @@
 		Naalu: {
 			Flagship: new root.UnitInfo(UnitType.Flagship, {
 				sustainDamageHits: 1,
-				battleValue: 9, //todo special racial ability
+				battleValue: 9,
 				battleDice: 2,
 				race: root.Race.Naalu,
 			}),
@@ -315,7 +315,7 @@
 		Virus: {
 			Flagship: new root.UnitInfo(UnitType.Flagship, {
 				sustainDamageHits: 1,
-				battleValue: 9, //todo special racial ability
+				battleValue: 9,
 				battleDice: 2,
 				race: root.Race.Virus,
 			}),
@@ -359,7 +359,7 @@
 		Hacan: {
 			Flagship: new root.UnitInfo(UnitType.Flagship, {
 				sustainDamageHits: 1,
-				battleValue: 7, //todo special racial ability
+				battleValue: 7,
 				battleDice: 2,
 				race: root.Race.Hacan,
 			}),
@@ -577,7 +577,5 @@
 
 //todo check all racial abilities
 //todo Sardakk Tekklar promisory
-//todo Mentak racial take into account when estimating Direct Hit
-//todo How the hell to take Nekro racial tech taking into account
 //todo Letnev promisary
 })(typeof exports === 'undefined' ? window : exports);

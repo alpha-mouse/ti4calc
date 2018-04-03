@@ -149,6 +149,36 @@
 					}
 				}
 			},
+			participates: function (battleSide, unitType) {
+				var bombardmentPossible = this.defenderUnits.PDS.count === 0 // either there are no defending PDS
+					|| this.attackerUnits.WarSun.count !== 0 // or there are but attacking WarSuns negate their Planetary Shield
+					|| this.options.attacker.race === Race.Letnev && this.attackerUnits.Flagship.count !== 0; // Letnev Flagship negates Planetary Shield as well
+				switch (unitType) {
+					case UnitType.Flagship:
+						return this.battleType === BattleType.Space ||
+							battleSide === BattleSide.attacker && (this.options.attacker.race === Race.Naalu || this.options.attacker.race === Race.Letnev);
+					case UnitType.WarSun:
+						return this.battleType === BattleType.Space ||
+							battleSide === BattleSide.attacker;
+					case UnitType.Dreadnought:
+						return this.battleType === BattleType.Space ||
+							battleSide === BattleSide.attacker && bombardmentPossible;
+					case UnitType.Cruiser:
+						return this.battleType === BattleType.Space;
+					case UnitType.Carrier:
+						return this.battleType === BattleType.Space;
+					case UnitType.Destroyer:
+						return this.battleType === BattleType.Space;
+					case UnitType.Fighter:
+						return this.battleType === BattleType.Space ||
+							battleSide === BattleSide.attacker && this.options.attacker.race === Race.Naalu && this.attackerUnits.Flagship.count !== 0;
+					case UnitType.Ground:
+						return this.battleType === BattleType.Ground ||
+							this.options[battleSide].race === Race.Virus && this[battleSide + 'Units'].Flagship.count !== 0;
+					case UnitType.PDS:
+						return this.battleType === BattleType.Space || battleSide === BattleSide.defender;
+				}
+			},
 		},
 		watch: {
 			'options.attacker.race': resetUpdatesAndTechnologies('attacker'),

@@ -47,8 +47,10 @@
 		</select>
 	</div>
 	<div id="counters">
-		<div class="o-grid o-grid--no-gutter center-grid" v-for="(name, key) in UnitType">
-			<div class="o-grid__cell counter c-input-group">
+		<div class="o-grid o-grid--no-gutter center-grid" v-for="(name, key) in UnitType"
+			 :class="{ 'attacker-participates': participates(BattleSide.attacker, name),
+					   'defender-participates': participates(BattleSide.defender, name) }">
+			<div class="o-grid__cell counter c-input-group attacker">
 				<button type="button" class="c-button upgrade"
 						:class="{ 'c-button--brand': attackerUnits[key].upgraded,
 								  'c-button--ghost-brand': !attackerUnits[key].upgraded,
@@ -66,8 +68,8 @@
 						@click="increment(attackerUnits[key])">+
 				</button>
 			</div>
-			<div class="unit-name">{{displayName(name)}}</div>
-			<div class="o-grid__cell counter c-input-group">
+			<div class="unit-name"><span>{{displayName(name)}}</span></div>
+			<div class="o-grid__cell counter c-input-group defender">
 				<button type="button" class="c-button c-button--ghost-brand count-stepper" title="remove unit"
 						@click="decrement(defenderUnits[key])">-
 				</button>
