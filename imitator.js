@@ -121,27 +121,38 @@
 				}
 				winnuFlagships(attacker, options.attacker, defender);
 				winnuFlagships(defender, options.defender, attacker);
-				var attackerInflicted = rollDice(attacker, game.ThrowType.Battle, attackerBoost, attackerReroll);
-				var defenderInflicted = rollDice(defender, game.ThrowType.Battle, defenderBoost, defenderReroll);
+				var attackerInflictedToNonFighters = 0, attackerInflictedToEverything = 0;
+				var defenderInflictedToNonFighters = 0, defenderInflictedToEverything = 0;
+
+				if (options.attacker.race === game.Race.L1Z1X && attacker.some(unitIs(game.UnitType.Flagship))) {
+					attackerInflictedToNonFighters = rollDice(attacker.filter(flagshipOrDreadnought), game.ThrowType.Battle, attackerBoost, attackerReroll);
+					attackerInflictedToEverything = rollDice(attacker.filter(not(flagshipOrDreadnought)), game.ThrowType.Battle, attackerBoost, attackerReroll);
+				} else
+					attackerInflictedToEverything = rollDice(attacker, game.ThrowType.Battle, attackerBoost, attackerReroll);
+				if (options.defender.race === game.Race.L1Z1X && defender.some(unitIs(game.UnitType.Flagship))) {
+					defenderInflictedToNonFighters = rollDice(defender.filter(flagshipOrDreadnought), game.ThrowType.Battle, defenderBoost, defenderReroll);
+					defenderInflictedToEverything = rollDice(defender.filter(not(flagshipOrDreadnought)), game.ThrowType.Battle, defenderBoost, defenderReroll);
+				} else
+					defenderInflictedToEverything = rollDice(defender, game.ThrowType.Battle, defenderBoost, defenderReroll);
 				if (round === 1 && magenDefenseActivated) {
-					attackerInflicted = 0;
+					attackerInflictedToEverything = 0;
 				}
 
 				if (battleType === game.BattleType.Ground) {
 					var attackerAdditional = 0;
 					var defenderAdditional = 0;
 					if (options.attacker.valkyrieParticleWeave &&
-						defenderInflicted > 0)
+						defenderInflictedToEverything > 0)
 						attackerAdditional = 1;
 					if (options.defender.valkyrieParticleWeave &&
-						attackerInflicted > 0)
+						attackerInflictedToEverything > 0)
 						defenderAdditional = 1;
-					attackerInflicted += attackerAdditional;
-					defenderInflicted += defenderAdditional;
+					attackerInflictedToEverything += attackerAdditional;
+					defenderInflictedToEverything += defenderAdditional;
 				}
 
-				var attackerYinFlagshipDied = applyDamage(attacker, defenderInflicted, options.attacker);
-				var defenderYinFlagshipDied = applyDamage(defender, attackerInflicted, options.defender);
+				var attackerYinFlagshipDied = applyDamage(attacker, defenderInflictedToNonFighters, options.attacker, null, notFighter) || applyDamage(attacker, defenderInflictedToEverything, options.attacker);
+				var defenderYinFlagshipDied = applyDamage(defender, attackerInflictedToNonFighters, options.defender, null, notFighter) || applyDamage(defender, attackerInflictedToEverything, options.defender);
 				if (attackerYinFlagshipDied || defenderYinFlagshipDied) {
 					attacker.splice(0);
 					defender.splice(0);
@@ -160,6 +171,20 @@
 			}
 
 			return { attacker: attacker, defender: defender };
+
+			function notFighter(unit) {
+				return unit.type !== game.UnitType.Fighter;
+			}
+
+			function flagshipOrDreadnought(unit) {
+				return unit.type === game.UnitType.Flagship || unit.type === game.UnitType.Dreadnought;
+			}
+
+			function not(predicate) {
+				return function (unit) {
+					return !predicate(unit);
+				}
+			}
 		}
 
 		/** returns true if Yin flagship was killed */

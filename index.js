@@ -37,9 +37,11 @@
 				persistInput();
 
 				var computed;
-				// unfortunately Duranium Armor cannot be handled by the calculator
+				// unfortunately some game aspects are hard to handle by the calculator
 				var duraniumArmor = this.options.attacker.duraniumArmor || this.options.defender.duraniumArmor;
-				if (duraniumArmor && this.battleType === BattleType.Space)
+				var l1z1xFlagship = this.options.attacker.race === Race.L1Z1X && this.attackerUnits.Flagship.count !== 0 ||
+					this.options.defender.race === Race.L1Z1X && this.defenderUnits.Flagship.count !== 0;
+				if ((duraniumArmor || l1z1xFlagship) && this.battleType === BattleType.Space)
 					computed = imitator.estimateProbabilities(this);
 				else
 					computed = calculator.computeProbabilities(this);

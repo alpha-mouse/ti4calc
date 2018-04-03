@@ -285,7 +285,7 @@
 				race: root.Race.Creuss,
 			}),
 		},
-		L1z1x: {
+		L1Z1X: {
 			Flagship: new root.UnitInfo(UnitType.Flagship, {
 				sustainDamageHits: 1,
 				battleValue: 5, //todo special racial ability
@@ -397,7 +397,7 @@
 				battleValue: 6,
 			}),
 		},
-		L1z1x: {
+		L1Z1X: {
 			Dreadnought: new root.UnitInfo(UnitType.Dreadnought, {
 				sustainDamageHits: 1,
 				battleValue: 4,

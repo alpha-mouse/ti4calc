@@ -41,8 +41,8 @@ function testBattle(test, attacker, defender, battleType, options) {
 	var got = calc.computeProbabilities(input).distribution;
 	var expected = im.estimateProbabilities(input).distribution;
 
-	console.log('i', expected.toString());
-	console.log('c', got.toString());
+	//console.log('i', expected.toString());
+	//console.log('c', got.toString());
 
 	test.ok(distributionsEqual(expected, got), 'empirical differs from analytical');
 
@@ -1926,6 +1926,31 @@ exports.virusFlagshipWinnuFlagship = function (test) {
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
 
+exports.l1z1xFlagship = function (test) {
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Flagship] = { count: 1 };
+	attacker[game.UnitType.Dreadnought] = { count: 1 };
+	attacker[game.UnitType.Cruiser] = { count: 2 };
+	attacker[game.UnitType.Fighter] = { count: 2 };
+
+	defender[game.UnitType.Flagship] = { count: 1 };
+	defender[game.UnitType.Dreadnought] = { count: 1 };
+	defender[game.UnitType.Cruiser] = { count: 2 };
+	defender[game.UnitType.Fighter] = { count: 2 };
+
+	// calculator doesn't handle L1Z1X flagship, so just check that imitator takes it into account at least somehow.
+	// Yssaril is used as an opponent as their Flagship has the same stats (except for special ability of course)
+	var options = { attacker: { race: game.Race.L1Z1X, }, defender: { race: game.Race.Yssaril } };
+
+	var distribution = im.estimateProbabilities(new Input(attacker, defender, game.BattleType.Space, options)).distribution;
+	//console.log(distribution.toString());
+	var inverse = invertDistribution(distribution);
+	test.ok(!distributionsEqual(distribution, inverse), 'L1Z1X flagship not working');
+
+	test.done();
+};
+
 /** Test some random battle. Because I couldn't have imagined all edge cases.
  * When this test fails - take input fleets and options from the console and reproduce the problem */
 function chaoticTest(test) {
@@ -2063,7 +2088,7 @@ function group(exports, testGroup) {
 //delete barrageGroup[''];
 //Object.assign(exports.barrage, barrageGroup);
 
-exports.expansion = group(exports, 'expansion');
+//exports.expansion = group(exports, 'expansion');
 //exports.plasmaScoring = group(exports, 'plasmaScoring');
 //exports.magenDefense = group(exports, 'magenDefense');
 //exports.ground = group(exports, 'ground');
