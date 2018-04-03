@@ -88,7 +88,7 @@ input::-webkit-inner-spin-button {
 }
 
 .collapsed {
-	display: none;
+	display: none !important;
 }
 
 #chart-area {
@@ -139,4 +139,35 @@ input::-webkit-inner-spin-button {
 .c-input-group .c-button.hidden:first-child + .c-button {
 	border-left-width: 1px;
 	margin-left: -1px;
+}
+
+#spinner-container {
+	position: absolute;
+	z-index: 10;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+@keyframes rotate-forever {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+.loading-spinner {
+	animation-duration: 0.75s;
+	animation-iteration-count: infinite;
+	animation-name: rotate-forever;
+	animation-timing-function: linear;
+	height: 30px;
+	width: 30px;
+	border: 8px solid black;
+	border-right-color: transparent;
+	border-radius: 50%;
+	display: inline-block;
+	margin: 0 auto;
 }

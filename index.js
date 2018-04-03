@@ -10,6 +10,7 @@
 	var viewOnlyProperties = {
 		showOptions: false,
 		showHelp: false,
+		computing: false,
 	};
 
 	app = new Vue({
@@ -34,21 +35,29 @@
 				}
 			},
 			recompute: function () {
+				this.computing = true;
+				var self = this;
+
 				persistInput();
 
-				var computed;
-				// unfortunately some game aspects are hard to handle by the calculator
-				var duraniumArmor = this.options.attacker.duraniumArmor || this.options.defender.duraniumArmor;
-				var l1z1xFlagship = this.options.attacker.race === Race.L1Z1X && this.attackerUnits.Flagship.count !== 0 ||
-					this.options.defender.race === Race.L1Z1X && this.defenderUnits.Flagship.count !== 0;
-				var letnevFlagship = this.options.attacker.race === Race.Letnev && this.attackerUnits.Flagship.count !== 0 ||
-					this.options.defender.race === Race.Letnev && this.defenderUnits.Flagship.count !== 0;
-				if ((duraniumArmor || l1z1xFlagship || letnevFlagship) && this.battleType === BattleType.Space)
-					computed = imitator.estimateProbabilities(this);
-				else
-					computed = calculator.computeProbabilities(this);
+				// veeery poor man's background processing
+				setTimeout(function () {
+					var computed;
+					// unfortunately some game aspects are hard to handle in the calculator
+					var duraniumArmor = self.options.attacker.duraniumArmor || self.options.defender.duraniumArmor;
+					var l1z1xFlagship = self.options.attacker.race === Race.L1Z1X && self.attackerUnits.Flagship.count !== 0 ||
+						self.options.defender.race === Race.L1Z1X && self.defenderUnits.Flagship.count !== 0;
+					var letnevFlagship = self.options.attacker.race === Race.Letnev && self.attackerUnits.Flagship.count !== 0 ||
+						self.options.defender.race === Race.Letnev && self.defenderUnits.Flagship.count !== 0;
+					if ((duraniumArmor || l1z1xFlagship || letnevFlagship) && self.battleType === BattleType.Space)
+						computed = imitator.estimateProbabilities(self);
+					else
+						computed = calculator.computeProbabilities(self);
 
-				this.displayDistribution(computed);
+					self.displayDistribution(computed);
+
+					self.computing = false;
+				}, 15); // number is magic. but at least the spinner has time to show up before calculation begins
 			},
 			displayDistribution: function (solution) {
 

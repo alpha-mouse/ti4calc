@@ -26,7 +26,8 @@
 
 </head>
 <body>
-<div id="root" class="o-container o-container--small">
+<div id="root">
+<div class="o-container o-container--small">
 	<div class="o-grid center-grid">
 		<div class="o-grid__cell block"><strong>Attacker</strong></div>
 		<div class="unit-name"></div>
@@ -254,6 +255,10 @@
 <div id="result-area" style="width: 600px; height: 400px">
 	<canvas id="chart-area" width="600px" height="400px"></canvas>
 	<canvas id="chart-area-overlay" width="600px" height="400px"></canvas>
+	<div id="spinner-container" style="width: 600px; height: 400px" :class="{ collapsed: !computing }">
+		<div class="loading-spinner"></div>
+	</div>
+</div>
 </div>
 <script type="text/javascript" src="index.js"></script>
 </body>
