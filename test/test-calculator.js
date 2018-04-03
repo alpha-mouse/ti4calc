@@ -1951,6 +1951,44 @@ exports.l1z1xFlagship = function (test) {
 	test.done();
 };
 
+exports.letnevFlagshipGround = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Flagship] = { count: 1 };
+	attacker[game.UnitType.Ground] = { count: 2 };
+
+	defender[game.UnitType.Ground] = { count: 3 };
+	defender[game.UnitType.PDS] = { count: 1 };
+
+	var options = { attacker: { race: game.Race.Letnev }, defender: {} };
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
+exports.letnevFlagshipSpace = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Flagship] = { count: 1 };
+	attacker[game.UnitType.Cruiser] = { count: 2 };
+
+	defender[game.UnitType.Flagship] = { count: 1 };
+	defender[game.UnitType.Cruiser] = { count: 2 };
+
+	// calculator doesn't handle Letnev flagship in Space Combat because of repairing ability,
+	// so just check that imitator takes it into account at least somehow.
+	// Yssaril is used as an opponent as their Flagship has the same stats except for special ability
+	var options = { attacker: { race: game.Race.Letnev, }, defender: { race: game.Race.Yssaril } };
+
+	var distribution = im.estimateProbabilities(new Input(attacker, defender, game.BattleType.Space, options)).distribution;
+	//console.log(distribution.toString());
+	var inverse = invertDistribution(distribution);
+	test.ok(!distributionsEqual(distribution, inverse), 'Letnev flagship not working');
+
+	test.done();
+};
+
 /** Test some random battle. Because I couldn't have imagined all edge cases.
  * When this test fails - take input fleets and options from the console and reproduce the problem */
 function chaoticTest(test) {

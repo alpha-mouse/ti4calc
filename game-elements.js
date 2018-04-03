@@ -288,7 +288,7 @@
 		L1Z1X: {
 			Flagship: new root.UnitInfo(UnitType.Flagship, {
 				sustainDamageHits: 1,
-				battleValue: 5, //todo special racial ability
+				battleValue: 5,
 				battleDice: 2,
 				race: root.Race.L1Z1X,
 			}),
@@ -331,7 +331,7 @@
 		Letnev: {
 			Flagship: new root.UnitInfo(UnitType.Flagship, {
 				sustainDamageHits: 1,
-				battleValue: 5, //todo special racial ability
+				battleValue: 5,
 				battleDice: 2,
 				bombardmentValue: 5,
 				bombardmentDice: 3,

@@ -159,9 +159,13 @@
 				}
 
 				if (options.attacker.duraniumArmor)
-					undamageUnit(attacker);
+					repairUnit(attacker);
 				if (options.defender.duraniumArmor)
-					undamageUnit(defender);
+					repairUnit(defender);
+				if (options.attacker.race === game.Race.Letnev)
+					repairFlagships(attacker);
+				if (options.defender.race === game.Race.Letnev)
+					repairFlagships(defender);
 
 				if (options.attacker.race === game.Race.L1Z1X && battleType === game.BattleType.Ground) { // Harrow
 					prebattleActions.find(function (a) {
@@ -185,6 +189,45 @@
 					return !predicate(unit);
 				}
 			}
+
+			function repairUnit(fleet) {
+
+				var somethingRepaired = false;
+				for (var i = 0; i < fleet.length; i++) {
+					var unit = fleet[i];
+					if (unit.damaged) {
+						if (unit.damagedThisRound) {
+							unit.damagedThisRound = false;
+						} else {
+							if (!somethingRepaired) {
+								var damageGhost = unit.toDamageGhost();
+								// find proper place for the new damage ghost
+								var index = structs.binarySearch(fleet, damageGhost, fleet.comparer);
+								if (index < 0)
+									index = -index - 1;
+								fleet.splice(index, 0, damageGhost);
+								somethingRepaired = true;
+							}
+						}
+					}
+				}
+			}
+
+			function repairFlagships(fleet) {
+
+				for (var i = 0; i < fleet.length; i++) {
+					var unit = fleet[i];
+					if (unit.type === game.UnitType.Flagship && unit.damaged) {
+						var damageGhost = unit.toDamageGhost();
+						// find proper place for the new damage ghost
+						var index = structs.binarySearch(fleet, damageGhost, fleet.comparer);
+						if (index < 0)
+							index = -index - 1;
+						fleet.splice(index, 0, damageGhost);
+					}
+				}
+			}
+
 		}
 
 		/** returns true if Yin flagship was killed */
@@ -257,29 +300,6 @@
 
 		function hasUnits(fleet) {
 			return fleet.length > 0;
-		}
-
-		function undamageUnit(fleet) {
-
-			var somethingRepaired = false;
-			for (var i = 0; i < fleet.length; i++) {
-				var unit = fleet[i];
-				if (unit.damaged) {
-					if (unit.damagedThisRound) {
-						unit.damagedThisRound = false;
-					} else {
-						if (!somethingRepaired) {
-							var damageGhost = unit.toDamageGhost();
-							// find proper place for the new damage ghost
-							var index = structs.binarySearch(fleet, damageGhost, fleet.comparer);
-							if (index < 0)
-								index = -index - 1;
-							fleet.splice(index, 0, damageGhost);
-							somethingRepaired = true;
-						}
-					}
-				}
-			}
 		}
 
 		function initPrebattleActions() {
@@ -418,7 +438,8 @@
 					appliesTo: game.BattleType.Ground,
 					execute: function (attacker, defender, attackerFull, defenderFull, options) {
 						var bombardmentPossible = !defenderFull.some(unitIs(game.UnitType.PDS)) // either there are no defending PDS
-							|| attackerFull.some(unitIs(game.UnitType.WarSun)); // or there are but attacking WarSuns negate their Planetary Shield
+							|| attackerFull.some(unitIs(game.UnitType.WarSun)) // or there are but attacking WarSuns negate their Planetary Shield
+							|| options.attacker.race === game.Race.Letnev && attackerFull.some(unitIs(game.UnitType.Flagship)); // Letnev Flagship negates Planetary Shield as well
 						if (!bombardmentPossible) return;
 
 						var attackerModifier = options.defender.bunker ? -4 : 0;

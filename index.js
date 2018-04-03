@@ -41,7 +41,9 @@
 				var duraniumArmor = this.options.attacker.duraniumArmor || this.options.defender.duraniumArmor;
 				var l1z1xFlagship = this.options.attacker.race === Race.L1Z1X && this.attackerUnits.Flagship.count !== 0 ||
 					this.options.defender.race === Race.L1Z1X && this.defenderUnits.Flagship.count !== 0;
-				if ((duraniumArmor || l1z1xFlagship) && this.battleType === BattleType.Space)
+				var letnevFlagship = this.options.attacker.race === Race.Letnev && this.attackerUnits.Flagship.count !== 0 ||
+					this.options.defender.race === Race.Letnev && this.defenderUnits.Flagship.count !== 0;
+				if ((duraniumArmor || l1z1xFlagship || letnevFlagship) && this.battleType === BattleType.Space)
 					computed = imitator.estimateProbabilities(this);
 				else
 					computed = calculator.computeProbabilities(this);
