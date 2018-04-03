@@ -2056,6 +2056,12 @@ function chaoticTest(test) {
 	// Duranium Armor is not supported by the calculator, so don't try to test it
 	options.attacker.duraniumArmor = false;
 	options.defender.duraniumArmor = false;
+	if (options.attacker.race === game.Race.L1Z1X || options.attacker.race === game.Race.Letnev) {
+		attacker.Flagship.count = 0;
+	}
+	if (options.defender.race === game.Race.L1Z1X || options.defender.race === game.Race.Letnev) {
+		defender.Flagship.count = 0;
+	}
 
 	for (var actionCard in game.ActionCards) {
 		options.attacker[actionCard] = Math.random() < .2;
