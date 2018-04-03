@@ -367,6 +367,13 @@
 	};
 
 	root.StandardUpgrades = {
+		// same as the regular Dreadnought, but upgrade affects ordering
+		Dreadnought: new root.UnitInfo(UnitType.Dreadnought, {
+			sustainDamageHits: 1,
+			battleValue: 5,
+			bombardmentValue: 5,
+			bombardmentDice: 1,
+		}),
 		Cruiser: new root.UnitInfo(UnitType.Cruiser, {
 			battleValue: 6,
 		}),
@@ -438,7 +445,6 @@
 			(input[opponentSide + 'Units'][UnitType.Flagship] || { count: 0 }).count !== 0;
 
 		var result = [];
-		var damageGhosts = [];
 		for (var unitType in UnitType) {
 			var counter = input[battleSide + 'Units'][unitType] || { count: 0 };
 			for (var i = 0; i < counter.count; i++) {
@@ -446,15 +452,10 @@
 				var addedUnit = unit.clone();
 				result.push(addedUnit);
 				if (unit.sustainDamageHits > 0 && !opponentMentakFlagship) {
-					damageGhosts.push(addedUnit.toDamageGhost());
+					result.push(addedUnit.toDamageGhost());
 				}
 			}
-			if (!thisSideOptions.riskDirectHit) {
-				result = result.concat(damageGhosts);
-				damageGhosts = [];
-			}
 		}
-		result = result.concat(damageGhosts);
 
 		var ships = createShips();
 		var virusFlagship = battleType === root.BattleType.Space && thisSideOptions.race === root.Race.Virus &&
@@ -468,16 +469,15 @@
 		naaluGoundUnitOrder[UnitType.Fighter] = 2;
 		var comparer;
 		var vipGround;
-		if (virusFlagship)
-			comparer = defaultComparer;
-		else if (naaluFlagship) {
+		if (naaluFlagship) {
 			// in case Fighters are stronger than Ground Forces, I'd like Ground Forces to die first, then sacrifice the
 			// Fighters. But, Fighters cannot take control of the planet, so I'd like to save one Ground Force
 			vipGround = (input[battleSide + 'Units'][UnitType.Fighter] || {}).upgraded &&
 				!(input[battleSide + 'Units'][UnitType.Ground] || {}).upgraded &&
 				result.find(function (unit) { return unit.type === UnitType.Ground; });
 			comparer = naaluComparer;
-		}
+		} else if ((input[battleSide + 'Units'][UnitType.Dreadnought] || {}).upgraded)
+			comparer = upgradedDreadnoughtsComparer;
 		else
 			comparer = defaultComparer;
 		result.sort(comparer);
@@ -515,23 +515,29 @@
 
 		function defaultComparer(unit1, unit2) {
 			var typeOrder = unitOrder[unit1.type] - unitOrder[unit2.type];
+			var damageGhostOrder = (unit1.isDamageGhost ? 1 : 0) - (unit2.isDamageGhost ? 1 : 0);
 			if (thisSideOptions.riskDirectHit) {
 				// means damage ghosts will come last
-				if (unit1.isDamageGhost === unit2.isDamageGhost)
-					return typeOrder;
-				else if (unit1.isDamageGhost)
-					return 1;
-				else
-					return -1;
+				return damageGhostOrder * 100 + typeOrder;
 			} else {
 				// means units are grouped with their damage ghosts
-				if (unit1.type === unit2.type) {
-					if (unit1.isDamageGhost)
-						return 1;
-					else
-						return -1;
-				} else
-					return typeOrder;
+				return typeOrder * 100 + damageGhostOrder;
+			}
+		}
+
+		function upgradedDreadnoughtsComparer(unit1, unit2) {
+			var typeOrder = unitOrder[unit1.type] - unitOrder[unit2.type];
+			var damageGhostOrder = (unit1.isDamageGhost ? 1 : 0) - (unit2.isDamageGhost ? 1 : 0);
+			if (thisSideOptions.riskDirectHit) {
+				// means damage ghosts will come last
+				return damageGhostOrder * 100 + typeOrder;
+			} else if (unit1.type === UnitType.Dreadnought && unit1.isDamageGhost){
+				return unit2.type === UnitType.Dreadnought && unit2.isDamageGhost ? 0: 1;
+			} else if (unit2.type === UnitType.Dreadnought && unit2.isDamageGhost) {
+				return -1;
+			} else {
+				// means units are grouped with their damage ghosts
+				return typeOrder * 100 + damageGhostOrder;
 			}
 		}
 

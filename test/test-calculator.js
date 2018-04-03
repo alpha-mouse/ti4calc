@@ -172,7 +172,7 @@ exports.expansionRiskDirectHit = function (test) {
 	testExpansion(test, expansion, expected);
 };
 
-exports.expansionNoRiskDirectHit = function (test) {
+exports.expansionNoRiskDirectHitRegularDreadnoughts = function (test) {
 	var fleet = {};
 	fleet[game.UnitType.WarSun] = { count: 1 };
 	fleet[game.UnitType.Dreadnought] = { count: 4 };
@@ -199,7 +199,40 @@ exports.expansionNoRiskDirectHit = function (test) {
 		game.StandardUnits[u.Cruiser],
 		game.StandardUnits[u.Cruiser],
 		game.StandardUnits[u.PDS],
-		game.StandardUnits[u.PDS]
+		game.StandardUnits[u.PDS],
+	];
+
+	testExpansion(test, expansion, expected);
+};
+
+exports.expansionNoRiskDirectHitUpgradedDreadnoughts = function (test) {
+	var fleet = {};
+	fleet[game.UnitType.WarSun] = { count: 1 };
+	fleet[game.UnitType.Dreadnought] = { count: 4, upgraded: true };
+	fleet[game.UnitType.Cruiser] = { count: 3 };
+	fleet[game.UnitType.PDS] = { count: 2 };
+
+	var expansion = game.expandFleet(new Input(fleet, null, game.BattleType.Space, {
+		attacker: { race: defaultRace, riskDirectHit: false },
+	}), game.BattleSide.attacker);
+
+	var u = game.UnitType;
+	var expected = [
+		game.StandardUnits[u.WarSun],
+		game.StandardUnits[u.WarSun].toDamageGhost(),
+		game.StandardUnits[u.Dreadnought],
+		game.StandardUnits[u.Dreadnought],
+		game.StandardUnits[u.Dreadnought],
+		game.StandardUnits[u.Dreadnought],
+		game.StandardUnits[u.Cruiser],
+		game.StandardUnits[u.Cruiser],
+		game.StandardUnits[u.Cruiser],
+		game.StandardUnits[u.PDS],
+		game.StandardUnits[u.PDS],
+		game.StandardUnits[u.Dreadnought].toDamageGhost(),
+		game.StandardUnits[u.Dreadnought].toDamageGhost(),
+		game.StandardUnits[u.Dreadnought].toDamageGhost(),
+		game.StandardUnits[u.Dreadnought].toDamageGhost(),
 	];
 
 	testExpansion(test, expansion, expected);
@@ -969,6 +1002,7 @@ exports.assaultCannonNoRiskDirectHit = function (test) {
 
 	attacker[game.UnitType.WarSun] = { count: 1 };
 	attacker[game.UnitType.Dreadnought] = { count: 1 };
+	attacker[game.UnitType.Fighter] = { count: 1 };
 
 	defender[game.UnitType.Destroyer] = { count: 3 };
 
@@ -1595,10 +1629,11 @@ exports.letnevRacialNonEuclideanSimple = function (test) {
 exports.letnevRacialNonEuclideanDontRiskDirectHit = function (test) {
 	var attacker = {};
 	var defender = {};
-	attacker[game.UnitType.Dreadnought] = { count: 3 };
+	attacker[game.UnitType.WarSun] = { count: 1 };
+	attacker[game.UnitType.Dreadnought] = { count: 2 };
 	attacker[game.UnitType.Fighter] = { count: 2 };
 
-	defender[game.UnitType.Dreadnought] = { count: 3 };
+	defender[game.UnitType.Dreadnought] = { count: 4 };
 
 	var options = { attacker: { race: game.Race.Letnev, nonEuclidean: true, riskDirectHit: false }, defender: {} };
 
@@ -1608,10 +1643,11 @@ exports.letnevRacialNonEuclideanDontRiskDirectHit = function (test) {
 exports.letnevRacialNonEuclideanMoraleBoost = function (test) {
 	var attacker = {};
 	var defender = {};
-	attacker[game.UnitType.Dreadnought] = { count: 3 };
+	attacker[game.UnitType.WarSun] = { count: 1 };
+	attacker[game.UnitType.Dreadnought] = { count: 2 };
 	attacker[game.UnitType.Fighter] = { count: 2 };
 
-	defender[game.UnitType.Dreadnought] = { count: 3 };
+	defender[game.UnitType.Dreadnought] = { count: 4 };
 
 	var options = {
 		attacker: { race: game.Race.Letnev, nonEuclidean: true, riskDirectHit: false },
