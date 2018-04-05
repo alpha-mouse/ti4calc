@@ -295,7 +295,7 @@
 			defenderUnits: {},
 			options: {
 				attacker: {
-					race: Race.Sardakk,
+					race: Race.Arborec,
 				}, defender: null,
 			},
 		};
@@ -323,7 +323,7 @@
 			for (var viewOnlyProperty in viewOnlyProperties) {
 				delete inputToSave[viewOnlyProperty];
 			}
-			localStorage.setItem('input', JSON.stringify(inputToSave));
+			localStorage.setItem('ti4calc/input', JSON.stringify(inputToSave));
 			return true;
 		}
 		return false;
@@ -331,7 +331,7 @@
 
 	function getPersistedInput() {
 		if (!localStorage) return null;
-		var result = localStorage.getItem('input');
+		var result = localStorage.getItem('ti4calc/input');
 		if (!result) return null;
 		return JSON.parse(result);
 	}

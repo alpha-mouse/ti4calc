@@ -41,7 +41,7 @@
 		</select>
 		<div class="unit-name"></div>
 		<select v-model="options.defender.race" class="o-grid__cell c-field block">
-			<option v-for="(name, key) in Race" v-bind:value="key">
+			<option v-for="(name, key) in RacesDisplayNames" v-bind:value="key">
 				{{ name }}
 			</option>
 		</select>
