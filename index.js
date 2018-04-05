@@ -156,13 +156,13 @@
 				switch (unitType) {
 					case UnitType.Flagship:
 						return this.battleType === BattleType.Space ||
-							battleSide === BattleSide.attacker && (this.options.attacker.race === Race.Naalu || this.options.attacker.race === Race.Letnev);
+							battleSide === BattleSide.attacker && (this.options.attacker.race === Race.Naalu || this.options.attacker.race === Race.Letnev && !this.options.defender.conventionsOfWar);
 					case UnitType.WarSun:
 						return this.battleType === BattleType.Space ||
-							battleSide === BattleSide.attacker;
+							battleSide === BattleSide.attacker && !this.options.defender.conventionsOfWar;
 					case UnitType.Dreadnought:
 						return this.battleType === BattleType.Space ||
-							battleSide === BattleSide.attacker && bombardmentPossible;
+							battleSide === BattleSide.attacker && bombardmentPossible && !this.options.defender.conventionsOfWar;
 					case UnitType.Cruiser:
 						return this.battleType === BattleType.Space;
 					case UnitType.Carrier:

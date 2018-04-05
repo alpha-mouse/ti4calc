@@ -2106,6 +2106,25 @@ exports.probableDeadlockAfterSomeRounds = function (test) {
 	test.done();
 };
 
+exports.conventionsOfWar = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.WarSun] = { count: 1 };
+	attacker[game.UnitType.Dreadnought] = { count: 2 };
+	attacker[game.UnitType.Ground] = { count: 2 };
+
+	defender[game.UnitType.Ground] = { count: 5 };
+
+	var options = {
+		attacker: { },
+		defender: { conventionsOfWar: true },
+	};
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
+
 /** Test some random battle. Because I couldn't have imagined all edge cases.
  * When this test fails - take input fleets and options from the console and reproduce the problem */
 function chaoticTest(test) {

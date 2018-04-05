@@ -832,9 +832,11 @@
 		}
 
 		function bombardmentTransitionsVector(attackerFull, defenderFull, options) {
-			var bombardmentPossible = !defenderFull.some(unitIs(game.UnitType.PDS)) // either there are no defending PDS
+			var bombardmentPossible = !options.defender.conventionsOfWar && (
+				!defenderFull.some(unitIs(game.UnitType.PDS)) // either there are no defending PDS
 				|| attackerFull.some(unitIs(game.UnitType.WarSun)) // or there are but attacking WarSuns negate their Planetary Shield
-				|| options.attacker.race === game.Race.Letnev && attackerFull.some(unitIs(game.UnitType.Flagship)); // Letnev Flagship negates Planetary Shield as well
+				|| options.attacker.race === game.Race.Letnev && attackerFull.some(unitIs(game.UnitType.Flagship)) // Letnev Flagship negates Planetary Shield as well
+			);
 			if (!bombardmentPossible) return [1];
 
 			var attackerModifier = options.defender.bunker ? -4 : 0;
