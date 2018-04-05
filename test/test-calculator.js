@@ -1,3 +1,4 @@
+var structs = require('../structs');
 var game = require('../game-elements');
 var calc = require('../calculator').calculator;
 var imitatorModule = require('../imitator');
@@ -2019,6 +2020,68 @@ exports.letnevFlagshipSpace = function (test) {
 	//console.log(distribution.toString());
 	var inverse = invertDistribution(distribution);
 	test.ok(!distributionsEqual(distribution, inverse), 'Letnev flagship not working');
+
+	test.done();
+};
+
+exports.deadlockStraightAway = function (test) {
+
+	// https://boardgamegeek.com/thread/1904694/how-do-you-resolve-endless-battles
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Dreadnought] = { count: 2 };
+
+	defender[game.UnitType.Dreadnought] = { count: 2 };
+
+	var options = {
+		attacker: {
+			duraniumArmor: true,
+			nonEuclidean: true,
+		},
+		defender: {
+			duraniumArmor: true,
+			nonEuclidean: true,
+		}
+	};
+
+	var distribution = im.estimateProbabilities(new Input(attacker, defender, game.BattleType.Space, options)).distribution;
+	//console.log(distribution.toString());
+	var expected = Object.assign(new structs.EmpiricalDistribution(), {
+		0: 1,
+		min: 0,
+		max: 0,
+	});
+	test.ok(distributionsEqual(distribution, expected), 'Deadlock not detected');
+
+	test.done();
+};
+
+exports.probableDeadlockAfterSomeRounds = function (test) {
+
+	// https://boardgamegeek.com/thread/1904694/how-do-you-resolve-endless-battles
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Dreadnought] = { count: 2 };
+	attacker[game.UnitType.Cruiser] = { count: 1 };
+
+	defender[game.UnitType.Dreadnought] = { count: 2 };
+	defender[game.UnitType.Destroyer] = { count: 1 };
+
+	var options = {
+		attacker: {
+			duraniumArmor: true,
+			nonEuclidean: true,
+		},
+		defender: {
+			duraniumArmor: true,
+			nonEuclidean: true,
+		}
+	};
+
+	var distribution = im.estimateProbabilities(new Input(attacker, defender, game.BattleType.Space, options)).distribution;
+	test.ok(true, 'It did not hang, so all is fine, I guess');
 
 	test.done();
 };

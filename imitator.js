@@ -172,6 +172,28 @@
 						return a.name === 'Bombardment';
 					}).execute(attacker, defender, attackerFull, defenderFull, options);
 				}
+
+				// https://boardgamegeek.com/thread/1904694/how-do-you-resolve-endless-battles
+				if (// both sides have Duranium Armor
+				options.attacker.duraniumArmor && options.defender.duraniumArmor &&
+				// both sides have Non-Euclidean Shielding
+				options.attacker.nonEuclidean && options.defender.nonEuclidean &&
+				// and both of them have two repairable ships left
+				attacker.filter(function (unit) { return unit.sustainDamageHits > 0 && !unit.isDamageGhost; }).length === 2 &&
+				defender.filter(function (unit) { return unit.sustainDamageHits > 0 && !unit.isDamageGhost; }).length === 2 &&
+				// and at least one of them (for each side) is not damaged
+				attacker.filter(function (unit) { return unit.sustainDamageHits > 0 && !unit.isDamageGhost && !unit.damaged; }).length > 0 &&
+				defender.filter(function (unit) { return unit.sustainDamageHits > 0 && !unit.isDamageGhost && !unit.damaged; }).length > 0 &&
+
+				// but both cannot inflict more than two damage
+				attacker.map(function (unit) {return unit.battleDice || 0; }).reduce(sum) <= 2 &&
+				defender.map(function (unit) {return unit.battleDice || 0; }).reduce(sum) <= 2
+				) {
+					// deadlock detected. report as a draw
+					attacker.splice(0);
+					defender.splice(0);
+					break;
+				}
 			}
 
 			return { attacker: attacker, defender: defender };
@@ -584,6 +606,10 @@
 
 		function notFighterNorGroundForceShip(unit) {
 			return unit.type !== game.UnitType.Fighter && unit.type !== game.UnitType.Ground && !unit.isDamageGhost;
+		}
+
+		function sum(a, b) {
+			return a + b;
 		}
 	})();
 })(typeof exports === 'undefined' ? window : exports);
