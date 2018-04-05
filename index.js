@@ -187,6 +187,12 @@
 			attackerUnits: recomputeHandler,
 			defenderUnits: recomputeHandler,
 			options: recomputeHandler,
+			'options.attacker.publicizeSchematics': function (value) {
+				this.options.defender.publicizeSchematics = value;
+			},
+			'options.defender.publicizeSchematics': function (value) {
+				this.options.attacker.publicizeSchematics = value;
+			},
 		},
 		computed: {
 			raceTechnologies: function () {

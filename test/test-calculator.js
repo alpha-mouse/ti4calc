@@ -352,6 +352,26 @@ exports.expansionAndFilterNaaluFlagshipGroundBetter = function (test) {
 	testExpansion(test, filteredFleet, expected);
 };
 
+exports.expansionPublicizeWeaponSchematics = function (test) {
+	var fleet = {};
+	fleet[game.UnitType.WarSun] = { count: 2 };
+	fleet[game.UnitType.Dreadnought] = { count: 1 };
+
+	var expansion = game.expandFleet(new Input(fleet, null, game.BattleType.Space, {
+		attacker: { race: defaultRace, publicizeSchematics: true },
+	}), game.BattleSide.attacker);
+
+	var u = game.UnitType;
+	var expected = [
+		game.StandardUnits[u.WarSun],
+		game.StandardUnits[u.WarSun],
+		game.StandardUnits[u.Dreadnought],
+		game.StandardUnits[u.Dreadnought].toDamageGhost(),
+	];
+
+	testExpansion(test, expansion, expected);
+};
+
 exports.symmetricImitator = function (test) {
 	var fleet = {};
 	fleet[game.UnitType.Dreadnought] = 2;

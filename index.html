@@ -143,6 +143,9 @@
 		<div class="heading"><strong>Action Cards</strong></div>
 		<option-pair v-for="(option, key) in ActionCards"
 					  :option-name="key" :option="option" :options="options"></option-pair>
+		<div class="heading"><strong>Agendas</strong></div>
+		<option-pair v-for="(option, key) in Agendas"
+					 :option-name="key" :option="option" :options="options"></option-pair>
 	</div>
 	<div id="help" :class="{ collapsed: !showHelp }">
 		<h1>Twilight Imperium IV Edition Battle Calculator</h1>
@@ -216,6 +219,7 @@
 			<li><strong>Sardakk N'orr</strong> <strong>Exotrireme II</strong> "kamikaze" ability,</li>
 			<li><strong>Ghosts of Creuss</strong> <strong>Dimensional Splicer</strong> technology,</li>
 			<li><strong>Emirates of Hacan</strong> flagship ability adding 1 to die result,</li>
+			<li><strong>The Crown of Thanlos</strong> Agenda card,</li>
 		</ul>
 		<p>Some other notes and limitations:</p>
 		<ul>

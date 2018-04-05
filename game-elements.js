@@ -94,12 +94,18 @@
 	};
 
 	root.Technologies = {
-		antimassDeflectors: new Option('Antimass Deflectors', '-1 to opponents Space Cannon rolls'),
+		antimassDeflectors: new Option('Antimass Deflectors', '-1 to opponents\' Space Cannon rolls'),
 		gravitonLaser: new Option('Graviton Laser System', 'Space Cannon hits should be applied to non-fighters if possible'),
 		plasmaScoring: new Option('Plasma Scoring', 'One additional die for one unit during Space Cannon or Bombardment'),
 		magenDefense: new Option('Magen Defense Grid', 'Opponent doesn\'t throw dice for one round if you have Planetary Shield', 'defender'),
 		duraniumArmor: new Option('Duranium Armor', 'After each round repair 1 unit that wasn\'t damaged this round'),
 		assaultCannon: new Option('Assault Cannon', 'Opponent destroys 1 non-Fighter ship if you have at least 3 non-Fighters'),
+	};
+
+	root.Agendas = {
+		publicizeSchematics: new Option('Publicize Weapon Schematics', 'WarSuns don\'t sustain damage'),
+		conventionsOfWar: new Option('Conventions of War', 'No bombardment',  'defender'),
+		prophecyOfIxth: new Option('Prophecy of IXTH', '+1 to Fighters rolls'),
 	};
 
 	root.RaceSpecificTechnologies = {
@@ -451,7 +457,7 @@
 				var unit = (counter.upgraded ? upgradedUnits : standardUnits)[unitType];
 				var addedUnit = unit.clone();
 				result.push(addedUnit);
-				if (unit.sustainDamageHits > 0 && !opponentMentakFlagship) {
+				if (unit.sustainDamageHits > 0 && !opponentMentakFlagship && !(unitType === UnitType.WarSun && thisSideOptions.publicizeSchematics)) {
 					result.push(addedUnit.toDamageGhost());
 				}
 			}
