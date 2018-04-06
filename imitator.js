@@ -593,6 +593,15 @@
 						return sideOptions.race === game.Race.JolNar ? -1 : 0;
 					}
 				},
+				{
+					name: 'prophecyOfIxth',
+					apply: function (battleType, round, sideOptions) {
+						return sideOptions.prophecyOfIxth ?
+							function (unit) {
+								return unit.type === game.UnitType.Fighter ? 1 : 0;
+							} : 0;
+					}
+				},
 			];
 		}
 

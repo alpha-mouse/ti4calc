@@ -728,7 +728,6 @@ exports.mentakRacial = function (test) {
 	var options = { attacker: { race: game.Race.Mentak }, defender: { race: defaultRace } };
 
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
-
 };
 
 exports.mentakRacialWithBarrageAndPds = function (test) {
@@ -2117,9 +2116,53 @@ exports.conventionsOfWar = function (test) {
 	defender[game.UnitType.Ground] = { count: 5 };
 
 	var options = {
-		attacker: { },
+		attacker: {},
 		defender: { conventionsOfWar: true },
 	};
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
+exports.prophecyOfIxth = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Cruiser] = { count: 1 };
+	attacker[game.UnitType.Fighter] = { count: 3 };
+
+	defender[game.UnitType.Cruiser] = { count: 1 };
+	defender[game.UnitType.Destroyer] = { count: 1 };
+
+	var options = { attacker: { prophecyOfIxth: true }, defender: {} };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.prophecyOfIxthMoraleBoost = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Cruiser] = { count: 1 };
+	attacker[game.UnitType.Fighter] = { count: 3 };
+
+	defender[game.UnitType.Cruiser] = { count: 1 };
+	defender[game.UnitType.Destroyer] = { count: 1 };
+
+	var options = { attacker: { prophecyOfIxth: true }, defender: {} };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.prophecyOfIxthNaalu = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Flagship] = { count: 1 };
+	attacker[game.UnitType.Fighter] = { count: 3 };
+
+	defender[game.UnitType.Ground] = { count: 3 };
+
+	var options = { attacker: { race: game.Race.Naalu, prophecyOfIxth: true }, defender: {} };
 
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
@@ -2288,3 +2331,4 @@ function group(exports, testGroup) {
 //exports.yin = group(exports, 'yinFlagship');
 //exports.jolNar = group(exports, 'jolNar');
 //exports.virus = group(exports, 'virus');
+exports.prophecy = group(exports, 'prophecyOfIxth');
