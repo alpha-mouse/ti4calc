@@ -81,8 +81,18 @@
 			var attacker = attackerFull.filterForBattle();
 			var defender = defenderFull.filterForBattle();
 
-			for (var i = 0; i < prebattleActions.length; i++) {
-				var action = prebattleActions[i];
+			var actions = prebattleActions;
+			if (options.attacker.race === game.Race.Mentak) {
+				actions = prebattleActions.slice();
+				var t = actions[1];
+				actions[1] = actions[2];
+				actions[2] = t;
+				if (actions[1].name !== 'Mentak racial' ||
+					actions[2].name !== 'Assault Cannon')
+					throw new Error('unexpected pre-battle actions order');
+			}
+			for (var i = 0; i < actions.length; i++) {
+				var action = actions[i];
 				if (action.appliesTo === battleType)
 					action.execute(attacker, defender, attackerFull, defenderFull, options);
 			}
@@ -92,17 +102,6 @@
 				options.defender.magenDefense &&
 				defenderFull.some(unitIs(game.UnitType.PDS)) &&
 				!attackerFull.some(unitIs(game.UnitType.WarSun));
-
-			function winnuFlagships(fleet, sideOptions, opposingFleet) {
-				if (battleType === game.BattleType.Space && sideOptions.race === game.Race.Winnu) {
-					// according to https://boardgamegeek.com/thread/1916774/nekrowinnu-flagship-interaction
-					var battleDice = opposingFleet.filter(notFighterNorGroundForceShip).length;
-					// In the game there could be only one flagship, but why the hell not)
-					fleet.filter(unitIs(game.UnitType.Flagship)).forEach(function (flagship) {
-						flagship.battleDice = battleDice;
-					});
-				}
-			}
 
 			while (hasUnits(attacker) && hasUnits(defender)) {
 				round++;
@@ -171,7 +170,7 @@
 					repairFlagships(defender);
 
 				if (options.attacker.race === game.Race.L1Z1X && battleType === game.BattleType.Ground) { // Harrow
-					prebattleActions.find(function (a) {
+					actions.find(function (a) {
 						return a.name === 'Bombardment';
 					}).execute(attacker, defender, attackerFull, defenderFull, options);
 				}
@@ -200,6 +199,17 @@
 			}
 
 			return { attacker: attacker, defender: defender };
+
+			function winnuFlagships(fleet, sideOptions, opposingFleet) {
+				if (battleType === game.BattleType.Space && sideOptions.race === game.Race.Winnu) {
+					// according to https://boardgamegeek.com/thread/1916774/nekrowinnu-flagship-interaction
+					var battleDice = opposingFleet.filter(notFighterNorGroundForceShip).length;
+					// In the game there could be only one flagship, but why the hell not)
+					fleet.filter(unitIs(game.UnitType.Flagship)).forEach(function (flagship) {
+						flagship.battleDice = battleDice;
+					});
+				}
+			}
 
 			function notFighter(unit) {
 				return unit.type !== game.UnitType.Fighter;
@@ -372,34 +382,6 @@
 					},
 				},
 				{
-					name: 'Mentak racial',
-					appliesTo: game.BattleType.Space,
-					execute: function (attacker, defender, attackerFull, defenderFull, options) {
-
-						function getInflicted(fleet) {
-							var firing = fleet.filter(unitIs(game.UnitType.Cruiser));
-							if (firing.length < 2)
-								firing = firing.concat(fleet.filter(unitIs(game.UnitType.Destroyer)));
-							if (firing.length > 2)
-								firing = firing.slice(0, 2);
-							return rollDice(firing, game.ThrowType.Battle);
-						}
-
-						var attackerInflicted = 0;
-						var defenderInflicted = 0;
-						if (options.attacker.race === game.Race.Mentak)
-							attackerInflicted = getInflicted(attacker);
-						if (options.defender.race === game.Race.Mentak)
-							defenderInflicted = getInflicted(defender);
-						var attackerYinFlagshipDied = applyDamage(attacker, defenderInflicted, options.attacker);
-						var defenderYinFlagshipDied = applyDamage(defender, attackerInflicted, options.defender);
-						if (attackerYinFlagshipDied || defenderYinFlagshipDied) {
-							attacker.splice(0);
-							defender.splice(0);
-						}
-					},
-				},
-				{
 					name: 'Assault Cannon',
 					appliesTo: game.BattleType.Space,
 					execute: function (attacker, defender, attackerFull, defenderFull, options) {
@@ -435,6 +417,34 @@
 									return unit;
 								}
 							}
+						}
+					},
+				},
+				{
+					name: 'Mentak racial',
+					appliesTo: game.BattleType.Space,
+					execute: function (attacker, defender, attackerFull, defenderFull, options) {
+
+						function getInflicted(fleet) {
+							var firing = fleet.filter(unitIs(game.UnitType.Cruiser));
+							if (firing.length < 2)
+								firing = firing.concat(fleet.filter(unitIs(game.UnitType.Destroyer)));
+							if (firing.length > 2)
+								firing = firing.slice(0, 2);
+							return rollDice(firing, game.ThrowType.Battle);
+						}
+
+						var attackerInflicted = 0;
+						var defenderInflicted = 0;
+						if (options.attacker.race === game.Race.Mentak)
+							attackerInflicted = getInflicted(attacker);
+						if (options.defender.race === game.Race.Mentak)
+							defenderInflicted = getInflicted(defender);
+						var attackerYinFlagshipDied = applyDamage(attacker, defenderInflicted, options.attacker);
+						var defenderYinFlagshipDied = applyDamage(defender, attackerInflicted, options.defender);
+						if (attackerYinFlagshipDied || defenderYinFlagshipDied) {
+							attacker.splice(0);
+							defender.splice(0);
 						}
 					},
 				},

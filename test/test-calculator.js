@@ -2247,6 +2247,36 @@ exports.tekklarLegionAgainstSardakk = function (test) {
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
 
+exports.mentakAttackerAssaultCannonDefender = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Cruiser] = { count: 2 };
+	attacker[game.UnitType.Destroyer] = { count: 1 };
+
+	defender[game.UnitType.Cruiser] = { count: 2 };
+	defender[game.UnitType.Destroyer] = { count: 1 };
+
+	var options = { attacker: { race: game.Race.Mentak }, defender: { assaultCannon: true } };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.mentakDefenderAssaultCannonAttacker = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Cruiser] = { count: 2 };
+	attacker[game.UnitType.Destroyer] = { count: 1 };
+
+	defender[game.UnitType.Cruiser] = { count: 2 };
+	defender[game.UnitType.Destroyer] = { count: 1 };
+
+	var options = { attacker: { assaultCannon: true }, defender: { race: game.Race.Mentak } };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
 /** Test some random battle. Because I couldn't have imagined all edge cases.
  * When this test fails - take input fleets and options from the console and reproduce the problem */
 function chaoticTest(test) {
@@ -2366,7 +2396,7 @@ exports.chaoticReproduce = function (test) {
 	testBattle(test, attacker, defender, battleType, options);
 };
 
-exports.chaoticMonkey = new Array(10).fill(chaoticTest);
+//exports.chaoticMonkey = new Array(10).fill(chaoticTest);
 
 function Input(attacker, defender, battleType, options) {
 	this.attackerUnits = attacker;
@@ -2391,34 +2421,35 @@ function group(exports, testGroup) {
 	return result;
 }
 
-var useGrouping = false; // set to true to be able to test related groups of test easily, like `nodeunit -t maneuveringJets`
+var useGrouping = true; // set to true to be able to test related groups of test easily, like `nodeunit -t maneuveringJets`
 
 if (useGrouping) {
 	var barrageGroup = group(exports, 'barrage');
 	delete barrageGroup[''];
-	Object.assign(exports.barrage, barrageGroup);
 
-	exports.expansion = group(exports, 'expansion');
-	exports.plasmaScoring = group(exports, 'plasmaScoring');
-	exports.magenDefense = group(exports, 'magenDefense');
-	exports.ground = group(exports, 'ground');
 	exports.assaultCannon = group(exports, 'assaultCannon');
-	exports.moraleBoost = group(exports, 'moraleBoost');
-	exports.fireTeam = group(exports, 'fireTeam');
-	exports.fighterPrototype = group(exports, 'fighterPrototype');
+	exports.barrage = Object.assign(exports.barrage, barrageGroup);
 	exports.bunker = group(exports, 'bunker');
 	exports.directHit = group(exports, 'directHit');
-	exports.maneuveringJets = group(exports, 'maneuveringJets');
-	exports.sardakk = group(exports, 'sardakk');
-	exports.harrow = group(exports, 'harrow');
-	exports.nonEuclidean = group(exports, 'nonEuclidean');
-	exports.valkyrieParticleWeave = group(exports, 'valkyrieParticleWeave');
+	exports.expansion = group(exports, 'expansion');
+	exports.fighterPrototype = group(exports, 'fighterPrototype');
+	exports.fireTeam = group(exports, 'fireTeam');
 	exports.gravitonLaser = group(exports, 'gravitonLaser');
+	exports.ground = group(exports, 'ground');
+	exports.harrow = group(exports, 'harrow');
+	exports.jolNar = group(exports, 'jolNar');
+	exports.magenDefense = group(exports, 'magenDefense');
+	exports.maneuveringJets = group(exports, 'maneuveringJets');
+	exports.mentak = group(exports, 'mentak');
+	exports.moraleBoost = group(exports, 'moraleBoost');
+	exports.munitions = group(exports, 'munitionsFunding');
+	exports.nonEuclidean = group(exports, 'nonEuclidean');
+	exports.plasmaScoring = group(exports, 'plasmaScoring');
+	exports.prophecy = group(exports, 'prophecyOfIxth');
+	exports.sardakk = group(exports, 'sardakk');
+	exports.tekklar = group(exports, 'tekklarLegion');
+	exports.valkyrieParticleWeave = group(exports, 'valkyrieParticleWeave');
+	exports.virus = group(exports, 'virus');
 	exports.winnu = group(exports, 'winnuFlagship');
 	exports.yin = group(exports, 'yinFlagship');
-	exports.jolNar = group(exports, 'jolNar');
-	exports.virus = group(exports, 'virus');
-	exports.prophecy = group(exports, 'prophecyOfIxth');
-	exports.munitions = group(exports, 'munitionsFunding');
-	exports.tekklar = group(exports, 'tekklarLegion');
 }

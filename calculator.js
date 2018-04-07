@@ -35,7 +35,17 @@
 			var problemArray = [new structs.Problem(distribution, attacker, defender)];
 
 			//apply all pre-battle actions, like PDS fire and Barrage
-			prebattleActions.forEach(function (action) {
+			var actions = prebattleActions;
+			if (options.attacker.race === game.Race.Mentak) {
+				actions = prebattleActions.slice();
+				var t = actions[1];
+				actions[1] = actions[2];
+				actions[2] = t;
+				if (actions[1].name !== 'Mentak racial' ||
+					actions[2].name !== 'Assault Cannon')
+					throw new Error('unexpected pre-battle actions order');
+			}
+			actions.forEach(function (action) {
 				if (action.appliesTo === battleType)
 					problemArray = action.execute(problemArray, attackerFull, defenderFull, options);
 			});
@@ -519,45 +529,6 @@
 					},
 				},
 				{
-					name: 'Mentak racial',
-					appliesTo: game.BattleType.Space,
-					execute: function (problemArray, attackerFull, defenderFull, options) {
-						problemArray.forEach(function (problem) {
-							if (options.attacker.race !== game.Race.Mentak && options.defender.race !== game.Race.Mentak)
-								return;
-
-							function createMentakTransitions(fleet) {
-								var firedShips = 0;
-								return computeSelectedUnitsTransitions(fleet, game.ThrowType.Battle, function (ship) {
-									if (2 <= firedShips) {
-										return false;
-									} else if (ship.type === game.UnitType.Cruiser || ship.type === game.UnitType.Destroyer) {
-										firedShips++;
-										return true;
-									}
-									return false;
-								});
-							}
-
-							var attackerTransitions;
-							var defenderTransitions;
-							if (options.attacker.race === game.Race.Mentak)
-								attackerTransitions = createMentakTransitions(problem.attacker);
-							else
-								attackerTransitions = scale([1], problem.attacker.length + 1);
-							if (options.defender.race === game.Race.Mentak)
-								defenderTransitions = createMentakTransitions(problem.defender);
-							else
-								defenderTransitions = scale([1], problem.defender.length + 1);
-							applyTransitions(problem, attackerTransitions, defenderTransitions, options);
-						});
-						problemArray.forEach(function (problem) {
-							collapseYinFlagship(problem, options);
-						});
-						return problemArray;
-					},
-				},
-				{
 					name: 'Assault Cannon',
 					appliesTo: game.BattleType.Space,
 					execute: function (problemArray, attackerFull, defenderFull, options) {
@@ -629,6 +600,45 @@
 							}
 							return result;
 						}
+					},
+				},
+				{
+					name: 'Mentak racial',
+					appliesTo: game.BattleType.Space,
+					execute: function (problemArray, attackerFull, defenderFull, options) {
+						problemArray.forEach(function (problem) {
+							if (options.attacker.race !== game.Race.Mentak && options.defender.race !== game.Race.Mentak)
+								return;
+
+							function createMentakTransitions(fleet) {
+								var firedShips = 0;
+								return computeSelectedUnitsTransitions(fleet, game.ThrowType.Battle, function (ship) {
+									if (2 <= firedShips) {
+										return false;
+									} else if (ship.type === game.UnitType.Cruiser || ship.type === game.UnitType.Destroyer) {
+										firedShips++;
+										return true;
+									}
+									return false;
+								});
+							}
+
+							var attackerTransitions;
+							var defenderTransitions;
+							if (options.attacker.race === game.Race.Mentak)
+								attackerTransitions = createMentakTransitions(problem.attacker);
+							else
+								attackerTransitions = scale([1], problem.attacker.length + 1);
+							if (options.defender.race === game.Race.Mentak)
+								defenderTransitions = createMentakTransitions(problem.defender);
+							else
+								defenderTransitions = scale([1], problem.defender.length + 1);
+							applyTransitions(problem, attackerTransitions, defenderTransitions, options);
+						});
+						problemArray.forEach(function (problem) {
+							collapseYinFlagship(problem, options);
+						});
+						return problemArray;
 					},
 				},
 				{

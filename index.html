@@ -239,19 +239,22 @@
 				When "Risk Direct Hit" is not selected, damageable units take hits only after all "cheaper" units are dead.
 				This is questionable, but I don't know any better clear-cut approach,
 			</li>
-			<li>When <strong>Duranium Armor</strong> is active, battles are calculated much slower, as another algorithm is used.</li>
+			<li>When <strong>Duranium Armor</strong> is active, battles are calculated much slower, as another algorithm is used,</li>
 			<li>As it is implemented at the moment, when <strong>Graviton Laser</strong> is active, PDS might kill a
 				Carrier, because it's "less valuable" than other units. But if there are Fighters in this Carrier, they
-				participate in the battle, though according to the rules, they should have died before the battle.
+				participate in the battle, though according to the rules, they should have died before the battle,
 			</li>
 			<li>Although you can send multiple <strong>Sardakk</strong> <strong>Flagships</strong> into the battle
-				(in game there is maximum one, obviously), their +1 effects won't be stacked.</li>
+				(in game there is maximum one, obviously), their +1 effects won't be stacked,</li>
 			<li>I consider <strong>Virus</strong> <strong>Flagship</strong> ability (let Ground Forces participate in the Space Combat)
 				interaction with <strong>Assault Cannon</strong> to be timing dependent. Each one of this abilities
 				could kick in first. If the attacker is Virus with Flagship, I count him to enlist Ground Forces into
 				combat first, and then absorb Assault Cannon hit into Ground Forces. If the Virus is the defender, then
 				I consider Assault cannon to activate first. Anyway, such fine-grained details are likely to be overwhelmed
-				by other simplifying assumptions (e.g. fixed units death order).
+				by other simplifying assumptions (e.g. fixed units death order),
+			</li>
+			<li>If <strong>Mentak</strong> is an attacker, Mentak racial is applied before <strong>Assault Cannon</strong>,
+				otherwise <strong>Assault Cannon</strong> is executed first,
 			</li>
 		</ul>
 		</p>
