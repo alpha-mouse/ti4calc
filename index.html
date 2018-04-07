@@ -160,7 +160,7 @@
 	<div id="help" :class="{ collapsed: !showHelp }">
 		<h1>Twilight Imperium IV Edition Battle Calculator</h1>
 		<p>Add and remove units to the battle by using '+' and '-' buttons.</p>
-		<p>Toggle unit upgrade by '&#x25b3' button.</p>
+		<p>Toggle unit upgrade with '&#x25b3' button.</p>
 		<p>Switch battle type between Space Combat and Invasion.</p>
 		<p>Read the chart. Huge red and blue percent figures tell the probabilities of either side winning the
 			battle.</p>
@@ -207,12 +207,12 @@
 		<p>Graph shows probabilities of battle outcomes. '=' represents a draw outcome.
 			Any other point represents an outcome in which units between this point and '=' sign survive.
 			Tooltips show probabilities that at least that many units will survive the battle.</p>
-		<p>Options allow calculator to take into account some Technologies, Action Cards, and Promissory Notes.</p>
+		<p>Options allow calculator to take into account some Technologies, Action Cards, Agendas, and Promissory Notes.</p>
 		<p>Units are ordered in what I consider reasonable sequence of dying. Though this order could be questionable,
 			e.g sometimes War Suns are more valuable than Flagships. I was lazy to implement manual ordering.</p>
 		<p>Game aspects <strong>not</strong> taken into account by this calculator:</p>
 		<ul>
-			<li><strong>Nekro Virus</strong> gaining technology during a battle thereby changing participating units' battle value,</li>
+			<li><strong>Nekro Virus</strong> gaining unit upgrade technology during a battle thereby changing participating units' battle value,</li>
 			<li><strong>Nekro Virus</strong> obtaining race-specific unit upgrades</li>
 			<li>Units being already <strong>damaged</strong> before the battle,</li>
 			<li><strong>Assault Cannon</strong> handling is questionable. Implemented preference for unit dying order is
@@ -227,19 +227,19 @@
 			<li><strong>Mentak</strong> <strong>Salvage Operations</strong> technology,</li>
 			<li><strong>Sardakk N'orr</strong> <strong>Exotrireme II</strong> "kamikaze" ability,</li>
 			<li><strong>Ghosts of Creuss</strong> <strong>Dimensional Splicer</strong> technology,</li>
-			<li><strong>Emirates of Hacan</strong> flagship ability adding 1 to die result,</li>
-			<li><strong>The Crown of Thanlos</strong> Agenda card,</li>
+			<li><strong>Emirates of Hacan</strong> flagship ability of adding 1 to die result,</li>
+			<li><strong>The Crown of Thanlos</strong> Agenda card.</li>
 		</ul>
 		<p>Some other notes and limitations:</p>
 		<ul>
 			<li>If defender activates <strong>Magen Defense</strong> Grid while <strong>Morale Boost</strong> is selected for the attacker,
-				card effect is applied to the second round. Fire Team is handled the same way,
+				the card effect is applied to the second round. <strong>Fire Team</strong> is handled the same way,
 			</li>
 			<li>When "Risk <strong>Direct Hit</strong>" is selected, first all damageable units take damage then other units start to die.
-				When "Risk Direct Hit" is not selected, damageable units take hits only after all "cheaper" units are dead.
+				When "Risk Direct Hit" is not selected, damageable units take hits only after all "cheaper" units are dead (except for upgraded Dreadnoughts which take damage before anything else).
 				This is questionable, but I don't know any better clear-cut approach,
 			</li>
-			<li>When <strong>Duranium Armor</strong> is active, battles are calculated much slower, as another algorithm is used,</li>
+			<li>When either <strong>Duranium Armor</strong> or <strong>L1Z1X Flagship</strong> or <strong>Letnev Flagship</strong> is active, Space Combats are calculated much slower, as another algorithm is used,</li>
 			<li>As it is implemented at the moment, when <strong>Graviton Laser</strong> is active, PDS might kill a
 				Carrier, because it's "less valuable" than other units. But if there are Fighters in this Carrier, they
 				participate in the battle, though according to the rules, they should have died before the battle,
@@ -253,13 +253,13 @@
 				I consider Assault cannon to activate first. Anyway, such fine-grained details are likely to be overwhelmed
 				by other simplifying assumptions (e.g. fixed units death order),
 			</li>
-			<li>If <strong>Mentak</strong> is an attacker, Mentak racial is applied before <strong>Assault Cannon</strong>,
-				otherwise <strong>Assault Cannon</strong> is executed first,
+			<li>In similar vein if <strong>Mentak</strong> is an attacker, Mentak racial is applied before <strong>Assault Cannon</strong>,
+				otherwise <strong>Assault Cannon</strong> is executed first.
 			</li>
 		</ul>
 		</p>
 		<p>Code and some more info could be found on <a
-				href="https://bitbucket.org/IvanBakhtin/ti3calculator">bitbucket</a>.</p>
+				href="https://github.com/alpha-mouse/ti4calc">GitHub</a>.</p>
 		<p>Thanks to:
 		<ul>
 			<li>Ling Weak, Edward Nickson, and L0ft3r​ – for various improvements to the calculator for the third

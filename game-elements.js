@@ -586,7 +586,4 @@
 			root.RaceSpecificUpgrades[race].hasOwnProperty(unitType));
 	};
 
-//todo check all racial abilities
-//todo Sardakk Tekklar promisory
-//todo Letnev promisary
 })(typeof exports === 'undefined' ? window : exports);
