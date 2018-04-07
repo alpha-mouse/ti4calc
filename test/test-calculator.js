@@ -2197,6 +2197,55 @@ exports.munitionsFundingMoraleBoost = function (test) {
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
 
+exports.tekklarLegion = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Ground] = { count: 3 };
+	defender[game.UnitType.Ground] = { count: 3 };
+
+	var options = { attacker: { tekklarLegion: true }, };
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
+exports.tekklarLegionForSardakk = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Ground] = { count: 3 };
+	defender[game.UnitType.Ground] = { count: 3 };
+
+	// should not take effect
+	var options = { attacker: { race: game.Race.Sardakk, tekklarLegion: true }, };
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
+exports.tekklarLegionFireTeam = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Ground] = { count: 3 };
+	defender[game.UnitType.Ground] = { count: 3 };
+
+	var options = { attacker: { tekklarLegion: true }, defender: { fireTeam: true } };
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
+exports.tekklarLegionAgainstSardakk = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Ground] = { count: 3 };
+	defender[game.UnitType.Ground] = { count: 3 };
+
+	// should not take effect
+	var options = { attacker: { tekklarLegion: true }, defender: { race: game.Race.Sardakk, } };
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
 
 /** Test some random battle. Because I couldn't have imagined all edge cases.
  * When this test fails - take input fleets and options from the console and reproduce the problem */
@@ -2337,7 +2386,7 @@ function group(exports, testGroup) {
 	return result;
 }
 
-var useGrouping = true; // set to true to be able to test related groups of test easily, like `nodeunit -t maneuveringJets`
+var useGrouping = false; // set to true to be able to test related groups of test easily, like `nodeunit -t maneuveringJets`
 
 if (useGrouping) {
 	var barrageGroup = group(exports, 'barrage');
@@ -2366,5 +2415,5 @@ if (useGrouping) {
 	exports.virus = group(exports, 'virus');
 	exports.prophecy = group(exports, 'prophecyOfIxth');
 	exports.munitions = group(exports, 'munitionsFunding');
-
+	exports.tekklar = group(exports, 'tekklarLegion');
 }

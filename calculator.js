@@ -86,8 +86,8 @@
 		/** Do full probability mass redistribution according to transition vectors */
 		function solveProblem(problem, battleType, attackerFull, defenderFull, options) {
 
-			var attackerBoost = boost(battleType, options.attacker, problem.attacker, true);
-			var defenderBoost = boost(battleType, options.defender, problem.defender, true);
+			var attackerBoost = boost(battleType, options.attacker, options.defender, problem.attacker, true);
+			var defenderBoost = boost(battleType, options.defender, options.attacker, problem.defender, true);
 			var attackerReroll = battleType === game.BattleType.Ground && options.attacker.fireTeam ||
 				battleType === game.BattleType.Space && options.attacker.letnevMunitionsFunding;
 			var defenderReroll = battleType === game.BattleType.Ground && options.defender.fireTeam ||
@@ -139,7 +139,7 @@
 					return computeFleetTransitions(problem.attacker, game.ThrowType.Battle, attackerBoost, attackerReroll);
 				};
 				var defenderTransitionsFactory = function () {
-					return computeFleetTransitions(problem.defender, game.ThrowType.Battle, boost(battleType, options.defender, problem.attacker, false));
+					return computeFleetTransitions(problem.defender, game.ThrowType.Battle, boost(battleType, options.defender, options.attacker, problem.defender, false));
 				};
 				applyTransitions(problem, attackerTransitionsFactory, defenderTransitionsFactory, options, effectsFlags);
 			}
@@ -150,8 +150,8 @@
 		function propagateProbabilityUpLeft(problem, battleType, attackerFull, defenderFull, options) {
 			var distr = problem.distribution;
 			// evaluate probabilities of transitions for each fleet
-			var attackerTransitions = computeFleetTransitions(problem.attacker, game.ThrowType.Battle, boost(battleType, options.attacker, problem.attacker, false));
-			var defenderTransitions = computeFleetTransitions(problem.defender, game.ThrowType.Battle, boost(battleType, options.defender, problem.defender, false));
+			var attackerTransitions = computeFleetTransitions(problem.attacker, game.ThrowType.Battle, boost(battleType, options.attacker, options.defender, problem.attacker, false));
+			var defenderTransitions = computeFleetTransitions(problem.defender, game.ThrowType.Battle, boost(battleType, options.defender, options.attacker, problem.defender, false));
 			if (options.attacker.race === game.Race.L1Z1X && battleType === game.BattleType.Ground) {
 				var harrowTransitions = bombardmentTransitionsVector(attackerFull, defenderFull, options);
 				if (harrowTransitions.length === 1) //means no bombardment
@@ -176,10 +176,10 @@
 
 					if (winnuFlagshipRelevant) {
 						if (options.attacker.race === game.Race.Winnu && modifyWinnuFlagship(problem.attacker, problem.defender, d)) {
-							attackerTransitions = computeFleetTransitions(problem.attacker, game.ThrowType.Battle, boost(battleType, options.attacker, problem.attacker, false));
+							attackerTransitions = computeFleetTransitions(problem.attacker, game.ThrowType.Battle, boost(battleType, options.attacker, options.defender, problem.attacker, false));
 						}
 						if (options.defender.race === game.Race.Winnu && modifyWinnuFlagship(problem.defender, problem.attacker, a)) {
-							defenderTransitions = computeFleetTransitions(problem.defender, game.ThrowType.Battle, boost(battleType, options.defender, problem.defender, false));
+							defenderTransitions = computeFleetTransitions(problem.defender, game.ThrowType.Battle, boost(battleType, options.defender, options.attacker, problem.defender, false));
 						}
 					}
 					var attackerTransitionsVector = adjustForNonEuclidean(attackerTransitions[a], problem.defender, d - 1, options.defender);
@@ -743,12 +743,12 @@
 			];
 		}
 
-		function boost(battleType, sideOptions, fleet, firstRound) {
+		function boost(battleType, sideOptions, opponentOptions, fleet, firstRound) {
 			var result = undefined;
 			for (var i = 0; i < boosts.length; i++) {
 				if (!firstRound && boosts[i].firstRoundOnly) continue;
 
-				var boost = boosts[i].apply(battleType, sideOptions, fleet);
+				var boost = boosts[i].apply(battleType, sideOptions, opponentOptions, fleet);
 				if (boost && !result) {
 					result = boost;
 					continue;
@@ -803,7 +803,7 @@
 				{
 					name: 'Sardakk Flagship',
 					firstRoundOnly: false,
-					apply: function (battleType, sideOptions, fleet) {
+					apply: function (battleType, sideOptions, opponentOptions, fleet) {
 						// Unit reordering, where the Flagship is not the first is not taken into account
 						// Several Flagships not taken into account
 						return sideOptions.race === game.Race.Sardakk && battleType === game.BattleType.Space &&
@@ -828,6 +828,20 @@
 							function (unit) {
 								return unit.type === game.UnitType.Fighter ? 1 : 0;
 							} : 0;
+					}
+				},
+				{
+					name: 'tekklarLegion',
+					firstRoundOnly: false,
+					apply: function (battleType, sideOptions) {
+						return battleType === game.BattleType.Ground && sideOptions.tekklarLegion && sideOptions.race !== game.Race.Sardakk ? 1 : 0;
+					}
+				},
+				{
+					name: 'tekklarLegion of the opponent',
+					firstRoundOnly: false,
+					apply: function (battleType, sideOptions, opponentOptions) {
+						return battleType === game.BattleType.Ground && opponentOptions.tekklarLegion && sideOptions.race === game.Race.Sardakk ? -1 : 0;
 					}
 				},
 			];

@@ -106,8 +106,8 @@
 
 			while (hasUnits(attacker) && hasUnits(defender)) {
 				round++;
-				var attackerBoost = boost(battleType, round, options.attacker, attacker);
-				var defenderBoost = boost(battleType, round, options.defender, defender);
+				var attackerBoost = boost(battleType, round, options.attacker, attacker, options.defender);
+				var defenderBoost = boost(battleType, round, options.defender, defender, options.attacker);
 				var attackerReroll = false;
 				var defenderReroll = false;
 				if (round === 1) {
@@ -118,7 +118,7 @@
 				}
 				if (round === 2 && magenDefenseActivated) {
 					// if Magen Defense was activated - treat the second round as the first for the attacker
-					attackerBoost = boost(battleType, 1, options.attacker, attacker);
+					attackerBoost = boost(battleType, 1, options.attacker, attacker, options.defender);
 					attackerReroll = options.attacker.fireTeam && battleType === game.BattleType.Ground ||
 						options.attacker.letnevMunitionsFunding && battleType === game.BattleType.Space /* space combat is mutually exclusive with magen defense but anyway*/;
 				}
@@ -528,10 +528,10 @@
 			}
 		}
 
-		function boost(battleType, round, sideOptions, fleet) {
+		function boost(battleType, round, sideOptions, fleet, opponentOptions) {
 			var result = 0;
 			for (var i = 0; i < boosts.length; i++) {
-				var boost = boosts[i].apply(battleType, round, sideOptions, fleet);
+				var boost = boosts[i].apply(battleType, round, sideOptions, fleet, opponentOptions);
 				if (boost && !result) {
 					result = boost;
 					continue;
@@ -603,6 +603,18 @@
 							function (unit) {
 								return unit.type === game.UnitType.Fighter ? 1 : 0;
 							} : 0;
+					}
+				},
+				{
+					name: 'tekklarLegion',
+					apply: function (battleType, round, sideOptions) {
+						return battleType === game.BattleType.Ground && sideOptions.tekklarLegion && sideOptions.race !== game.Race.Sardakk ? 1 : 0;
+					}
+				},
+				{
+					name: 'tekklarLegion of the opponent',
+					apply: function (battleType, round, sideOptions, fleet, opponentOptions) {
+						return battleType === game.BattleType.Ground && opponentOptions.tekklarLegion && sideOptions.race === game.Race.Sardakk ? -1 : 0;
 					}
 				},
 			];
