@@ -136,8 +136,8 @@
 					  :option-name="key" :option="option" :options="options"></option-pair>
 		<div class="o-grid center-grid" v-for="pair in raceTechnologies">
 			<left-option :option-name="pair.attacker.key" :option="pair.attacker.option" :options="options" side="attacker"></left-option>
-			<help-mark :text="pair.attacker.option.description" :class="{ hidden: !pair.attacker.option.availableFor('attacker') }"></help-mark>
-			<help-mark :text="pair.defender.option.description" :class="{ hidden: !pair.defender.option.availableFor('defender') }"></help-mark>
+			<help-mark :option="pair.attacker.option" :class="{ hidden: !pair.attacker.option.availableFor('attacker') }"></help-mark>
+			<help-mark :option="pair.defender.option" :class="{ hidden: !pair.defender.option.availableFor('defender') }"></help-mark>
 			<right-option :option-name="pair.defender.key" :option="pair.defender.option" :options="options" side="defender"></right-option>
 		</div>
 		<div class="heading"><strong>Action Cards</strong></div>

@@ -277,19 +277,19 @@
 		template:
 		'<div class="o-grid center-grid">' +
 		'	<left-option :option-name="optionName" :option="option" :options="options" side="attacker"></left-option>' +
-		'	<help-mark :text="option.description"></help-mark>' +
+		'	<help-mark :option="option"></help-mark>' +
 		'	<right-option :option-name="optionName" :option="option" :options="options" side="defender"></right-option>' +
 		'</div>',
 	});
 	Vue.component('help-mark', {
-		props: ['text'],
+		props: ['option'],
 		template:
 		'<div class="o-grid__cell">' +
-		'	<button type="button" class="help" v-bind:title="text" @click="showHelp"></button>' +
+		'	<button type="button" class="help" v-bind:title="option.description" @click="showHelp"></button>' +
 		'</div>',
 		methods: {
 			showHelp: function () {
-				alert(this.text);
+				alert(this.option.title + ':\n' + this.option.description);
 			}
 		}
 	});
