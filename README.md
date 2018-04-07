@@ -1,9 +1,9 @@
 # Twilight Imperium 4th ed. battle calculator #
 
-This is a calculator of battle outcomes probabilities for Twilight Imperium board game. You can play with it at [alphamou.se/ti4calc].  
+This is a calculator of battle outcomes probabilities for Twilight Imperium board game. You can play with it at [alphamou.se/ti4calc](http://alphamou.se/ti4calc).  
 It's written purely in client-side javascript so can be easily copied locally and run from the file system.  
 Licensed under [Creative Commons Attribution](http://creativecommons.org/licenses/by/4.0/) license.  
-I have no further plans of improving it. If you find a bug or consider some feature needed, let me know (ivan.bachtin@gmail.com). Or feel free to implement them yourself, I'll happily accept pull requests. Or you can even steal it and improve it silently. Whatever =)
+I have no further plans of improving it. If you find a bug or consider some feature needed, let me know (ivan.bachtin@gmail.com) or create an [issue](../../issues). Or feel free to implement anything yourself, I'll happily accept pull requests. Or you can even steal it and improve it silently. Whatever =)
 Also, I haven't played the game myself, so if you notice something suspicious, it might very likely be wrong, so don't hesitate to notify me.
 
 ## Developing calculator ##
@@ -11,12 +11,12 @@ Also, I haven't played the game myself, so if you notice something suspicious, i
 Although you can change calculator logic and manually test it in the browser it would be more reliable to verify changes with automatic unit tests.  
 For that you'll need
 
-1. [node.js](https://nodejs.org/en/). I used version 4.4.7. I suppose that any 4.X.X version should be fine.
+1. [node.js](https://nodejs.org/). I used version 6.11.0. I suppose newer versions should be fine as well.
 2. After installing node, run the following command from the command line  
    `npm install nodeunit -g`  
-   That will install [nodeunit](https://github.com/caolan/nodeunit), module for unit testing.
+   That will install [nodeunit](https://github.com/caolan/nodeunit), a module for unit testing.
 
-Now you can go to the project folder (one where _calculator.js_ is located) in the console and execute `nodeunit test`. If all is fine that will run unit tests and report errors if any. At the moment of writing there are 59 tests and they live in _test/test-calculator.js_. Most of the tests compare calculated probabilities with averaged results of tens of thousands simulated battle runs.
+Now you can go to the project folder (one where _calculator.js_ is located) in the console and execute `nodeunit test`. If all is fine that will run unit tests and report errors if any. Tests themselves are located in _test/test-calculator.js_. Most of the tests compare calculated probabilities with averaged results of tens of thousands simulated battle runs. Individual tests could be run as `nodeunit -t TEST_NAME`.
 
 ### Debugging ###
 There two good ways do debug the code.
@@ -26,13 +26,13 @@ There two good ways do debug the code.
 
 ## Algorithm description ##
 
-This calculator algorithm is the same that I used in the [calculator for the third edition of Twilight Imperium](https://bitbucket.org/IvanBakhtin/ti3calculator).
+This calculator algorithm is mostly the same that I used in the [calculator for the third edition of Twilight Imperium](https://bitbucket.org/IvanBakhtin/ti3calculator).
 
 ### The gist ###
-Many battle calculators I've seen just run battle thousands of times and then show results statistics. Mine implementation doesn't do that. It computes probabilities using a probability propagation algorithm I describe below. It's much faster than running many iterations of battles and averaging results. But I've implemented statistical algorithm as well and used it to test probability propagation algorithm.  
+The calculator computes probabilities using a probability propagation algorithm I describe below. It's much faster than running many iterations of battles and averaging results. But I've implemented statistical algorithm as well and used it to test probability propagation algorithm.  
 Here goes high level description of the algorithm.  
 It's based on the assumption that preferred units dying order is defined before the battle and doesn't change during its course. This may not be the case in general. I can conceive that initially you might try to save Carrier with Ground Forces to make an invasion, but later seeing that the battle will be lost anyway abandon it and try to prolong life of Dreadnoughts to inflict maximum damage. In practice though I don't see how such concerns can be reasonably taken care of in a calculator of any type.  
-So, I take both fleets (I'll call Ground Forces in an Invasion Combat a fleet, too) and arrange units in them in what I consider a reasonable order of importance which is Flagship, War Sun, Dreadnought, Cruiser, Destroyer, Carrier, Fighter. Then (here goes the key point) possible states of the combat can be represented by a table in which columns and rows correspond to units of one and another army respectively. For example, let there be an attacker army consisting of two Cruisers and defending army of a Carrier and two Fighters.
+I take both fleets (I'll call Ground Forces in an Invasion Combat a fleet as well) and arrange units in them in what I consider a reasonable order of importance which is Flagship, War Sun, Dreadnought, Cruiser, Carrier, Destroyer, Fighter. Then (here goes the key point) possible states of the combat can be represented by a table in which columns and rows correspond to units of one and another army respectively. For example, let there be an attacker army consisting of two Cruisers and defending army of a Carrier and two Fighters.
 
 |           |        | Carrier | Fighter | Fighter |
 |:---------:|:------:|:-------:|:-------:|:-------:|
@@ -41,7 +41,7 @@ So, I take both fleets (I'll call Ground Forces in an Invasion Combat a fleet, t
 |**Cruiser**|        |         |   *     |         |
 
 The cell marked by a __\*__ then represents a state when both attacker's Cruisers are still alive and the defender has lost one of the Fighters. __=__ cell will denote a state where both armies are dead and the battle has ended in a draw.  
-But we can put **probabilities** in the cells!  
+Now we can put **probabilities** in the cells!  
 
 |           |        | Carrier | Fighter | Fighter |
 |:---------:|:------:|:-------:|:-------:|:-------:|
@@ -49,8 +49,8 @@ But we can put **probabilities** in the cells!
 |**Cruiser**|   0    |   0     |   0     |   0     |
 |**Cruiser**|   0    |   0     |   0     |   1     |
 
-This table represents game state at the start of the battle, we know for sure that both fleets are untouched.  
-During the first round of the battle two Cruisers can inflict 0, 1, 2 hits with probabilities 0.36, 0.48, 0.16 respectively. Carrier and two Fighters can inflict 0, 1, 2, 3 hits with probabilities 0.512, 0.384, 0.096, 0.008. So after the first round our states probabilities will be  
+This table represents game state at the start of the battle, when both fleets are untouched.  
+During the first round of the battle two Cruisers can inflict 0, 1, 2 hits with probabilities 0.36, 0.48, 0.16 respectively. Carrier and two Fighters can inflict 0, 1, 2, 3 hits with probabilities 0.512, 0.384, 0.096, 0.008. So after the first round the states probabilities will be  
 
 |           |        | Carrier | Fighter | Fighter |
 |:---------:|:------:|:-------:|:-------:|:-------:|
@@ -78,13 +78,14 @@ Now we can just redistribute mass from all the cells one by one in 5 more operat
 Some units can have technology or race modifiers to attack rolls. That's handled easily by taking these modifiers into account when computing inflicted hits probabilities.
 
 #### Damageable ships ####
-Flagships, War Suns, Dreadnoughts, and upgraded Sol Carriers are capable of taking one hit without dying. For these ships I add what I call "damage ghosts" to the fleet. These are fake units that don't fire and exist to denote damage hit applied to a damageable unit. I place them in the end of the fleet ordering under an assumption that player will take damage to these ships before killing all the rest (this assumption might not be always reasonable given the existence of Direct Hit Action Card; there is an option in the calculator to change the ordering). So for two Dreadnoughts and a Cruiser expanded fleet ordering will be Dreadnought, Dreadnought, Cruiser, dreadnought, dreadnought, where lower case "dreadnought" is such damage ghost and upper case "Dreadnought" will be killed with just one hit.
+Flagships, War Suns, Dreadnoughts, and upgraded Sol Carriers are capable of taking one hit without dying (Non-Euclidean Shielding of Letnev allows to absorb even two hits). For these ships I add what I call "damage ghosts" to the fleet. These are fake units that don't fire and exist to denote damage hit applied to a damageable unit. I place them in the end of the fleet ordering under an assumption that player will take damage to these ships before killing all the rest (this assumption might not be always reasonable given the existence of Direct Hit Action Card; there is an option in the calculator to change the ordering). So for two Dreadnoughts and a Cruiser expanded fleet ordering will be Dreadnought, Dreadnought, Cruiser, dreadnought, dreadnought, where lower case "dreadnought" is such damage ghost and upper case "Dreadnought" will be killed with just one hit.
 
 #### PDS fire and other effects ####
-To take PDS fire into account we can just apply one round of probability redistribution caused by PDS fire. Then the actual battle is computed starting with this already modified probability table. Various Action Cards, Bombardment and other effects are handled exactly like PDS fire by doing one round of propagation. Anti-Fighter Barrage is considerably more complicated, will describe it below.
+To take PDS fire into account we can just apply one round of probability redistribution caused by PDS fire. Then the actual battle is computed starting with this already modified probability table. Some Action Cards, Bombardment and other effects are handled exactly like PDS fire by doing one round of propagation. Anti-Fighter Barrage is considerably more complicated, will describe it below.
 
-#### Anti-Fighter Barrage ####
-Well, here my cherished assumption of ordered units dying went down the tubes. I'd say that handling barrage is as complicated as all the rest of the calculator. The problem arises when fleet of damageable ships and Fighters is affected by opponent's barrage. On the one hand I assume that damageable ships should take hits first. On the other, barrage only targets Fighters. So I cannot propagate probability in the table in any consistent way. To workaround this I split problem into several subproblems, solve them and combine results in the end. Let's consider an example, Dreadnought and Fighter vs Destroyer. Initially we have  
+#### Anti-Fighter Barrage, Graviton Laser and Assault Cannon ####
+Well, here my cherished assumption of ordered units dying went down the tubes. I'd say that handling these effects is as complicated as all the rest of the calculator. They are handles similarly, so I'll describe the Barrage only.  
+The problem arises when fleet of damageable ships and Fighters is affected by opponent's barrage. On the one hand I assume that damageable ships should take hits first. On the other, barrage only targets Fighters. So I cannot propagate probability in the table in any consistent way. To workaround this I split problem into several subproblems, solve them and combine results in the end. Let's consider an example, Dreadnought and Fighter vs Destroyer. Initially we have  
 
 |             |        | Dreadnought | Fighter | dreadnought |
 |:-----------:|:------:|:-----------:|:-------:|:-----------:|
@@ -108,10 +109,10 @@ and
 Notice how probabilities in the resulting tables sum to 1. In the worst case, we get up to `Af + Df + Af*Df` subproblems, where Af and Df are numbers of attacking and defending Fighters. These subproblems are solved separately and resulting probabilities are summed across all of them. I thought of an optimisation where we can solve all subproblems partially, combine intermediate results and continue propagation till the end, but thought that it will give at best ~2x speed improvement, which I was lazy to pursue as barrage code was already too complicated. To see why it was complicated consider taking into account PDS fire, so that before computing barrage effects table is already full of non-zero probabilities.
 
 #### Duranium Armor ####
-Duranium Armor is a technology that allows one to repair one damaged unit at the end of each combat round. As with Barrage, this breaks assumptions that allowed fast probability calculation. First, when previously probability mass was moving only up and left in the table, now it can move back down and right. Or in another terms previously each cell's probability depended only on cells to the right and bottom of it, now each cell depends on the entire table, which means I cannot do one pass through the table and be done. Another complication (though no as severe) is that where previously fleet remains during battle were always a subset from the beginning of the initial fleet composition (units at the tail of the fleet were eliminated), now some ships in the middle of the fleet might be killed while some damage ghost are restored in the tail.
+Duranium Armor is a technology that allows to repair one damaged unit at the end of each combat round. As with Barrage, this breaks assumptions that allowed fast probability calculation. First, when previously probability mass was moving only up and left in the table, now it can move back down and right. Or in another terms previously each cell's probability depended only on cells to the right and bottom of it, now each cell depends on the entire table, which means I cannot do one pass through the table and be done. Another complication (though no as severe) is that where previously fleet remains during battle were always a subset from the beginning of the initial fleet composition (units at the tail of the fleet were eliminated), now some ships in the middle of the fleet might be killed while some damage ghost are restored in the tail.
 
-As much as I tried, I failed to imagine any algorithm to compute probabilities when Duranium Armor is involved. So I had no choice but to do many battle simulations and average the results.
+As much as I tried, I failed to imagine any good algorithm to compute probabilities when Duranium Armor is involved. So I had no choice but to do many battle simulations and average the results.
 
 ## Credits ##
 
-* Ling Weak, Edward Nickson, and L0ft3r​ – for various improvements to the calculator for the third edition of the game. This calculator is heavily based on that one.
+* Ling Weak, Edward Nickson, and L0ft3r – for various improvements to the calculator for the third edition of the game. This calculator is heavily based on that one.
