@@ -7,6 +7,11 @@ body {
 	justify-content: center;
 }
 
+#options .o-grid {
+	align-items: center;
+	margin: .3em 0;
+}
+
 .center-grid .unit-name {
 	flex-basis: 10em;
 	flex-grow: 0;
@@ -69,6 +74,7 @@ body {
 	flex-basis: auto;
 	flex-grow: 0;
 	width: auto;
+	padding: 0 .5em;
 }
 
 #result-area {
@@ -140,6 +146,26 @@ input::-webkit-inner-spin-button {
 .c-input-group .c-button.hidden:first-child + .c-button {
 	border-left-width: 1px;
 	margin-left: -1px;
+}
+
+.left-option {
+	display: flex;
+	text-align: right;
+	align-items: center;
+}
+
+.left-option input {
+	margin-left: .3em;
+}
+
+.right-option {
+	display: flex;
+	text-align: left;
+	align-items: center;
+}
+
+.right-option input {
+	margin-right: .3em;
 }
 
 #counters .o-grid.attacker-participates.defender-participates .unit-name {

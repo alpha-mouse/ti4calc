@@ -255,7 +255,7 @@
 	Vue.component('left-option', {
 		props: ['optionName', 'option', 'options', 'side'],
 		template:
-		'<div class="o-grid__cell" :class="{ hidden: !option.availableFor(side) }">' +
+		'<div class="o-grid__cell left-option" :class="{ hidden: !option.availableFor(side) }">' +
 		'	<label class="" v-bind:for="side + \'.\' + optionName"' +
 		'		   v-bind:title="option.description">{{option.title}}</label>' +
 		'	<input type="checkbox" class="" v-bind:id="side + \'.\' + optionName"' +
@@ -265,7 +265,7 @@
 	Vue.component('right-option', {
 		props: ['optionName', 'option', 'options', 'side'],
 		template:
-		'<div class="o-grid__cell" :class="{ hidden: !option.availableFor(side) }">' +
+		'<div class="o-grid__cell right-option" :class="{ hidden: !option.availableFor(side) }">' +
 		'	<input type="checkbox" class="" v-bind:id="side + \'.\' + optionName"' +
 		'		   v-model="options[side][optionName]">' +
 		'	<label class="" v-bind:for="side + \'.\' + optionName"' +
