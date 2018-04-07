@@ -2253,16 +2253,6 @@ function chaoticTest(test) {
 	var attacker = {};
 	var defender = {};
 
-	for (var unitType in game.UnitType) {
-		var count = Math.max(0, Math.floor(Math.random() * 8) - 3);
-		attacker[unitType] = { count: count };
-	}
-
-	for (var unitType in game.UnitType) {
-		var count = Math.max(0, Math.floor(Math.random() * 8) - 3);
-		defender[unitType] = { count: count };
-	}
-
 	var options = {
 		attacker: {
 			race: pickRandom(Object.keys(game.Race)),
@@ -2271,6 +2261,21 @@ function chaoticTest(test) {
 			race: pickRandom(Object.keys(game.Race)),
 		},
 	};
+
+	var attackerUnitUpgrades = Object.assign({}, game.StandardUpgrades, game.RaceSpecificUpgrades[options.attacker.race]);
+	var defenderUnitUpgrades = Object.assign({}, game.StandardUpgrades, game.RaceSpecificUpgrades[options.defender.race]);
+
+	for (var unitType in game.UnitType) {
+		var count = Math.max(0, Math.floor(Math.random() * 8) - 3);
+		var upgraded = attackerUnitUpgrades[unitType] && Math.random() < .4;
+		attacker[unitType] = { count: count, upgraded: upgraded };
+	}
+
+	for (var unitType in game.UnitType) {
+		var count = Math.max(0, Math.floor(Math.random() * 8) - 3);
+		var upgraded = defenderUnitUpgrades[unitType] && Math.random() < .4;
+		defender[unitType] = { count: count, upgraded: upgraded };
+	}
 
 	for (var technology in game.Technologies) {
 		options.attacker[technology] = Math.random() < .2;
@@ -2361,7 +2366,7 @@ exports.chaoticReproduce = function (test) {
 	testBattle(test, attacker, defender, battleType, options);
 };
 
-//exports.chaoticMonkey = new Array(20).fill(chaoticTest);
+exports.chaoticMonkey = new Array(10).fill(chaoticTest);
 
 function Input(attacker, defender, battleType, options) {
 	this.attackerUnits = attacker;
