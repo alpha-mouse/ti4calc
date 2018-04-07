@@ -108,6 +108,11 @@
 		prophecyOfIxth: new Option('Prophecy of IXTH', '+1 to Fighters rolls'),
 	};
 
+	root.Promisory = {
+		letnevMunitionsFunding: new Option('Munitions Reserves / War Funding 1st round', 'Reroll dice during first space combat round'),
+		tekklarLegion: new Option('Tekklar Legion', '+1 in invasion combat. -1 to Sardakk if he\'s the opponent'),
+	};
+
 	root.RaceSpecificTechnologies = {
 		Letnev: {
 			nonEuclidean: new Option('Non-Euclidean Shielding', 'Sustain Damage absorbs 2 hits'),

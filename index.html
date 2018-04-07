@@ -143,8 +143,10 @@
 		<div class="heading"><strong>Action Cards</strong></div>
 		<option-pair v-for="(option, key) in ActionCards"
 					  :option-name="key" :option="option" :options="options"></option-pair>
-		<div class="heading"><strong>Agendas</strong></div>
+		<div class="heading"><strong>Agendas / Promisory / Racial</strong></div>
 		<option-pair v-for="(option, key) in Agendas"
+					 :option-name="key" :option="option" :options="options"></option-pair>
+		<option-pair v-for="(option, key) in Promisory"
 					 :option-name="key" :option="option" :options="options"></option-pair>
 	</div>
 	<div id="help" :class="{ collapsed: !showHelp }">
@@ -214,7 +216,6 @@
 				I wasn't able to imagine any obvious way to algorithmically decide when to play these cards during the battle,
 			</li>
 			<li><strong>Yin Brotherhood</strong> <strong>Devotion</strong>, <strong>Indoctrination</strong> racial abilities and <strong>Impulse Core</strong> technology,</li>
-			<li><strong>Letnev</strong> <strong>Munitions Reserves</strong> ability. Though it can be partially emulated by <strong>Fire Team</strong> Action Card option,</li>
 			<li><strong>Mentak</strong> <strong>Salvage Operations</strong> technology,</li>
 			<li><strong>Sardakk N'orr</strong> <strong>Exotrireme II</strong> "kamikaze" ability,</li>
 			<li><strong>Ghosts of Creuss</strong> <strong>Dimensional Splicer</strong> technology,</li>

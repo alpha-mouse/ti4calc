@@ -2167,6 +2167,36 @@ exports.prophecyOfIxthNaalu = function (test) {
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
 
+exports.munitionsFunding = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Dreadnought] = { count: 1 };
+	attacker[game.UnitType.Cruiser] = { count: 2 };
+
+	defender[game.UnitType.Cruiser] = { count: 1 };
+	defender[game.UnitType.Destroyer] = { count: 3 };
+
+	var options = { attacker: { letnevMunitionsFunding: true }, };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.munitionsFundingMoraleBoost = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Cruiser] = { count: 1 };
+	attacker[game.UnitType.Fighter] = { count: 3 };
+
+	defender[game.UnitType.Cruiser] = { count: 1 };
+	defender[game.UnitType.Destroyer] = { count: 1 };
+
+	var options = { attacker: { letnevMunitionsFunding: true }, defender: { moraleBoost: true } };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
 
 /** Test some random battle. Because I couldn't have imagined all edge cases.
  * When this test fails - take input fleets and options from the console and reproduce the problem */
@@ -2307,28 +2337,34 @@ function group(exports, testGroup) {
 	return result;
 }
 
-//var barrageGroup = group(exports, 'barrage');
-//delete barrageGroup[''];
-//Object.assign(exports.barrage, barrageGroup);
+var useGrouping = true; // set to true to be able to test related groups of test easily, like `nodeunit -t maneuveringJets`
 
-//exports.expansion = group(exports, 'expansion');
-//exports.plasmaScoring = group(exports, 'plasmaScoring');
-//exports.magenDefense = group(exports, 'magenDefense');
-//exports.ground = group(exports, 'ground');
-//exports.assaultCannon = group(exports, 'assaultCannon');
-//exports.moraleBoost = group(exports, 'moraleBoost');
-//exports.fireTeam = group(exports, 'fireTeam');
-//exports.fighterPrototype = group(exports, 'fighterPrototype');
-//exports.bunker = group(exports, 'bunker');
-//exports.directHit = group(exports, 'directHit');
-//exports.maneuveringJets = group(exports, 'maneuveringJets');
-//exports.sardakk = group(exports, 'sardakk');
-//exports.harrow = group(exports, 'harrow');
-//exports.nonEuclidean = group(exports, 'nonEuclidean');
-//exports.valkyrieParticleWeave = group(exports, 'valkyrieParticleWeave');
-//exports.gravitonLaser = group(exports, 'gravitonLaser');
-//exports.winnu = group(exports, 'winnuFlagship');
-//exports.yin = group(exports, 'yinFlagship');
-//exports.jolNar = group(exports, 'jolNar');
-//exports.virus = group(exports, 'virus');
-exports.prophecy = group(exports, 'prophecyOfIxth');
+if (useGrouping) {
+	var barrageGroup = group(exports, 'barrage');
+	delete barrageGroup[''];
+	Object.assign(exports.barrage, barrageGroup);
+
+	exports.expansion = group(exports, 'expansion');
+	exports.plasmaScoring = group(exports, 'plasmaScoring');
+	exports.magenDefense = group(exports, 'magenDefense');
+	exports.ground = group(exports, 'ground');
+	exports.assaultCannon = group(exports, 'assaultCannon');
+	exports.moraleBoost = group(exports, 'moraleBoost');
+	exports.fireTeam = group(exports, 'fireTeam');
+	exports.fighterPrototype = group(exports, 'fighterPrototype');
+	exports.bunker = group(exports, 'bunker');
+	exports.directHit = group(exports, 'directHit');
+	exports.maneuveringJets = group(exports, 'maneuveringJets');
+	exports.sardakk = group(exports, 'sardakk');
+	exports.harrow = group(exports, 'harrow');
+	exports.nonEuclidean = group(exports, 'nonEuclidean');
+	exports.valkyrieParticleWeave = group(exports, 'valkyrieParticleWeave');
+	exports.gravitonLaser = group(exports, 'gravitonLaser');
+	exports.winnu = group(exports, 'winnuFlagship');
+	exports.yin = group(exports, 'yinFlagship');
+	exports.jolNar = group(exports, 'jolNar');
+	exports.virus = group(exports, 'virus');
+	exports.prophecy = group(exports, 'prophecyOfIxth');
+	exports.munitions = group(exports, 'munitionsFunding');
+
+}

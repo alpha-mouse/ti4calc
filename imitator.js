@@ -111,13 +111,16 @@
 				var attackerReroll = false;
 				var defenderReroll = false;
 				if (round === 1) {
-					attackerReroll = options.attacker.fireTeam && battleType === game.BattleType.Ground;
-					defenderReroll = options.defender.fireTeam && battleType === game.BattleType.Ground
+					attackerReroll = options.attacker.fireTeam && battleType === game.BattleType.Ground ||
+						options.attacker.letnevMunitionsFunding && battleType === game.BattleType.Space;
+					defenderReroll = options.defender.fireTeam && battleType === game.BattleType.Ground ||
+						options.defender.letnevMunitionsFunding && battleType === game.BattleType.Space;
 				}
 				if (round === 2 && magenDefenseActivated) {
 					// if Magen Defense was activated - treat the second round as the first for the attacker
 					attackerBoost = boost(battleType, 1, options.attacker, attacker);
-					attackerReroll = options.attacker.fireTeam && battleType === game.BattleType.Ground;
+					attackerReroll = options.attacker.fireTeam && battleType === game.BattleType.Ground ||
+						options.attacker.letnevMunitionsFunding && battleType === game.BattleType.Space /* space combat is mutually exclusive with magen defense but anyway*/;
 				}
 				winnuFlagships(attacker, options.attacker, defender);
 				winnuFlagships(defender, options.defender, attacker);

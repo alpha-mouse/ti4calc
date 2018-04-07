@@ -88,8 +88,10 @@
 
 			var attackerBoost = boost(battleType, options.attacker, problem.attacker, true);
 			var defenderBoost = boost(battleType, options.defender, problem.defender, true);
-			var attackerReroll = battleType === game.BattleType.Ground && options.attacker.fireTeam;
-			var defenderReroll = battleType === game.BattleType.Ground && options.defender.fireTeam;
+			var attackerReroll = battleType === game.BattleType.Ground && options.attacker.fireTeam ||
+				battleType === game.BattleType.Space && options.attacker.letnevMunitionsFunding;
+			var defenderReroll = battleType === game.BattleType.Ground && options.defender.fireTeam ||
+				battleType === game.BattleType.Space && options.defender.letnevMunitionsFunding;
 
 			var magenDefenseActivated = battleType === game.BattleType.Ground &&
 				options.defender.magenDefense &&
