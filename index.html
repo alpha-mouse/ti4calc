@@ -148,7 +148,15 @@
 					 :option-name="key" :option="option" :options="options"></option-pair>
 		<option-pair v-for="(option, key) in Promisory"
 					 :option-name="key" :option="option" :options="options"></option-pair>
+		<p id="chart-size-selector" class="o-grid center-grid"><span>Chart size:&nbsp;</span>
+			<select class="o-grid__cell c-field block" v-model="canvasSize">
+				<option v-for="(size, key) in CanvasSizes" v-bind:value="key">
+					{{ size.width + '*' + size.height }}
+				</option>
+			</select>
+		</p>
 	</div>
+
 	<div id="help" :class="{ collapsed: !showHelp }">
 		<h1>Twilight Imperium IV Edition Battle Calculator</h1>
 		<p>Add and remove units to the battle by using '+' and '-' buttons.</p>
@@ -259,10 +267,10 @@
 		<p>Any suggestions and bug reports are welcome at ivan.bachtin@gmail.com</p>
 	</div>
 </div>
-<div id="result-area" style="width: 600px; height: 400px">
-	<canvas id="chart-area" width="600px" height="400px"></canvas>
-	<canvas id="chart-area-overlay" width="600px" height="400px"></canvas>
-	<div id="spinner-container" style="width: 600px; height: 400px" :class="{ collapsed: !computing }">
+<div id="result-area" :style="{ width: canvasWidth, height: canvasHeight }">
+	<canvas id="chart-area" :width="canvasWidth" :height="canvasHeight"></canvas>
+	<canvas id="chart-area-overlay" :width="canvasWidth" :height="canvasHeight"></canvas>
+	<div id="spinner-container" :style="{ width: canvasWidth, height: canvasHeight }" :class="{ collapsed: !computing }">
 		<div class="loading-spinner"></div>
 	</div>
 </div>

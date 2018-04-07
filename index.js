@@ -1,5 +1,14 @@
 (function () {
 
+	window.CanvasSizes = [
+		{ width: 600, height: 400 },
+		{ width: 900, height: 600 },
+		{ width: 1200, height: 800 },
+		{ width: 1800, height: 1200 },
+	];
+
+	var lastComputed;
+
 	var input = getInput();
 
 	var recomputeHandler = {
@@ -7,7 +16,7 @@
 		deep: true,
 	};
 
-	var viewOnlyProperties = {
+	var transientProperties = {
 		showOptions: false,
 		showHelp: false,
 		computing: false,
@@ -15,7 +24,7 @@
 
 	app = new Vue({
 		el: '#root',
-		data: Object.assign(input, viewOnlyProperties),
+		data: Object.assign(input, transientProperties),
 		methods: {
 			increment: function (unitInput) {
 				unitInput.count++;
@@ -42,7 +51,6 @@
 
 				// veeery poor man's background processing
 				setTimeout(function () {
-					var computed;
 					// unfortunately some game aspects are hard to handle in the calculator
 					var duraniumArmor = self.options.attacker.duraniumArmor || self.options.defender.duraniumArmor;
 					var l1z1xFlagship = self.options.attacker.race === Race.L1Z1X && self.attackerUnits.Flagship.count !== 0 ||
@@ -50,11 +58,11 @@
 					var letnevFlagship = self.options.attacker.race === Race.Letnev && self.attackerUnits.Flagship.count !== 0 ||
 						self.options.defender.race === Race.Letnev && self.defenderUnits.Flagship.count !== 0;
 					if ((duraniumArmor || l1z1xFlagship || letnevFlagship) && self.battleType === BattleType.Space)
-						computed = imitator.estimateProbabilities(self);
+						lastComputed = imitator.estimateProbabilities(self);
 					else
-						computed = calculator.computeProbabilities(self);
+						lastComputed = calculator.computeProbabilities(self);
 
-					self.displayDistribution(computed);
+					self.displayDistribution(lastComputed);
 
 					self.computing = false;
 				}, 15); // number is magic. but at least the spinner has time to show up before calculation begins
@@ -193,6 +201,14 @@
 			'options.defender.publicizeSchematics': function (value) {
 				this.options.attacker.publicizeSchematics = value;
 			},
+			canvasSize: function () {
+				persistInput();
+				var self = this;
+				if (lastComputed)
+					this.$nextTick(function () {
+						this.displayDistribution(lastComputed);
+					});
+			},
 		},
 		computed: {
 			raceTechnologies: function () {
@@ -227,8 +243,14 @@
 							}
 					};
 				}
-			}
-		}
+			},
+			canvasWidth: function () {
+				return window.CanvasSizes[this.canvasSize].width + 'px';
+			},
+			canvasHeight: function () {
+				return window.CanvasSizes[this.canvasSize].height + 'px';
+			},
+		},
 	});
 	Vue.component('left-option', {
 		props: ['optionName', 'option', 'options', 'side'],
@@ -304,6 +326,7 @@
 					race: Race.Arborec,
 				}, defender: null,
 			},
+			canvasSize: 0,
 		};
 
 		for (var technology in Technologies) {
@@ -326,7 +349,7 @@
 	function persistInput() {
 		if (localStorage) {
 			var inputToSave = JSON.parse(JSON.stringify(input));
-			for (var viewOnlyProperty in viewOnlyProperties) {
+			for (var viewOnlyProperty in transientProperties) {
 				delete inputToSave[viewOnlyProperty];
 			}
 			localStorage.setItem('ti4calc/input', JSON.stringify(inputToSave));

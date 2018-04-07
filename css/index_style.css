@@ -154,6 +154,12 @@ input::-webkit-inner-spin-button {
 	background: linear-gradient(-0.25turn, #f0f0ff, #f0f0ff 70%, white 90%, white);
 }
 
+#chart-size-selector {
+	display: flex;
+	align-items: center;
+	margin-top: .5em;
+}
+
 #spinner-container {
 	position: absolute;
 	z-index: 10;
