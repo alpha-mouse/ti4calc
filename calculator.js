@@ -259,8 +259,8 @@
 		/** Compute probabilities of the unit inflicting 0, 1, etc. hits.
 		 * @param reroll is used for units that can reroll failed throws */
 		function computeUnitTransitions(unit, throwType, modifier, reroll) {
-			var battleValue = unit[throwType + 'Value'];
-			var diceCount = unit[throwType + 'Dice'];
+			var battleValue = unit[game.ThrowValues[throwType]];
+			var diceCount = unit[game.ThrowDice[throwType]];
 			if (diceCount === 0) return [1];
 			modifier = modifier || 0;
 			var modifierFunction = typeof modifier === 'function' ? modifier : function (unit) {
@@ -889,10 +889,10 @@
 
 		function fleetTransitionsVectorWithPlasmaScoring(fleet, throwType, modifier, reroll) {
 			var fleetInflicted = computeFleetTransitions(fleet, throwType, modifier, reroll).pop();
-			var bestUnit = getUnitWithLowest(fleet, throwType + 'Value');
+			var bestUnit = getUnitWithLowest(fleet, game.ThrowValues[throwType]);
 			if (bestUnit) {
 				var unitWithOneDie = bestUnit.clone();
-				unitWithOneDie[throwType + 'Dice'] = 1;
+				unitWithOneDie[game.ThrowDice[throwType]] = 1;
 				var unitTransitions = computeUnitTransitions(unitWithOneDie, throwType, modifier, reroll);
 				fleetInflicted = slideMultiply(unitTransitions, fleetInflicted);
 			}

@@ -7,6 +7,17 @@
 		Ground: 'Ground',
 	};
 
+	root.BattleSide = {
+		attacker: 'attacker',
+		defender: 'defender',
+		opponent: function (battleSide) {
+			return {
+				attacker: 'defender',
+				defender: 'attacker',
+			}[battleSide];
+		}
+	};
+
 	var UnitType = {
 		Flagship: 'Flagship',
 		WarSun: 'WarSun',
@@ -104,7 +115,7 @@
 
 	root.Agendas = {
 		publicizeSchematics: new Option('Publicize Weapon Schematics', 'WarSuns don\'t sustain damage'),
-		conventionsOfWar: new Option('Conventions of War', 'No bombardment',  'defender'),
+		conventionsOfWar: new Option('Conventions of War', 'No bombardment', 'defender'),
 		prophecyOfIxth: new Option('Prophecy of IXTH', '+1 to Fighters rolls'),
 	};
 
@@ -127,27 +138,28 @@
 
 		function UnitInfo(type, stats) {
 
-			Object.assign(this, {
-				type: type,
-				sustainDamageHits: 0,
-
-				battleValue: NaN,
-				battleDice: 1,
-
-				bombardmentValue: NaN,
-				bombardmentDice: 0,
-
-				spaceCannonValue: NaN,
-				spaceCannonDice: 0,
-
-				barrageValue: NaN,
-				barrageDice: 0,
-
-				isDamageGhost: false,
-			}, stats);
-
+			this.type = type;
 			var shortType = shortUnitType[this.type];
-			this.shortType = this.isDamageGhost ? shortType.toLowerCase() : shortType;
+			this.shortType = stats.isDamageGhost ? shortType.toLowerCase() : shortType;
+
+			this.battleValue = stats.battleValue || NaN;
+			this.battleDice = stats.battleDice !== undefined ? stats.battleDice : 1;
+
+			this.bombardmentValue = stats.bombardmentValue || NaN;
+			this.bombardmentDice = stats.bombardmentDice || 0;
+
+			this.spaceCannonValue = stats.spaceCannonValue || NaN;
+			this.spaceCannonDice = stats.spaceCannonDice || 0;
+
+			this.barrageValue = stats.barrageValue || NaN;
+			this.barrageDice = stats.barrageDice || 0;
+
+			this.sustainDamageHits = stats.sustainDamageHits || 0;
+			this.isDamageGhost = stats.isDamageGhost || false;
+
+			this.damageCorporeal = undefined;
+			this.damaged = false;
+			this.damagedThisRound = false;
 		}
 
 		UnitInfo.prototype.clone = function () {
@@ -177,6 +189,18 @@
 		Bombardment: 'bombardment',
 		SpaceCannon: 'spaceCannon',
 		Barrage: 'barrage',
+	};
+	root.ThrowValues = {
+		battle: 'battleValue',
+		bombardment: 'bombardmentValue',
+		spaceCannon: 'spaceCannonValue',
+		barrage: 'barrageValue',
+	};
+	root.ThrowDice = {
+		battle: 'battleDice',
+		bombardment: 'bombardmentDice',
+		spaceCannon: 'spaceCannonDice',
+		barrage: 'barrageDice',
 	};
 
 	root.StandardUnits = {
@@ -430,34 +454,35 @@
 		},
 	};
 
-	root.BattleSide = {
-		attacker: 'attacker',
-		defender: 'defender',
-		opponent: function (battleSide) {
-			return {
-				attacker: 'defender',
-				defender: 'attacker',
-			}[battleSide];
-		}
-	};
+	root.MergedUnits = {};
+	root.MergedUpgrades = {};
+	for (var race in root.Race) {
+		root.MergedUnits[race] = Object.assign({}, root.StandardUnits, root.RaceSpecificUnits[race]);
+		root.MergedUpgrades[race] = Object.assign({}, root.StandardUpgrades, root.RaceSpecificUpgrades[race]);
+	}
 
 	/** Make an array of units in their reversed order of dying */
 	root.expandFleet = function (input, battleSide) {
+		var sides = {
+			attacker: 'attackerUnits',
+			defender: 'defenderUnits',
+		};
 		var options = input.options || { attacker: {}, defender: {} };
 		var battleType = input.battleType;
 		var thisSideOptions = options[battleSide];
 		var opponentSide = root.BattleSide.opponent(battleSide);
 		var opponentSideOptions = options[opponentSide];
 
-		var standardUnits = Object.assign({}, root.StandardUnits, root.RaceSpecificUnits[thisSideOptions.race]);
-		var upgradedUnits = Object.assign({}, root.StandardUpgrades, root.RaceSpecificUpgrades[thisSideOptions.race]);
+		var standardUnits = root.MergedUnits[thisSideOptions.race];
+		var upgradedUnits = root.MergedUpgrades[thisSideOptions.race];
 
 		var opponentMentakFlagship = battleType === root.BattleType.Space && opponentSideOptions.race === root.Race.Mentak &&
-			(input[opponentSide + 'Units'][UnitType.Flagship] || { count: 0 }).count !== 0;
+			(input[sides[opponentSide]][UnitType.Flagship] || { count: 0 }).count !== 0;
 
 		var result = [];
+		var thisSideCounters = input[sides[battleSide]];
 		for (var unitType in UnitType) {
-			var counter = input[battleSide + 'Units'][unitType] || { count: 0 };
+			var counter = thisSideCounters[unitType] || { count: 0 };
 			for (var i = 0; i < counter.count; i++) {
 				var unit = (counter.upgraded ? upgradedUnits : standardUnits)[unitType];
 				var addedUnit = unit.clone();
@@ -470,9 +495,9 @@
 
 		var ships = createShips();
 		var virusFlagship = battleType === root.BattleType.Space && thisSideOptions.race === root.Race.Virus &&
-			(input[battleSide + 'Units'][UnitType.Flagship] || { count: 0 }).count !== 0;
+			(thisSideCounters[UnitType.Flagship] || { count: 0 }).count !== 0;
 		var naaluFlagship = battleType === root.BattleType.Ground && thisSideOptions.race === root.Race.Naalu &&
-			(input[battleSide + 'Units'][UnitType.Flagship] || { count: 0 }).count !== 0;
+			(thisSideCounters[UnitType.Flagship] || { count: 0 }).count !== 0;
 
 		var unitOrder = createUnitOrder(virusFlagship);
 		var naaluGoundUnitOrder = {};
@@ -483,11 +508,11 @@
 		if (naaluFlagship) {
 			// in case Fighters are stronger than Ground Forces, I'd like Ground Forces to die first, then sacrifice the
 			// Fighters. But, Fighters cannot take control of the planet, so I'd like to save one Ground Force
-			vipGround = (input[battleSide + 'Units'][UnitType.Fighter] || {}).upgraded &&
-				!(input[battleSide + 'Units'][UnitType.Ground] || {}).upgraded &&
+			vipGround = (thisSideCounters[UnitType.Fighter] || {}).upgraded &&
+				!(thisSideCounters[UnitType.Ground] || {}).upgraded &&
 				result.find(function (unit) { return unit.type === UnitType.Ground; });
 			comparer = naaluComparer;
-		} else if ((input[battleSide + 'Units'][UnitType.Dreadnought] || {}).upgraded)
+		} else if ((thisSideCounters[UnitType.Dreadnought] || {}).upgraded)
 			comparer = upgradedDreadnoughtsComparer;
 		else
 			comparer = defaultComparer;
@@ -542,8 +567,8 @@
 			if (thisSideOptions.riskDirectHit) {
 				// means damage ghosts will come last
 				return damageGhostOrder * 100 + typeOrder;
-			} else if (unit1.type === UnitType.Dreadnought && unit1.isDamageGhost){
-				return unit2.type === UnitType.Dreadnought && unit2.isDamageGhost ? 0: 1;
+			} else if (unit1.type === UnitType.Dreadnought && unit1.isDamageGhost) {
+				return unit2.type === UnitType.Dreadnought && unit2.isDamageGhost ? 0 : 1;
 			} else if (unit2.type === UnitType.Dreadnought && unit2.isDamageGhost) {
 				return -1;
 			} else {

@@ -309,8 +309,8 @@
 			};
 			for (var i = 0; i < fleet.length; i++) {
 				var unit = fleet[i];
-				var battleValue = unit[throwType + 'Value'];
-				var diceCount = unit[throwType + 'Dice'];
+				var battleValue = unit[game.ThrowValues[throwType]];
+				var diceCount = unit[game.ThrowDice[throwType]];
 				for (var die = 0; die < diceCount; ++die) {
 					var rollResult = rollDie();
 					if (unit.type === game.UnitType.Flagship && unit.race === game.Race.JolNar && 8 < rollResult)
@@ -528,10 +528,10 @@
 			}
 
 			function fromPlasmaScoring(fleet, throwType, modifier) {
-				var bestUnit = getUnitWithLowest(fleet, throwType + 'Value');
+				var bestUnit = getUnitWithLowest(fleet, game.ThrowValues[throwType]);
 				if (bestUnit) {
 					var unitWithOneDie = bestUnit.clone();
-					unitWithOneDie[throwType + 'Dice'] = 1;
+					unitWithOneDie[game.ThrowDice[throwType]] = 1;
 					return rollDice([unitWithOneDie], throwType, modifier);
 				}
 				return 0;

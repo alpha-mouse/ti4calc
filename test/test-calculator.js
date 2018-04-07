@@ -509,9 +509,43 @@ exports.spacePerformance = function (test) {
 
 	s = new Date();
 	var dummy = 1;
-	for (var i = 0; i < 500000000; ++i)
+	for (var i = 0; i < 50000000; ++i)
 		dummy *= 1.000000001;
-	var elapsedComparison = new Date() - s;
+	var elapsedComparison = (new Date() - s) * 10;
+
+	test.ok(elapsed < elapsedComparison, 'such performance is suspicious: ' + elapsed / elapsedComparison);
+
+	test.done();
+};
+
+exports.spaceImitatorPerformance = function (test) {
+
+	var attacker = {};
+
+	attacker[game.UnitType.Dreadnought] = { count: 5 };
+	attacker[game.UnitType.Fighter] = { count: 5 };
+
+	var defender = {};
+	defender[game.UnitType.Dreadnought] = { count: 5 };
+	defender[game.UnitType.Fighter] = { count: 6 };
+
+	var input = new Input(attacker, defender, game.BattleType.Space, {
+		attacker: { duraniumArmor: true },
+		defender: { duraniumArmor: true }
+	});
+	var s = new Date();
+	var previousImitatorIterations = imitatorModule.imitationIterations;
+	imitatorModule.imitationIterations = 10000;
+	for (var i = 0; i < 10; ++i)
+		im.estimateProbabilities(input);
+	imitatorModule.imitationIterations = previousImitatorIterations;
+	var elapsed = new Date() - s;
+
+	s = new Date();
+	var dummy = 1;
+	for (var i = 0; i < 90000000; ++i)
+		dummy *= 1.000000001;
+	var elapsedComparison = (new Date() - s) * 100;
 
 	test.ok(elapsed < elapsedComparison, 'such performance is suspicious: ' + elapsed / elapsedComparison);
 
@@ -2421,7 +2455,7 @@ function group(exports, testGroup) {
 	return result;
 }
 
-var useGrouping = true; // set to true to be able to test related groups of test easily, like `nodeunit -t maneuveringJets`
+var useGrouping = false; // set to true to be able to test related groups of test easily, like `nodeunit -t maneuveringJets`
 
 if (useGrouping) {
 	var barrageGroup = group(exports, 'barrage');
