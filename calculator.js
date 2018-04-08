@@ -52,7 +52,8 @@
 
 			// the most interesting part - actually compute outcome probabilities
 			for (var i = 0; i < problemArray.length; ++i)
-				solveProblem(problemArray[i], battleType, attackerFull, defenderFull, options);
+				if (problemArray[i].attacker.length && problemArray[i].defender.length)
+					solveProblem(problemArray[i], battleType, attackerFull, defenderFull, options);
 
 			// format output
 			var finalDistribution = new structs.DistributionBase(-attacker.length, defender.length);

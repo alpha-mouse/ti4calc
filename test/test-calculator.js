@@ -1174,7 +1174,7 @@ exports.gravitonLaserNonEuclidean2 = function (test) {
 	defender[game.UnitType.Fighter] = { count: 1 };
 
 	var options = {
-		attacker: { },
+		attacker: {},
 		defender: { race: game.Race.Letnev, gravitonLaser: true, nonEuclidean: true }
 	};
 
@@ -1667,6 +1667,19 @@ exports.l1z1xRacialHarrowPlasmaScoring = function (test) {
 	defender[game.UnitType.Ground] = { count: 4 };
 
 	var options = { attacker: { race: game.Race.L1Z1X, plasmaScoring: true }, defender: {} };
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
+exports.l1z1xRacialHarrowNoAttacker = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Dreadnought] = { count: 1 };
+
+	defender[game.UnitType.Ground] = { count: 1 };
+
+	var options = { attacker: { race: game.Race.L1Z1X }, defender: { moraleBoost: true } };
 
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
