@@ -2341,9 +2341,16 @@ function chaoticTest(test) {
 		defender[unitType] = { count: count, upgraded: upgraded };
 	}
 
-	for (var technology in game.Technologies) {
-		options.attacker[technology] = Math.random() < .2;
-		options.defender[technology] = Math.random() < .2;
+	var Options = Object.assign({},
+		game.Technologies,
+		game.ActionCards,
+		game.Agendas,
+		game.Promissory,
+		game.RaceSpecificTechnologies.Letnev,
+		game.RaceSpecificTechnologies.Sardakk);
+	for (var option in Options) {
+		options.attacker[option] = Math.random() < .2;
+		options.defender[option] = Math.random() < .2;
 	}
 
 	// Duranium Armor is not supported by the calculator, so don't try to test it
@@ -2354,11 +2361,6 @@ function chaoticTest(test) {
 	}
 	if (options.defender.race === game.Race.L1Z1X || options.defender.race === game.Race.Letnev) {
 		defender.Flagship.count = 0;
-	}
-
-	for (var actionCard in game.ActionCards) {
-		options.attacker[actionCard] = Math.random() < .2;
-		options.defender[actionCard] = Math.random() < .2;
 	}
 
 	var input = {

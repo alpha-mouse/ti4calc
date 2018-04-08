@@ -119,7 +119,7 @@
 		prophecyOfIxth: new Option('Prophecy of IXTH', '+1 to Fighters rolls'),
 	};
 
-	root.Promisory = {
+	root.Promissory = {
 		letnevMunitionsFunding: new Option('Munitions Reserves / War Funding 1st round', 'Reroll dice during first space combat round'),
 		tekklarLegion: new Option('Tekklar Legion', '+1 in invasion combat. -1 to Sardakk if he\'s the opponent'),
 	};
