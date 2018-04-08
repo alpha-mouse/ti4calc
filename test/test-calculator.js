@@ -1163,6 +1163,24 @@ exports.gravitonLaserNonEuclidean = function (test) {
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
 
+exports.gravitonLaserNonEuclidean2 = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Cruiser] = { count: 1 };
+	attacker[game.UnitType.PDS] = { count: 2 };
+
+	defender[game.UnitType.Dreadnought] = { count: 1 };
+	defender[game.UnitType.Fighter] = { count: 1 };
+
+	var options = {
+		attacker: { },
+		defender: { race: game.Race.Letnev, gravitonLaser: true, nonEuclidean: true }
+	};
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
 exports.gravitonLaserManyPds = function (test) {
 
 	var attacker = {};

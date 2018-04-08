@@ -72,37 +72,37 @@ exports.victim = {
 		},
 	},
 	collapseRanges: {
-		oneRangeMatch : function (test) {
+		oneRangeMatch: function (test) {
 			var v = new structs.Victim();
 			v.addRange(1, 3);
 			var collapsed = v.collapseRanges(3);
 			compareRangesAndDead(test, collapsed, [], 2);
 		},
-		oneSingleMatch : function (test) {
+		oneSingleMatch: function (test) {
 			var v = new structs.Victim();
 			v.addRange(1);
 			var collapsed = v.collapseRanges(2);
 			compareRangesAndDead(test, collapsed, [], 1);
 		},
-		twoRangesMatch : function (test) {
+		twoRangesMatch: function (test) {
 			var v = new structs.Victim();
-			v.addRange(1,3);
-			v.addRange(5,8);
+			v.addRange(1, 3);
+			v.addRange(5, 8);
 			var collapsed = v.collapseRanges(8);
-			compareRangesAndDead(test, collapsed, [1,3], 5);
+			compareRangesAndDead(test, collapsed, [1, 3], 5);
 		},
-		twoRangeSingleMatch : function (test) {
+		twoRangeSingleMatch: function (test) {
 			var v = new structs.Victim();
-			v.addRange(1,3);
+			v.addRange(1, 3);
 			v.addRange(5);
 			var collapsed = v.collapseRanges(6);
-			compareRangesAndDead(test, collapsed, [1,3], 3);
+			compareRangesAndDead(test, collapsed, [1, 3], 3);
 		},
-		noMatch:function(test) {
+		noMatch: function (test) {
 			var v = new structs.Victim();
 			v.addRange(1, 3);
 			var collapsed = v.collapseRanges(4);
-			compareRangesAndDead(test, collapsed, [1,3], 2);
+			compareRangesAndDead(test, collapsed, [1, 3], 2);
 		}
 	},
 	rangesKey: {
@@ -114,13 +114,13 @@ exports.victim = {
 		singleRange: function (test) {
 			var v = new structs.Victim();
 			v.addRange(1);
-			v.addRange(3,5);
+			v.addRange(3, 5);
 			compareKey(test, v, '1,3-5');
 		},
 		rangeRange: function (test) {
 			var v = new structs.Victim();
-			v.addRange(1,3);
-			v.addRange(5,8);
+			v.addRange(1, 3);
+			v.addRange(5, 8);
 			compareKey(test, v, '1-3,5-8');
 		},
 	}

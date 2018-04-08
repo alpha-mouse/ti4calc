@@ -475,7 +475,7 @@
 						function gravitonLaserVictims(fleet, index, hits, thisSideOptions, opposingSideOptions) {
 							if (hits === 0 || index === 0)
 								return structs.Victim.Null;
-							if (!opposingSideOptions.gravitonLaser && !fleet.some(unitIs(game.UnitType.Ground))) {
+							if (!opposingSideOptions.gravitonLaser && !thisSideOptions.nonEuclidean && !fleet.some(unitIs(game.UnitType.Ground))) {
 								var result = new structs.Victim();
 								result._dead = Math.min(hits, fleet.map(absorbsHits).reduce(sum));
 								return result;
