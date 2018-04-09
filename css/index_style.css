@@ -26,6 +26,12 @@ body {
 	width: auto;
 }
 
+.center-grid .damaged {
+	flex-basis: 2.5em;
+	flex-shrink: 0;
+	flex-grow: 0;
+}
+
 .center-grid .block:first-child {
 	text-align: right;
 }
@@ -41,14 +47,13 @@ body {
 }
 
 #counters .counter input {
-	width: 3em;
 	text-align: center;
 }
 
 #counters .counter {
-	flex-basis: auto;
+	flex-basis: 11.5em;
 	flex-grow: 0;
-	width: auto;
+	flex-shrink: 0;
 }
 
 #counters .counter .c-button {
@@ -143,7 +148,12 @@ input::-webkit-inner-spin-button {
 }
 
 /* workaround blazecss input groups handling a bit */
-.c-input-group .c-button.hidden:first-child + .c-button {
+.c-input-group .c-button.hidden + .c-button {
+	border-left-width: 1px;
+	margin-left: -1px;
+}
+
+.c-input-group .damaged.hidden + .c-button {
 	border-left-width: 1px;
 	margin-left: -1px;
 }

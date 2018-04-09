@@ -91,6 +91,10 @@ function testExpansion(test, actual, expected) {
 					break test;
 				}
 			}
+			if (unit.damaged !== expectedUnit.damaged) {
+				message = format('wrong damaged state at ' + i, unit.damaged, expectedUnit.damaged);
+				break test;
+			}
 		}
 		result = true;
 	} while (false);
@@ -354,7 +358,7 @@ exports.expansionAndFilterNaaluFlagshipGroundBetter = function (test) {
 
 exports.expansionPublicizeWeaponSchematics = function (test) {
 	var fleet = {};
-	fleet[game.UnitType.WarSun] = { count: 2 };
+	fleet[game.UnitType.WarSun] = { count: 2, damaged: 1 };
 	fleet[game.UnitType.Dreadnought] = { count: 1 };
 
 	var expansion = game.expandFleet(new Input(fleet, null, game.BattleType.Space, {
@@ -363,6 +367,7 @@ exports.expansionPublicizeWeaponSchematics = function (test) {
 
 	var u = game.UnitType;
 	var expected = [
+		// in contrast to expansionDamaged test, WarSuns are considered undamaged, as they cannot be repaired by Duranium Armor
 		game.StandardUnits[u.WarSun],
 		game.StandardUnits[u.WarSun],
 		game.StandardUnits[u.Dreadnought],
@@ -370,6 +375,39 @@ exports.expansionPublicizeWeaponSchematics = function (test) {
 	];
 
 	testExpansion(test, expansion, expected);
+};
+
+exports.expansionDamaged = function (test) {
+	var fleet = {};
+	fleet[game.UnitType.Flagship] = { count: 2, damaged: 1 };
+	fleet[game.UnitType.WarSun] = { count: 3, damaged: 2 };
+	fleet[game.UnitType.Dreadnought] = { count: 4, damaged: 3 };
+
+	var expansion = game.expandFleet(new Input(fleet, null, game.BattleType.Space, { attacker: { race: game.Race.Sol, }, }), game.BattleSide.attacker);
+
+	var u = game.UnitType;
+	var expected = [
+		game.RaceSpecificUnits[game.Race.Sol][u.Flagship],
+		damage(game.RaceSpecificUnits[game.Race.Sol][u.Flagship]),
+		game.StandardUnits[u.WarSun],
+		damage(game.StandardUnits[u.WarSun]),
+		damage(game.StandardUnits[u.WarSun]),
+		game.StandardUnits[u.Dreadnought],
+		damage(game.StandardUnits[u.Dreadnought]),
+		damage(game.StandardUnits[u.Dreadnought]),
+		damage(game.StandardUnits[u.Dreadnought]),
+		game.RaceSpecificUnits[game.Race.Sol][u.Flagship].toDamageGhost(),
+		game.StandardUnits[u.WarSun].toDamageGhost(),
+		game.StandardUnits[u.Dreadnought].toDamageGhost(),
+	];
+
+	testExpansion(test, expansion, expected);
+
+	function damage(unit) {
+		var result = unit.clone();
+		result.damaged = true;
+		return result;
+	}
 };
 
 exports.symmetricImitator = function (test) {
@@ -543,7 +581,7 @@ exports.spaceImitatorPerformance = function (test) {
 
 	s = new Date();
 	var dummy = 1;
-	for (var i = 0; i < 90000000; ++i)
+	for (var i = 0; i < 140000000; ++i)
 		dummy *= 1.000000001;
 	var elapsedComparison = (new Date() - s) * 100;
 
@@ -1382,6 +1420,27 @@ exports.duraniumArmor = function (test) {
 	//console.log(distribution.toString());
 	var inverse = invertDistribution(distribution);
 	test.ok(!distributionsEqual(distribution, inverse), 'Duranium Armor not applied');
+
+	test.done();
+};
+
+exports.duraniumArmorRepairAlreadyDamaged = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Fighter] = { count: 1 }; // just a scapegoat
+
+	defender[game.UnitType.Dreadnought] = { count: 1, damaged: 1 };
+	defender[game.UnitType.Destroyer] = { count: 10, upgraded: true };
+
+	var options = {
+		attacker: {},
+		defender: { duraniumArmor: true },
+	};
+
+	var distribution = im.estimateProbabilities(new Input(attacker, defender, game.BattleType.Space, options)).distribution;
+	//console.log(distribution.toString());
+	test.equals(distribution.max, 12, 'Dreadnought not repaired for free');
 
 	test.done();
 };
@@ -2363,13 +2422,13 @@ function chaoticTest(test) {
 	for (var unitType in game.UnitType) {
 		var count = Math.max(0, Math.floor(Math.random() * 8) - 3);
 		var upgraded = attackerUnitUpgrades[unitType] && Math.random() < .4;
-		attacker[unitType] = { count: count, upgraded: upgraded };
+		attacker[unitType] = { count: count, upgraded: upgraded, damaged: Math.floor(Math.random() * (count + 1)) };
 	}
 
 	for (var unitType in game.UnitType) {
 		var count = Math.max(0, Math.floor(Math.random() * 8) - 3);
 		var upgraded = defenderUnitUpgrades[unitType] && Math.random() < .4;
-		defender[unitType] = { count: count, upgraded: upgraded };
+		defender[unitType] = { count: count, upgraded: upgraded, damaged: Math.floor(Math.random() * (count + 1)) };
 	}
 
 	var Options = Object.assign({},

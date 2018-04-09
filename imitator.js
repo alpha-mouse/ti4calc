@@ -27,13 +27,9 @@
 
 			var result = new structs.EmpiricalDistribution();
 			var finalAttacker = game.expandFleet(input, game.BattleSide.attacker).filterForBattle()
-				.map(function (unit) {
-					return [unit.shortType];
-				});
+				.map(function (unit) { return [unit.shortType]; });
 			var finalDefender = game.expandFleet(input, game.BattleSide.defender).filterForBattle()
-				.map(function (unit) {
-					return [unit.shortType];
-				});
+				.map(function (unit) { return [unit.shortType]; });
 			for (var i = 0; i < root.imitationIterations; ++i) {
 				var attacker = game.expandFleet(input, game.BattleSide.attacker);
 				var defender = game.expandFleet(input, game.BattleSide.defender);
@@ -81,6 +77,7 @@
 			var attacker = attackerFull.filterForBattle();
 			var defender = defenderFull.filterForBattle();
 
+			var doAtLeastOneRound = false;
 			var actions = prebattleActions;
 			if (options.attacker.race === game.Race.Mentak) {
 				actions = prebattleActions.slice();
@@ -95,6 +92,15 @@
 				var action = actions[i];
 				if (action.appliesTo === battleType)
 					action.execute(attacker, defender, attackerFull, defenderFull, options);
+				if (i === 0) {
+					if (action.name === 'Space Cannon -> Ships') {
+						// if last unit's are destroyed by Mentak racial ability or Assault Cannon or Barrage,
+						// make sure "after combat round" effects still occur
+						doAtLeastOneRound = battleType === game.BattleType.Space &&
+							(attacker.length || defender.length);
+					} else
+						throw new Error('first pre-battle action not Space Cannon -> Ships');
+				}
 			}
 			var round = 0;
 
@@ -103,7 +109,7 @@
 				defenderFull.some(unitIs(game.UnitType.PDS)) &&
 				!attackerFull.some(unitIs(game.UnitType.WarSun));
 
-			while (hasUnits(attacker) && hasUnits(defender)) {
+			while (hasUnits(attacker) && hasUnits(defender) || (doAtLeastOneRound && round === 0)) {
 				round++;
 				var attackerBoost = boost(battleType, round, options.attacker, attacker, options.defender);
 				var defenderBoost = boost(battleType, round, options.defender, defender, options.attacker);

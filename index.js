@@ -39,8 +39,8 @@
 			},
 			clear: function (side) {
 				for (var unitType in UnitType) {
-					this[side + 'Units'][unitType].count = 0;
-					this[side + 'Units'][unitType].upgraded = false;
+					this[SideUnits[side]][unitType].count = 0;
+					this[SideUnits[side]][unitType].upgraded = false;
 				}
 			},
 			recompute: function () {
@@ -182,18 +182,24 @@
 							battleSide === BattleSide.attacker && this.options.attacker.race === Race.Naalu && this.attackerUnits.Flagship.count !== 0;
 					case UnitType.Ground:
 						return this.battleType === BattleType.Ground ||
-							this.options[battleSide].race === Race.Virus && this[battleSide + 'Units'].Flagship.count !== 0;
+							this.options[battleSide].race === Race.Virus && this[SideUnits[battleSide]].Flagship.count !== 0;
 					case UnitType.PDS:
 						return this.battleType === BattleType.Space || battleSide === BattleSide.defender;
 				}
+			},
+			damageableCount: function (count) {
+				var result = [];
+				for (var i = 0; i <= count; i++)
+					result.push(i);
+				return result;
 			},
 		},
 		watch: {
 			'options.attacker.race': resetUpdatesAndTechnologies('attacker'),
 			'options.defender.race': resetUpdatesAndTechnologies('defender'),
 			battleType: recomputeHandler,
-			attackerUnits: recomputeHandler,
-			defenderUnits: recomputeHandler,
+			attackerUnits: updateDamageableCountAndRecomputeHandler('attacker'),
+			defenderUnits: updateDamageableCountAndRecomputeHandler('defender'),
 			options: recomputeHandler,
 			'options.attacker.publicizeSchematics': function (value) {
 				this.options.defender.publicizeSchematics = value;
@@ -301,15 +307,31 @@
 	function resetUpdatesAndTechnologies(battleSide) {
 		return function (newRace, oldRace) {
 			for (var unitType in UnitType) {
-				if (upgradeable(oldRace, unitType) &&
-					!upgradeable(newRace, unitType)) {
-					this[battleSide + 'Units'][unitType].upgraded = false;
+				var counter = this[SideUnits[battleSide]][unitType];
+				if (!upgradeable(newRace, unitType)) {
+					counter.upgraded = false;
+				}
+				if (!damageable(newRace, unitType, counter.upgraded)) {
+					counter.damaged = 0;
 				}
 			}
 			if (RaceSpecificTechnologies[oldRace])
 				for (var tech in RaceSpecificTechnologies[oldRace])
 					this.options[battleSide][tech] = false;
 		};
+	}
+
+	function updateDamageableCountAndRecomputeHandler(battleSide) {
+		return {
+			handler: function () {
+				for (var unitType in UnitType) {
+					var counter = this[SideUnits[battleSide]][unitType];
+					counter.damaged = Math.min(counter.damaged, counter.count);
+				}
+				this.recompute();
+			},
+			deep: true
+		}
 	}
 
 	function getInput() {
@@ -340,8 +362,8 @@
 		result.options.defender = Object.assign({}, result.options.attacker);
 
 		for (var unitType in UnitType) {
-			result.attackerUnits[unitType] = { count: 0, upgraded: false };
-			result.defenderUnits[unitType] = { count: 0, upgraded: false };
+			result.attackerUnits[unitType] = { count: 0, upgraded: false, damaged: 0 };
+			result.defenderUnits[unitType] = { count: 0, upgraded: false, damaged: 0 };
 		}
 		return result;
 	}
@@ -360,8 +382,14 @@
 
 	function getPersistedInput() {
 		if (!localStorage) return null;
-		var result = localStorage.getItem('ti4calc/input');
-		if (!result) return null;
-		return JSON.parse(result);
+		var resultString = localStorage.getItem('ti4calc/input');
+		if (!resultString) return null;
+		var result = JSON.parse(resultString);
+		for (var unitType in UnitType) {
+			// because previous published version didn't have already damaged units, persisted input might miss these fields
+			result.attackerUnits[unitType].damaged = result.attackerUnits[unitType].damaged || 0;
+			result.defenderUnits[unitType].damaged = result.defenderUnits[unitType].damaged || 0;
+		}
+		return result;
 	}
 })();

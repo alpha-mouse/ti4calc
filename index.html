@@ -51,10 +51,16 @@
 			 :class="{ 'attacker-participates': participates(BattleSide.attacker, name),
 					   'defender-participates': participates(BattleSide.defender, name) }">
 			<div class="o-grid__cell counter c-input-group attacker">
+				<select v-model="attackerUnits[key].damaged" class="damaged"
+						:class="{ hidden: !damageable(options.attacker.race, key, attackerUnits[key].upgraded) }"
+						title="Units already damaged before the battle">
+					<option v-for="c in damageableCount(attackerUnits[key].count)" v-bind:value="c">{{ c }}</option>
+				</select>
 				<button type="button" class="c-button upgrade"
 						:class="{ 'c-button--brand': attackerUnits[key].upgraded,
 								  'c-button--ghost-brand': !attackerUnits[key].upgraded,
 								   hidden: !upgradeable(options.attacker.race, key) }"
+						:title="attackerUnits[key].upgraded ? 'Un-upgrade' : 'Upgrade'"
 						@click="attackerUnits[key].upgraded = !attackerUnits[key].upgraded">
 					{{ attackerUnits[key].upgraded ? '\u25B2' : '\u25b3' }}
 				</button>
@@ -83,9 +89,15 @@
 						:class="{ 'c-button--brand': defenderUnits[key].upgraded,
 								  'c-button--ghost-brand': !defenderUnits[key].upgraded,
 								   hidden: !upgradeable(options.defender.race, key) }"
+						:title="defenderUnits[key].upgraded ? 'Un-upgrade' : 'Upgrade'"
 						@click="defenderUnits[key].upgraded = !defenderUnits[key].upgraded">
 					{{ defenderUnits[key].upgraded ? '\u25B2' : '\u25b3' }}
 				</button>
+				<select v-model="defenderUnits[key].damaged" class="damaged"
+						:class="{ hidden: !damageable(options.defender.race, key, defenderUnits[key].upgraded) }"
+						title="Units already damaged before the battle">
+					<option v-for="c in damageableCount(defenderUnits[key].count)" v-bind:value="c">{{ c }}</option>
+				</select>
 			</div>
 		</div>
 	</div>
@@ -160,7 +172,8 @@
 	<div id="help" :class="{ collapsed: !showHelp }">
 		<h1>Twilight Imperium IV Edition Battle Calculator</h1>
 		<p>Add and remove units to the battle by using '+' and '-' buttons.</p>
-		<p>Toggle unit upgrade with '&#x25b3' button.</p>
+		<p>Toggle unit upgrades with '&#x25b3' buttons.</p>
+		<p>Select number of units already damaged before the battle from the corresponding drop-downs.</p>
 		<p>Switch battle type between Space Combat and Invasion.</p>
 		<p>Read the chart. Huge red and blue percent figures tell the probabilities of either side winning the
 			battle.</p>

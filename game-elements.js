@@ -18,6 +18,11 @@
 		}
 	};
 
+	root.SideUnits = {
+		attacker: 'attackerUnits',
+		defender: 'defenderUnits',
+	};
+
 	var UnitType = {
 		Flagship: 'Flagship',
 		WarSun: 'WarSun',
@@ -463,10 +468,7 @@
 
 	/** Make an array of units in their reversed order of dying */
 	root.expandFleet = function (input, battleSide) {
-		var sides = {
-			attacker: 'attackerUnits',
-			defender: 'defenderUnits',
-		};
+
 		var options = input.options || { attacker: {}, defender: {} };
 		var battleType = input.battleType;
 		var thisSideOptions = options[battleSide];
@@ -477,18 +479,24 @@
 		var upgradedUnits = root.MergedUpgrades[thisSideOptions.race];
 
 		var opponentMentakFlagship = battleType === root.BattleType.Space && opponentSideOptions.race === root.Race.Mentak &&
-			(input[sides[opponentSide]][UnitType.Flagship] || { count: 0 }).count !== 0;
+			(input[root.SideUnits[opponentSide]][UnitType.Flagship] || { count: 0 }).count !== 0;
 
 		var result = [];
-		var thisSideCounters = input[sides[battleSide]];
+		var thisSideCounters = input[root.SideUnits[battleSide]];
 		for (var unitType in UnitType) {
 			var counter = thisSideCounters[unitType] || { count: 0 };
 			for (var i = 0; i < counter.count; i++) {
 				var unit = (counter.upgraded ? upgradedUnits : standardUnits)[unitType];
 				var addedUnit = unit.clone();
 				result.push(addedUnit);
-				if (unit.sustainDamageHits > 0 && !opponentMentakFlagship && !(unitType === UnitType.WarSun && thisSideOptions.publicizeSchematics)) {
-					result.push(addedUnit.toDamageGhost());
+				if (unit.sustainDamageHits > 0 &&
+					!opponentMentakFlagship &&
+					!(unitType === UnitType.WarSun && thisSideOptions.publicizeSchematics)
+				) {
+					if (i < counter.count - (counter.damaged || 0))
+						result.push(addedUnit.toDamageGhost());
+					else
+						addedUnit.damaged = true;
 				}
 			}
 		}
@@ -551,29 +559,26 @@
 
 		function defaultComparer(unit1, unit2) {
 			var typeOrder = unitOrder[unit1.type] - unitOrder[unit2.type];
-			var damageGhostOrder = (unit1.isDamageGhost ? 1 : 0) - (unit2.isDamageGhost ? 1 : 0);
+			var damageGhostOrder = (unit1.isDamageGhost ? 1 : 0) - (unit2.isDamageGhost ? 1 : 0); // damage ghosts come after corresponding units
+			var damagedOrder = (unit1.damaged ? 1 : 0) - (unit2.damaged ? 1 : 0); // damaged units come after undamaged ones (within one type of course)
 			if (thisSideOptions.riskDirectHit) {
 				// means damage ghosts will come last
-				return damageGhostOrder * 100 + typeOrder;
+				return damageGhostOrder * 1000 + typeOrder * 10 + damagedOrder;
 			} else {
 				// means units are grouped with their damage ghosts
-				return typeOrder * 100 + damageGhostOrder;
+				return typeOrder * 1000 + damageGhostOrder * 10 + damagedOrder;
 			}
 		}
 
 		function upgradedDreadnoughtsComparer(unit1, unit2) {
-			var typeOrder = unitOrder[unit1.type] - unitOrder[unit2.type];
-			var damageGhostOrder = (unit1.isDamageGhost ? 1 : 0) - (unit2.isDamageGhost ? 1 : 0);
 			if (thisSideOptions.riskDirectHit) {
-				// means damage ghosts will come last
-				return damageGhostOrder * 100 + typeOrder;
+				return defaultComparer(unit1, unit2);
 			} else if (unit1.type === UnitType.Dreadnought && unit1.isDamageGhost) {
 				return unit2.type === UnitType.Dreadnought && unit2.isDamageGhost ? 0 : 1;
 			} else if (unit2.type === UnitType.Dreadnought && unit2.isDamageGhost) {
 				return -1;
 			} else {
-				// means units are grouped with their damage ghosts
-				return typeOrder * 100 + damageGhostOrder;
+				return defaultComparer(unit1, unit2);
 			}
 		}
 
@@ -609,6 +614,10 @@
 		return !!(root.StandardUpgrades.hasOwnProperty(unitType) ||
 			root.RaceSpecificUpgrades[race] &&
 			root.RaceSpecificUpgrades[race].hasOwnProperty(unitType));
+	};
+
+	root.damageable = function (race, unitType, upgraded) {
+		return (upgraded ? root.MergedUpgrades : root.MergedUnits)[race][unitType].sustainDamageHits > 0;
 	};
 
 })(typeof exports === 'undefined' ? window : exports);
