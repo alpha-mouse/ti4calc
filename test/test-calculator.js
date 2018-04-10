@@ -1988,7 +1988,7 @@ exports.yinFlagshipGravitonLaser = function (test) {
 	defender[game.UnitType.Cruiser] = { count: 1 };
 	defender[game.UnitType.PDS] = { count: 2 };
 
-	var options = { attacker: { race: game.Race.Yin, }, defender: { gravitonLaser: true} };
+	var options = { attacker: { race: game.Race.Yin, }, defender: { gravitonLaser: true } };
 
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
@@ -2415,6 +2415,18 @@ exports.mentakDefenderAssaultCannonAttacker = function (test) {
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
 
+var chaoticProfile = {
+	Flagship: { count: 1, zeroBias: 1 },
+	WarSun: { count: 2, zeroBias: 2 },
+	Dreadnought: { count: 5, zeroBias: 3 },
+	Cruiser: { count: 8, zeroBias: 3 },
+	Carrier: { count: 4, zeroBias: 2 },
+	Destroyer: { count: 8, zeroBias: 4 },
+	Fighter: { count: 15, zeroBias: 5 },
+	Ground: { count: 10, zeroBias: 3 },
+	PDS: { count: 6, zeroBias: 3 },
+};
+
 /** Test some random battle. Because I couldn't have imagined all edge cases.
  * When this test fails - take input fleets and options from the console and reproduce the problem */
 function chaoticTest(test) {
@@ -2434,13 +2446,15 @@ function chaoticTest(test) {
 	var defenderUnitUpgrades = Object.assign({}, game.StandardUpgrades, game.RaceSpecificUpgrades[options.defender.race]);
 
 	for (var unitType in game.UnitType) {
-		var count = Math.max(0, Math.floor(Math.random() * 8) - 3);
+		var profile = chaoticProfile[unitType];
+		var count = Math.max(0, Math.floor(Math.random() * (profile.count + profile.zeroBias + 1)) - profile.zeroBias);
 		var upgraded = attackerUnitUpgrades[unitType] && Math.random() < .4;
 		attacker[unitType] = { count: count, upgraded: upgraded, damaged: Math.floor(Math.random() * (count + 1)) };
 	}
 
 	for (var unitType in game.UnitType) {
-		var count = Math.max(0, Math.floor(Math.random() * 8) - 3);
+		var profile = chaoticProfile[unitType];
+		var count = Math.max(0, Math.floor(Math.random() * (profile.count + profile.zeroBias + 1)) - profile.zeroBias);
 		var upgraded = defenderUnitUpgrades[unitType] && Math.random() < .4;
 		defender[unitType] = { count: count, upgraded: upgraded, damaged: Math.floor(Math.random() * (count + 1)) };
 	}
