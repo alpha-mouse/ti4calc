@@ -1979,6 +1979,20 @@ exports.yinFlagshipMentakRacial = function (test) {
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
 
+exports.yinFlagshipGravitonLaser = function (test) {
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Flagship] = { count: 1 };
+	attacker[game.UnitType.Fighter] = { count: 1 };
+
+	defender[game.UnitType.Cruiser] = { count: 1 };
+	defender[game.UnitType.PDS] = { count: 2 };
+
+	var options = { attacker: { race: game.Race.Yin, }, defender: { gravitonLaser: true} };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
 exports.jolNarFlagship = function (test) {
 	var attacker = {};
 	var defender = {};

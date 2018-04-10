@@ -444,17 +444,19 @@
 									}
 								}
 
-								result.push.apply(result, ensemble.getSubproblems());
+								var subproblems = ensemble.getSubproblems();
+								subproblems.forEach(function (subproblem) {
+									collapseYinFlagship(subproblem, options, problem);
+								});
+								result.push.apply(result, subproblems);
 							} else {
 
 								var attackerTransitions = scale(attackerTransitionsVector, problem.attacker.length + 1);
 								var defenderTransitions = scale(defenderTransitionsVector, problem.defender.length + 1);
 								applyTransitions(problem, attackerTransitions, defenderTransitions, options);
+								collapseYinFlagship(problem, options);
 								result.push(problem);
 							}
-						});
-						result.forEach(function (problem) {
-							collapseYinFlagship(problem, options);
 						});
 						return result;
 
@@ -555,10 +557,11 @@
 									ensemble.increment(attackerVictim, defenderVictim, a, d, distribution[a][d]);
 								}
 							}
-							result.push.apply(result, ensemble.getSubproblems());
-						});
-						result.forEach(function (problem) {
-							collapseYinFlagship(problem, options);
+							var subproblems = ensemble.getSubproblems();
+							subproblems.forEach(function (subproblem) {
+								collapseYinFlagship(subproblem, options, problem);
+							});
+							result.push.apply(result, subproblems);
 						});
 						return result;
 
@@ -635,8 +638,6 @@
 							else
 								defenderTransitions = scale([1], problem.defender.length + 1);
 							applyTransitions(problem, attackerTransitions, defenderTransitions, options);
-						});
-						problemArray.forEach(function (problem) {
 							collapseYinFlagship(problem, options);
 						});
 						return problemArray;
@@ -1000,16 +1001,27 @@
 			return battleDice !== null; // means flagship present
 		}
 
-		function collapseYinFlagship(problem, options) {
+		function collapseYinFlagship(problem, options, parentProblem) {
 			if (options.attacker.race === game.Race.Yin || options.defender.race === game.Race.Yin) {
-				var attackerFlagshipIndex = options.attacker.race === game.Race.Yin ?
-					findLastIndex(problem.attacker, unitIs(game.UnitType.Flagship))
-					: -1;
-				var defenderFlagshipIndex = options.defender.race === game.Race.Yin ?
-					findLastIndex(problem.defender, unitIs(game.UnitType.Flagship))
-					: -1;
-				collapse(problem.distribution, attackerFlagshipIndex + 1, problem.distribution.columns);
-				collapse(problem.distribution, problem.distribution.rows, defenderFlagshipIndex + 1);
+				var attackerCollapseTo = getCollapseTo(problem, options, parentProblem, game.BattleSide.attacker);
+				var defenderCollapseTo = getCollapseTo(problem, options, parentProblem, game.BattleSide.defender);
+
+				collapse(problem.distribution, attackerCollapseTo, problem.distribution.columns);
+				collapse(problem.distribution, problem.distribution.rows, defenderCollapseTo);
+			}
+
+			function getCollapseTo(problem, options, parentProblem, battleSide) {
+				var flagshipIndex = findLastIndex(problem[battleSide], unitIs(game.UnitType.Flagship));
+				if (options[battleSide].race === game.Race.Yin) {
+					// Yin flagship could have been a victim of ensemble split. If so, collapse whole distribution
+					if (parentProblem &&
+						problem[battleSide].length < parentProblem[battleSide].length &&
+						flagshipIndex < findLastIndex(parentProblem[battleSide], unitIs(game.UnitType.Flagship))) {
+						return battleSide === game.BattleSide.attacker ? problem.distribution.rows : problem.distribution.columns;
+					} else // definitely not a victim of ensemble split
+						return flagshipIndex + 1;
+				}
+				return 0;
 			}
 
 			function collapse(distribution, toRow, toColumn) {
