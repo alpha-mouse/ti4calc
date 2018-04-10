@@ -132,11 +132,21 @@
 					return computeFleetTransitions(problem.defender, game.ThrowType.Battle, defenderBoost, defenderReroll);
 				};
 
-				applyTransitions(problem, attackerTransitionsFactory, defenderTransitionsFactory, options, effectsFlags);
 				if (options.attacker.race === game.Race.L1Z1X && battleType === game.BattleType.Ground) { // Harrow
+					// The first row, the one where the attacker was wiped out by defending pds should not be affected by the harrow
+					// Remember this row, as it might get some probability mass from applyTransiions. And this mass is liable to harrow
+					var stashedRow = problem.distribution[0];
+					problem.distribution[0] = new Array(problem.distribution.columns);
+					problem.distribution[0].fill(0);
+					applyTransitions(problem, attackerTransitionsFactory, defenderTransitionsFactory, options, effectsFlags);
 					prebattleActions.find(function (action) {
 						return action.name === 'Bombardment';
 					}).execute([problem], attackerFull, defenderFull, options)
+					for (var d = 0; d < problem.distribution.columns; ++d) {
+						problem.distribution[0][d] += stashedRow[d];
+					}
+				} else {
+					applyTransitions(problem, attackerTransitionsFactory, defenderTransitionsFactory, options, effectsFlags);
 				}
 				if (battleType === game.BattleType.Space)
 					collapseYinFlagship(problem, options);
@@ -153,6 +163,7 @@
 					return computeFleetTransitions(problem.defender, game.ThrowType.Battle, boost(battleType, options.defender, options.attacker, problem.defender, false));
 				};
 				applyTransitions(problem, attackerTransitionsFactory, defenderTransitionsFactory, options, effectsFlags);
+				// no application of Harrow Bombardment because magen defense is mutually exclusive with bombardment
 			}
 
 			propagateProbabilityUpLeft(problem, battleType, attackerFull, defenderFull, options);

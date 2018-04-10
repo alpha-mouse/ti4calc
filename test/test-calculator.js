@@ -1743,6 +1743,21 @@ exports.l1z1xRacialHarrowNoAttacker = function (test) {
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
 
+exports.l1z1xRacialHarrowBombardmentAgainsPdsMoraleBoost = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.WarSun] = { count: 1 };
+	attacker[game.UnitType.Ground] = { count: 1 };
+
+	defender[game.UnitType.Ground] = { count: 2 };
+	defender[game.UnitType.PDS] = { count: 2 };
+
+	var options = { attacker: { race: game.Race.L1Z1X }, defender: { moraleBoost: true } };
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
 exports.l4Disruptors = function (test) {
 	var attacker = {};
 	var defender = {};
