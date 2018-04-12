@@ -271,6 +271,7 @@
 				battleValue: 5,
 				bombardmentValue: 4,
 				bombardmentDice: 2,
+				cost: 4,
 			}),
 		},
 		JolNar: {
@@ -324,6 +325,7 @@
 			}),
 			Ground: new root.UnitInfo(UnitType.Ground, {
 				battleValue: 7,
+				cost: 0.5,
 			}),
 		},
 		Creuss: {
@@ -422,17 +424,21 @@
 			battleValue: 5,
 			bombardmentValue: 5,
 			bombardmentDice: 1,
+			cost: 4,
 		}),
 		Cruiser: new root.UnitInfo(UnitType.Cruiser, {
 			battleValue: 6,
+			cost: 2,
 		}),
 		Destroyer: new root.UnitInfo(UnitType.Destroyer, {
 			battleValue: 8,
 			barrageValue: 6,
 			barrageDice: 3,
+			cost: 1,
 		}),
 		Fighter: new root.UnitInfo(UnitType.Fighter, {
 			battleValue: 8,
+			cost: 0.5,
 		}),
 		PDS: new root.UnitInfo(UnitType.PDS, {
 			spaceCannonValue: 5,
@@ -440,6 +446,7 @@
 		}),
 		Ground: new root.UnitInfo(UnitType.Ground, {
 			battleValue: 7,
+			cost: 0.5,
 		}),
 	};
 
@@ -448,9 +455,11 @@
 			Carrier: new root.UnitInfo(UnitType.Carrier, {
 				sustainDamageHits: 1,
 				battleValue: 9,
+				cost: 3,
 			}),
 			Ground: new root.UnitInfo(UnitType.Ground, {
 				battleValue: 6,
+				cost: 0.5,
 			}),
 		},
 		L1Z1X: {
@@ -459,11 +468,13 @@
 				battleValue: 4,
 				bombardmentValue: 4,
 				bombardmentDice: 1,
+				cost: 4,
 			}),
 		},
 		Naalu: {
 			Fighter: new root.UnitInfo(UnitType.Fighter, {
 				battleValue: 7,
+				cost: 0.5,
 			}),
 		},
 		Muaat: {
