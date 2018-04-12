@@ -69,6 +69,26 @@ body {
 	padding-right: .8em;
 }
 
+#totals .block {
+	flex-basis: 11.5em;
+	flex-grow: 0;
+	flex-shrink: 0;
+}
+
+#totals .block .count {
+	width: 2.6em;
+	display: inline-block;
+	text-align: center;
+}
+
+#totals .block .count:first-child {
+	margin-left: 2.1em;
+}
+
+#totals .block .count:last-child {
+	margin-right: 2.4em;
+}
+
 #options .heading {
 	margin-top: .6em;
 	margin-bottom: .3em;

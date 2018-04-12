@@ -165,6 +165,8 @@
 			this.damageCorporeal = undefined;
 			this.damaged = false;
 			this.damagedThisRound = false;
+
+			this.cost = stats.cost;
 		}
 
 		UnitInfo.prototype.clone = function () {
@@ -215,26 +217,32 @@
 			battleDice: 3,
 			bombardmentValue: 3,
 			bombardmentDice: 3,
+			cost: 12,
 		}),
 		Dreadnought: new root.UnitInfo(UnitType.Dreadnought, {
 			sustainDamageHits: 1,
 			battleValue: 5,
 			bombardmentValue: 5,
 			bombardmentDice: 1,
+			cost: 4,
 		}),
 		Cruiser: new root.UnitInfo(UnitType.Cruiser, {
 			battleValue: 7,
+			cost: 2,
 		}),
 		Carrier: new root.UnitInfo(UnitType.Carrier, {
 			battleValue: 9,
+			cost: 3,
 		}),
 		Destroyer: new root.UnitInfo(UnitType.Destroyer, {
 			battleValue: 9,
 			barrageValue: 9,
 			barrageDice: 2,
+			cost: 1,
 		}),
 		Fighter: new root.UnitInfo(UnitType.Fighter, {
 			battleValue: 9,
+			cost: 0.5,
 		}),
 		PDS: new root.UnitInfo(UnitType.PDS, {
 			spaceCannonValue: 6,
@@ -242,6 +250,7 @@
 		}),
 		Ground: new root.UnitInfo(UnitType.Ground, {
 			battleValue: 8,
+			cost: 0.5,
 		}),
 		ExperimentalBattlestation: new root.UnitInfo('Bloodthirsty Space Dock', {
 			spaceCannonValue: 5,
@@ -255,7 +264,7 @@
 				sustainDamageHits: 1,
 				battleValue: 6,
 				battleDice: 2,
-				race: root.Race.Sardakk,
+				cost: 8,
 			}),
 			Dreadnought: new root.UnitInfo(UnitType.Dreadnought, {
 				sustainDamageHits: 1,
@@ -269,7 +278,7 @@
 				sustainDamageHits: 1,
 				battleValue: 6,
 				battleDice: 2,
-				race: root.Race.JolNar,
+				cost: 8,
 			}),
 		},
 		Winnu: {
@@ -277,7 +286,7 @@
 				sustainDamageHits: 1,
 				battleValue: 7,
 				battleDice: undefined,
-				race: root.Race.Winnu,
+				cost: 8,
 			}),
 		},
 		Xxcha: {
@@ -287,7 +296,7 @@
 				battleDice: 2,
 				spaceCannonValue: 5,
 				spaceCannonDice: 3,
-				race: root.Race.Xxcha,
+				cost: 8,
 			}),
 		},
 		Yin: {
@@ -295,7 +304,7 @@
 				sustainDamageHits: 1,
 				battleValue: 9,
 				battleDice: 2,
-				race: root.Race.Yin,
+				cost: 8,
 			}),
 		},
 		Yssaril: {
@@ -303,7 +312,7 @@
 				sustainDamageHits: 1,
 				battleValue: 5,
 				battleDice: 2,
-				race: root.Race.Yssaril,
+				cost: 8,
 			}),
 		},
 		Sol: {
@@ -311,7 +320,7 @@
 				sustainDamageHits: 1,
 				battleValue: 5,
 				battleDice: 2,
-				race: root.Race.Sol,
+				cost: 8,
 			}),
 			Ground: new root.UnitInfo(UnitType.Ground, {
 				battleValue: 7,
@@ -322,7 +331,7 @@
 				sustainDamageHits: 1,
 				battleValue: 5,
 				battleDice: 1,
-				race: root.Race.Creuss,
+				cost: 8,
 			}),
 		},
 		L1Z1X: {
@@ -330,7 +339,7 @@
 				sustainDamageHits: 1,
 				battleValue: 5,
 				battleDice: 2,
-				race: root.Race.L1Z1X,
+				cost: 8,
 			}),
 		},
 		Mentak: {
@@ -338,7 +347,7 @@
 				sustainDamageHits: 1,
 				battleValue: 7,
 				battleDice: 2,
-				race: root.Race.Mentak,
+				cost: 8,
 			}),
 		},
 		Naalu: {
@@ -346,7 +355,7 @@
 				sustainDamageHits: 1,
 				battleValue: 9,
 				battleDice: 2,
-				race: root.Race.Naalu,
+				cost: 8,
 			}),
 			Fighter: new root.UnitInfo(UnitType.Fighter, {
 				battleValue: 8,
@@ -357,7 +366,7 @@
 				sustainDamageHits: 1,
 				battleValue: 9,
 				battleDice: 2,
-				race: root.Race.Virus,
+				cost: 8,
 			}),
 		},
 		Arborec: {
@@ -365,7 +374,7 @@
 				sustainDamageHits: 1,
 				battleValue: 7,
 				battleDice: 2,
-				race: root.Race.Arborec,
+				cost: 8,
 			}),
 		},
 		Letnev: {
@@ -375,7 +384,7 @@
 				battleDice: 2,
 				bombardmentValue: 5,
 				bombardmentDice: 3,
-				race: root.Race.Letnev,
+				cost: 8,
 			}),
 		},
 		Saar: {
@@ -385,7 +394,7 @@
 				battleDice: 2,
 				barrageValue: 6,
 				barrageDice: 4,
-				race: root.Race.Saar,
+				cost: 8,
 			}),
 		},
 		Muaat: {
@@ -393,7 +402,7 @@
 				sustainDamageHits: 1,
 				battleValue: 5,
 				battleDice: 2,
-				race: root.Race.Muaat,
+				cost: 8,
 			}),
 		},
 		Hacan: {
@@ -401,7 +410,7 @@
 				sustainDamageHits: 1,
 				battleValue: 7,
 				battleDice: 2,
-				race: root.Race.Hacan,
+				cost: 8,
 			}),
 		},
 	};
@@ -455,6 +464,16 @@
 		Naalu: {
 			Fighter: new root.UnitInfo(UnitType.Fighter, {
 				battleValue: 7,
+			}),
+		},
+		Muaat: {
+			WarSun: new root.UnitInfo(UnitType.WarSun, {
+				sustainDamageHits: 1,
+				battleValue: 3,
+				battleDice: 3,
+				bombardmentValue: 3,
+				bombardmentDice: 3,
+				cost: 10,
 			}),
 		},
 	};

@@ -17,6 +17,7 @@
 	};
 
 	var transientProperties = {
+		costs: { attacker: { count: 0, cost: 0, }, defender: { count: 0, cost: 0, } },
 		showOptions: false,
 		showHelp: false,
 		computing: false,
@@ -45,6 +46,7 @@
 				}
 			},
 			recompute: function () {
+				this.tallyCosts();
 				this.computing = true;
 				var self = this;
 
@@ -158,6 +160,22 @@
 					}
 				}
 			},
+			tallyCosts: function () {
+				tally(this.costs.attacker, this.attackerUnits, this.options.attacker);
+				tally(this.costs.defender, this.defenderUnits, this.options.defender);
+
+				function tally(costs, units, sideOptions) {
+					costs.count = 0;
+					costs.cost = 0;
+					for (var unitType in UnitType) {
+						if (unitType === UnitType.PDS) continue;
+
+						var counter = units[unitType];
+						costs.count += counter.count;
+						costs.cost += (counter.upgraded && MergedUpgrades[sideOptions.race][unitType].cost || MergedUnits[sideOptions.race][unitType].cost) * counter.count;
+					}
+				}
+			},
 			participates: function (battleSide, unitType) {
 				var bombardmentPossible = this.defenderUnits.PDS.count === 0 // either there are no defending PDS
 					|| this.attackerUnits.WarSun.count !== 0 // or there are but attacking WarSuns negate their Planetary Shield
@@ -198,16 +216,16 @@
 		watch: {
 			'options.attacker.race': resetUpdatesAndTechnologies('attacker'),
 			'options.defender.race': resetUpdatesAndTechnologies('defender'),
-			battleType: recomputeHandler,
-			attackerUnits: updateDamageableCountAndRecomputeHandler('attacker'),
-			defenderUnits: updateDamageableCountAndRecomputeHandler('defender'),
-			options: recomputeHandler,
 			'options.attacker.publicizeSchematics': function (value) {
 				this.options.defender.publicizeSchematics = value;
 			},
 			'options.defender.publicizeSchematics': function (value) {
 				this.options.attacker.publicizeSchematics = value;
 			},
+			battleType: recomputeHandler,
+			attackerUnits: updateDamageableCountAndRecomputeHandler('attacker'),
+			defenderUnits: updateDamageableCountAndRecomputeHandler('defender'),
+			options: recomputeHandler,
 			canvasSize: function () {
 				persistInput();
 				var self = this;
