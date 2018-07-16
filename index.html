@@ -294,12 +294,14 @@
 		<p>Version 1.0.3. Released 12-04-2018</p>
 	</div>
 </div>
-<div id="result-area" :style="{ width: canvasWidth, height: canvasHeight }">
-	<canvas id="chart-area" :width="canvasWidth" :height="canvasHeight"></canvas>
-	<canvas id="chart-area-overlay" :width="canvasWidth" :height="canvasHeight"></canvas>
-	<div id="spinner-container" :style="{ width: canvasWidth, height: canvasHeight }" :class="{ collapsed: !computing }">
-		<div class="loading-spinner"></div>
-	</div>
+<div class="o-container o-container--small">
+  <div id="result-area" :style="{ width: canvasWidth, height: canvasHeight }">
+    <canvas id="chart-area" :width="canvasWidth" :height="canvasHeight"></canvas>
+    <canvas id="chart-area-overlay" :width="canvasWidth" :height="canvasHeight"></canvas>
+    <div id="spinner-container" :style="{ width: canvasWidth, height: canvasHeight }" :class="{ collapsed: !computing }">
+      <div class="loading-spinner"></div>
+    </div>
+  </div>
 </div>
 </div>
 <script type="text/javascript" src="index.js"></script>

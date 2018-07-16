@@ -271,6 +271,10 @@
 				}
 			},
 			canvasWidth: function () {
+                                // make canvas full width on mobile
+                                if ($( window ).width() <= 576) {
+                                    return $( window ).width() + 'px';
+                                }
 				return window.CanvasSizes[this.canvasSize].width + 'px';
 			},
 			canvasHeight: function () {
