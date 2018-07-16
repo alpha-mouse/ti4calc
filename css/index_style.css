@@ -250,3 +250,6 @@ input[type=number] {
 	display: inline-block;
 	margin: 0 auto;
 }
+
+@media only screen and (max-width: 576px) {
+}
