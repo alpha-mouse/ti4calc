@@ -23,11 +23,11 @@
 </head>
 <body>
 <div id="root">
-<div class="container p-0">
+<div class="container bg-dark">
 	<div class="row">
     <!-- attacker column -->
     <div class="col-sm">
-		  <div class="row text-center">
+		  <div class="row text-center text-light">
         <div class="col"><strong>Attacker</strong></div>
       </div>
       <!-- row for race selector -->
@@ -44,19 +44,19 @@
       <div class="row no-gutters" v-for="(name, key) in UnitType"
          :class="{ 'attacker-participates': participates(BattleSide.attacker, name),
                'defender-participates': participates(BattleSide.defender, name) }">
-        <div class="col d-block d-sm-none">
+        <div class="col d-block d-sm-none text-light">
 			    {{displayName(name)}}
         </div>
         <div class="col-auto">
           <div class="input-group rounded-0">
-            <button type="button" class="btn btn-dark rounded-0" title="Remove unit"
+            <button type="button" class="btn btn-secondary rounded-0" title="Remove unit"
                 @click="decrement(attackerUnits[key])">-
             </button>
             <input v-model.number="attackerUnits[key].count" class="form-control unit-input" type="number" min="0">
-            <button type="button" class="btn btn-dark rounded-0" title="Add unit"
+            <button type="button" class="btn btn-secondary rounded-0" title="Add unit"
                 @click="increment(attackerUnits[key])">+
             </button>
-            <button type="button" class="btn btn-dark rounded-0"
+            <button type="button" class="btn btn-secondary rounded-0"
                 :class="{ 'c-button--brand': attackerUnits[key].upgraded,
                       'c-button--ghost-brand': !attackerUnits[key].upgraded,
                        hidden: !upgradeable(options.attacker.race, key) }"
