@@ -27,9 +27,9 @@
   <!-- help -->
   <div class="row">
     <div class="col">
-      <button type="button" class="btn btn-secondary rounded-0 w-100"
-					:class="{ 'c-button--brand': showHelp,
-					 		  'c-button--ghost-brand': !showHelp }"
+      <button type="button" class="btn rounded-0 w-100"
+					:class="{ 'btn-secondary-outline': showHelp,
+					 		  'btn-secondary': !showHelp }"
 					@click="showHelp = !showHelp">Help
 			</button>
     </div>
@@ -147,7 +147,7 @@
 		<p>Any suggestions and bug reports are welcome at ivan.bachtin@gmail.com</p>
 		<p>Version 1.0.3. Released 12-04-2018</p>
 	</div>
-	<div class="row">
+	<div class="row no-gutters">
     <!-- attacker column -->
     <div class="col-sm">
 		  <div class="row text-center text-light">
@@ -156,7 +156,7 @@
       <!-- row for race selector -->
       <div class="row">
         <div class="col">
-          <select v-model="options.attacker.race" class="form-control">
+          <select v-model="options.attacker.race" class="form-control rounded-0">
             <option v-for="(name, key) in RacesDisplayNames" v-bind:value="key">
               {{ name }}
             </option>
@@ -167,7 +167,7 @@
       <div class="row no-gutters" v-for="(name, key) in UnitType"
          :class="{ 'attacker-participates': participates(BattleSide.attacker, name),
                'defender-participates': participates(BattleSide.defender, name) }">
-        <div class="col d-block d-sm-none text-light">
+        <div class="col text-light">
 			    {{displayName(name)}}
         </div>
         <div class="col-auto">
@@ -220,7 +220,7 @@
       <!-- row for race selector -->
       <div class="row">
         <div class="col">
-          <select v-model="options.defender.race" class="form-control">
+          <select v-model="options.defender.race" class="form-control rounded-0">
             <option v-for="(name, key) in RacesDisplayNames" v-bind:value="key">
               {{ name }}
             </option>
@@ -277,30 +277,29 @@
       </div>
     </div>
 	</div>
-	<div class="o-grid o-grid--no-gutter spread-grid">
-		<div class="o-grid__cell">
-			<button type="button" class="c-button u-small"
-					:class="{ 'c-button--brand': showOptions,
-					 		  'c-button--ghost-brand': !showOptions }"
-					@click="showOptions = !showOptions">Options
-			</button>
-		</div>
-		<div class="o-grid__cell c-input-group">
-			<button type="button" class="c-button"
-					:class="{ 'c-button--brand': battleType === BattleType.Space,
-							  'c-button--ghost-brand': battleType !== BattleType.Space }"
-					@click="battleType = BattleType.Space">Space Battle
-			</button>
-			<button type="button" class="c-button"
-					:class="{ 'c-button--brand': battleType === BattleType.Ground,
-							  'c-button--ghost-brand': battleType !== BattleType.Ground }"
-					@click="battleType = BattleType.Ground">Invasion Combat
-			</button>
-		</div>
-		<div class="o-grid__cell">
+  <!-- battle type and options -->
+	<div class="row no-gutters">
+    <div class="col">
+      <div class="btn-group w-100" role="group">
+        <button type="button" class="btn rounded-0 w-33"
+            :class="{ 'btn-primary': battleType === BattleType.Space,
+                  'btn-secondary': battleType !== BattleType.Space }"
+            @click="battleType = BattleType.Space">Space Battle
+        </button>
+        <button type="button" class="btn rounded-0 w-33"
+            :class="{ 'btn-primary': battleType === BattleType.Ground,
+                  'btn-secondary': battleType !== BattleType.Ground }"
+            @click="battleType = BattleType.Ground">Invasion
+        </button>
+        <button type="button" class="btn rounded-0 w-33"
+            :class="{ 'btn-secondary-outline': showOptions,
+                  'btn-secondary': !showOptions }"
+            @click="showOptions = !showOptions">Options
+        </button>
+      </div>
 		</div>
 	</div>
-	<div id="options" :class="{ collapsed: !showOptions }">
+	<div id="options" class="text-light" :class="{ collapsed: !showOptions }">
 		<div class="heading"><strong>Technologies</strong></div>
 		<option-pair v-for="(option, key) in Technologies"
 					  :option-name="key" :option="option" :options="options"></option-pair>
