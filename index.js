@@ -285,17 +285,17 @@
 	Vue.component('left-option', {
 		props: ['optionName', 'option', 'options', 'side'],
 		template:
-		'<div class="o-grid__cell left-option" :class="{ hidden: !option.availableFor(side) }">' +
-		'	<label class="" v-bind:for="side + \'.\' + optionName"' +
+		'<div class="left-option col" :class="{ hidden: !option.availableFor(side) }">' +
+		'	<label class="float-right" v-bind:for="side + \'.\' + optionName"' +
 		'		   v-bind:title="option.description">{{option.title}}</label>' +
-		'	<input type="checkbox" class="" v-bind:id="side + \'.\' + optionName"' +
+		'	<input type="checkbox" class="float-right" v-bind:id="side + \'.\' + optionName"' +
 		'		   v-model="options[side][optionName]">' +
 		'</div>',
 	});
 	Vue.component('right-option', {
 		props: ['optionName', 'option', 'options', 'side'],
 		template:
-		'<div class="o-grid__cell right-option" :class="{ hidden: !option.availableFor(side) }">' +
+		'<div class="col right-option" :class="{ hidden: !option.availableFor(side) }">' +
 		'	<input type="checkbox" class="" v-bind:id="side + \'.\' + optionName"' +
 		'		   v-model="options[side][optionName]">' +
 		'	<label class="" v-bind:for="side + \'.\' + optionName"' +
@@ -305,7 +305,7 @@
 	Vue.component('option-pair', {
 		props: ['optionName', 'option', 'options',],
 		template:
-		'<div class="o-grid center-grid">' +
+		'<div class="row">' +
 		'	<left-option :option-name="optionName" :option="option" :options="options" side="attacker"></left-option>' +
 		'	<help-mark :option="option"></help-mark>' +
 		'	<right-option :option-name="optionName" :option="option" :options="options" side="defender"></right-option>' +
@@ -314,7 +314,7 @@
 	Vue.component('help-mark', {
 		props: ['option'],
 		template:
-		'<div class="o-grid__cell">' +
+		'<div class="col-auto">' +
 		'	<button type="button" class="help" v-bind:title="option.description" @click="showHelp"></button>' +
 		'</div>',
 		methods: {
