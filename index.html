@@ -1,22 +1,18 @@
 <!DOCTYPE HTML>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=480, initial-scale=1, shrink-to-fit=no">
-	<meta http-equiv="Content-Language" content="en">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Twilight Imperium IV battle calculator</title>
 
-	<link href="css/normalize.min.css" type="text/css" rel="stylesheet"/>
-	<link href="css/generics.global.min.css" type="text/css" rel="stylesheet"/>
-	<link href="css/objects.containers.min.css" type="text/css" rel="stylesheet"/>
-	<link href="css/objects.grid.min.css" type="text/css" rel="stylesheet"/>
-	<link href="css/components.buttons.min.css" type="text/css" rel="stylesheet"/>
-	<link href="css/components.input-groups.min.css" type="text/css" rel="stylesheet"/>
-	<link href="css/components.inputs.min.css" type="text/css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css" integrity="sha384-Smlep5jCw/wG7hdkwQ/Z5nLIefveQRIY9nfy6xoR1uRYBtpZgI6339F5dgvm/e9B" crossorigin="anonymous">
 	<link href="css/index_style.css" type="text/css" rel="stylesheet"/>
 	<link rel="shortcut icon" href="favicon.gif" type="image/x-icon"/>
 
-	<script type="text/javascript" src="js/jquery-3.3.1.slim.min.js">/*RGraph needs jQuery. I don't*/</script>
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/js/bootstrap.min.js" integrity="sha384-o+RDsa0aLu++PJvFqy8fFScvbHFLtbvScb8AjopnFD+iEQ7wo/CG0xlczd+2O/em" crossorigin="anonymous"></script>
 	<script type="text/javascript" src="js/vue.min.js"></script>
 	<script type="text/javascript" src="js/RGraph.min.js"></script>
 	<script type="text/javascript" src="structs.js"></script>
@@ -25,162 +21,20 @@
 	<script type="text/javascript" src="imitator.js"></script>
 
 </head>
-<body>
+<body class="bg-dark">
 <div id="root">
-<div class="o-container o-container--small">
-	<div class="o-grid center-grid">
-		<div class="o-grid__cell block"><strong>Attacker</strong></div>
-		<div class="unit-name"></div>
-		<div class="o-grid__cell block"><strong>Defender</strong></div>
-	</div>
-	<div class="o-grid center-grid">
-		<select v-model="options.attacker.race" class="o-grid__cell c-field block">
-			<option v-for="(name, key) in RacesDisplayNames" v-bind:value="key">
-				{{ name }}
-			</option>
-		</select>
-		<div class="unit-name"></div>
-		<select v-model="options.defender.race" class="o-grid__cell c-field block">
-			<option v-for="(name, key) in RacesDisplayNames" v-bind:value="key">
-				{{ name }}
-			</option>
-		</select>
-	</div>
-	<div id="counters">
-		<div class="o-grid o-grid--no-gutter center-grid" v-for="(name, key) in UnitType"
-			 :class="{ 'attacker-participates': participates(BattleSide.attacker, name),
-					   'defender-participates': participates(BattleSide.defender, name) }">
-			<div class="o-grid__cell counter c-input-group attacker">
-				<select v-model="attackerUnits[key].damaged" class="damaged"
-						:class="{ hidden: !damageable(options.attacker.race, key, attackerUnits[key].upgraded) }"
-						title="Units already damaged before the battle">
-					<option v-for="c in damageableCount(attackerUnits[key].count)" v-bind:value="c">{{ c }}</option>
-				</select>
-				<button type="button" class="c-button upgrade"
-						:class="{ 'c-button--brand': attackerUnits[key].upgraded,
-								  'c-button--ghost-brand': !attackerUnits[key].upgraded,
-								   hidden: !upgradeable(options.attacker.race, key) }"
-						:title="attackerUnits[key].upgraded ? 'Un-upgrade' : 'Upgrade'"
-						@click="attackerUnits[key].upgraded = !attackerUnits[key].upgraded">
-					{{ attackerUnits[key].upgraded ? '\u25B2' : '\u25b3' }}
-				</button>
-				<button type="button" class="c-button c-button--ghost-brand count-stepper" title="Remove unit"
-						@click="decrement(attackerUnits[key])">-
-				</button>
-				<div class="o-field">
-					<input v-model.number="attackerUnits[key].count" class="c-field" type="number" min="0">
-				</div>
-				<button type="button" class="c-button c-button--ghost-brand count-stepper" title="Add unit"
-						@click="increment(attackerUnits[key])">+
-				</button>
-			</div>
-			<div class="unit-name"><span>{{displayName(name)}}</span></div>
-			<div class="o-grid__cell counter c-input-group defender">
-				<button type="button" class="c-button c-button--ghost-brand count-stepper" title="remove unit"
-						@click="decrement(defenderUnits[key])">-
-				</button>
-				<div class="o-field">
-					<input v-model.number="defenderUnits[key].count" class="c-field" type="number" min="0">
-				</div>
-				<button type="button" class="c-button c-button--ghost-brand count-stepper" title="Add unit"
-						@click="increment(defenderUnits[key])">+
-				</button>
-				<button type="button" class="c-button upgrade"
-						:class="{ 'c-button--brand': defenderUnits[key].upgraded,
-								  'c-button--ghost-brand': !defenderUnits[key].upgraded,
-								   hidden: !upgradeable(options.defender.race, key) }"
-						:title="defenderUnits[key].upgraded ? 'Un-upgrade' : 'Upgrade'"
-						@click="defenderUnits[key].upgraded = !defenderUnits[key].upgraded">
-					{{ defenderUnits[key].upgraded ? '\u25B2' : '\u25b3' }}
-				</button>
-				<select v-model="defenderUnits[key].damaged" class="damaged"
-						:class="{ hidden: !damageable(options.defender.race, key, defenderUnits[key].upgraded) }"
-						title="Units already damaged before the battle">
-					<option v-for="c in damageableCount(defenderUnits[key].count)" v-bind:value="c">{{ c }}</option>
-				</select>
-			</div>
-		</div>
-	</div>
-	<div id="totals" class="o-grid o-grid--no-gutter center-grid">
-		<div class="o-grid__cell block">
-			<span>{{costs.attacker.cost}} res</span>
-			<span class="count">{{costs.attacker.count}}</span>
-		</div>
-		<div class="unit-name"><span>Totals</span></div>
-		<div class="o-grid__cell block">
-			<span class="count">{{costs.defender.count}}</span>
-			<span>{{costs.defender.cost}} res</span>
-		</div>
-	</div>
-	<div class="o-grid o-grid--no-gutter center-grid">
-		<div class="o-grid__cell block">
-			<button type="button" class="c-button c-button--ghost-brand u-small"
-					@click="clear('attacker')">Clear Attacker
-			</button>
-		</div>
-		<div class="unit-name"></div>
-		<div class="o-grid__cell block">
-			<button type="button" class="c-button c-button--ghost-brand u-small"
-					@click="clear('defender')">Clear Defender
-			</button>
-		</div>
-	</div>
-	<div class="o-grid o-grid--no-gutter spread-grid">
-		<div class="o-grid__cell">
-			<button type="button" class="c-button u-small"
-					:class="{ 'c-button--brand': showOptions,
-					 		  'c-button--ghost-brand': !showOptions }"
-					@click="showOptions = !showOptions">Options
-			</button>
-		</div>
-		<div class="o-grid__cell c-input-group">
-			<button type="button" class="c-button"
-					:class="{ 'c-button--brand': battleType === BattleType.Space,
-							  'c-button--ghost-brand': battleType !== BattleType.Space }"
-					@click="battleType = BattleType.Space">Space Battle
-			</button>
-			<button type="button" class="c-button"
-					:class="{ 'c-button--brand': battleType === BattleType.Ground,
-							  'c-button--ghost-brand': battleType !== BattleType.Ground }"
-					@click="battleType = BattleType.Ground">Invasion Combat
-			</button>
-		</div>
-		<div class="o-grid__cell">
-			<button type="button" class="c-button u-small"
-					:class="{ 'c-button--brand': showHelp,
-					 		  'c-button--ghost-brand': !showHelp }"
+<div class="container">
+  <!-- help -->
+  <div class="row">
+    <div class="col">
+      <button type="button" class="btn rounded-0 w-100"
+					:class="{ 'btn-secondary-outline': showHelp,
+					 		  'btn-secondary': !showHelp }"
 					@click="showHelp = !showHelp">Help
 			</button>
-		</div>
-	</div>
-	<div id="options" :class="{ collapsed: !showOptions }">
-		<div class="heading"><strong>Technologies</strong></div>
-		<option-pair v-for="(option, key) in Technologies"
-					  :option-name="key" :option="option" :options="options"></option-pair>
-		<div class="o-grid center-grid" v-for="pair in raceTechnologies">
-			<left-option :option-name="pair.attacker.key" :option="pair.attacker.option" :options="options" side="attacker"></left-option>
-			<help-mark :option="pair.attacker.option" :class="{ hidden: !pair.attacker.option.availableFor('attacker') }"></help-mark>
-			<help-mark :option="pair.defender.option" :class="{ hidden: !pair.defender.option.availableFor('defender') }"></help-mark>
-			<right-option :option-name="pair.defender.key" :option="pair.defender.option" :options="options" side="defender"></right-option>
-		</div>
-		<div class="heading"><strong>Action Cards</strong></div>
-		<option-pair v-for="(option, key) in ActionCards"
-					  :option-name="key" :option="option" :options="options"></option-pair>
-		<div class="heading"><strong>Agendas / Promissory / Racial</strong></div>
-		<option-pair v-for="(option, key) in Agendas"
-					 :option-name="key" :option="option" :options="options"></option-pair>
-		<option-pair v-for="(option, key) in Promissory"
-					 :option-name="key" :option="option" :options="options"></option-pair>
-		<p id="chart-size-selector" class="o-grid center-grid"><span>Chart size:&nbsp;</span>
-			<select class="o-grid__cell c-field block" v-model="canvasSize">
-				<option v-for="(size, key) in CanvasSizes" v-bind:value="key">
-					{{ size.width + '*' + size.height }}
-				</option>
-			</select>
-		</p>
-	</div>
-
-	<div id="help" :class="{ collapsed: !showHelp }">
+    </div>
+  </div>
+	<div id="help" class="text-light" :class="{ collapsed: !showHelp }">
 		<h1>Twilight Imperium IV Edition Battle Calculator</h1>
 		<p>Add and remove units to the battle by using '+' and '-' buttons.</p>
 		<p>Toggle unit upgrades with '&#x25b3' buttons.</p>
@@ -293,13 +147,194 @@
 		<p>Any suggestions and bug reports are welcome at ivan.bachtin@gmail.com</p>
 		<p>Version 1.0.3. Released 12-04-2018</p>
 	</div>
-</div>
-<div id="result-area" :style="{ width: canvasWidth, height: canvasHeight }">
-	<canvas id="chart-area" :width="canvasWidth" :height="canvasHeight"></canvas>
-	<canvas id="chart-area-overlay" :width="canvasWidth" :height="canvasHeight"></canvas>
-	<div id="spinner-container" :style="{ width: canvasWidth, height: canvasHeight }" :class="{ collapsed: !computing }">
-		<div class="loading-spinner"></div>
+	<div class="row no-gutters">
+    <!-- attacker column -->
+    <div class="col-md">
+		  <div class="row text-center text-light">
+        <div class="col"><strong>Attacker</strong></div>
+      </div>
+      <!-- row for race selector -->
+      <div class="row">
+        <div class="col">
+          <select v-model="options.attacker.race" class="form-control rounded-0">
+            <option v-for="(name, key) in RacesDisplayNames" v-bind:value="key">
+              {{ name }}
+            </option>
+          </select>
+        </div> 
+      </div>
+      <!-- rows for units -->
+      <div class="row no-gutters" v-for="(name, key) in UnitType"
+         :class="{ 'attacker-participates': participates(BattleSide.attacker, name),
+               'defender-participates': participates(BattleSide.defender, name) }">
+        <div class="col text-light">
+			    {{displayName(name)}}
+        </div>
+        <div class="col-auto">
+          <div class="input-group rounded-0">
+            <button type="button" class="btn btn-secondary rounded-0" title="Remove unit"
+                @click="decrement(attackerUnits[key])">-
+            </button>
+            <input v-model.number="attackerUnits[key].count" class="form-control unit-input" type="number" min="0">
+            <button type="button" class="btn btn-secondary rounded-0" title="Add unit"
+                @click="increment(attackerUnits[key])">+
+            </button>
+            <button type="button" class="btn btn-secondary rounded-0"
+                :class="{ 'c-button--brand': attackerUnits[key].upgraded,
+                      'c-button--ghost-brand': !attackerUnits[key].upgraded,
+                       hidden: !upgradeable(options.attacker.race, key) }"
+                :title="attackerUnits[key].upgraded ? 'Un-upgrade' : 'Upgrade'"
+                @click="attackerUnits[key].upgraded = !attackerUnits[key].upgraded">
+              {{ attackerUnits[key].upgraded ? '\u25B2' : '\u25b3' }}
+            </button>
+            <select v-model="attackerUnits[key].damaged" class="form-control unit-input rounded-0"
+                :class="{ hidden: !damageable(options.attacker.race, key, attackerUnits[key].upgraded) }"
+                title="Units already damaged before the battle">
+              <option v-for="c in damageableCount(attackerUnits[key].count)" v-bind:value="c">{{ c }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <!-- row for cost -->
+      <div class="row">
+        <div class="col text-light text-center">
+          <span>Totals:</span>
+          <span>{{costs.attacker.cost}} res</span>
+          <span class="count">{{costs.attacker.count}}</span>
+        </div>
+      </div>
+      <!-- clear units -->
+      <div class="row">
+        <div class="col">
+          <button type="button" class="btn btn-secondary rounded-0 w-100"
+              @click="clear('attacker')">Clear Attacker
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- defender column -->
+    <div class="col-md">
+		  <div class="row text-center text-light">
+        <div class="col"><strong>Defender</strong></div>
+      </div>
+      <!-- row for race selector -->
+      <div class="row">
+        <div class="col">
+          <select v-model="options.defender.race" class="form-control rounded-0">
+            <option v-for="(name, key) in RacesDisplayNames" v-bind:value="key">
+              {{ name }}
+            </option>
+          </select>
+        </div> 
+      </div>
+      <!-- rows for units -->
+      <div class="row no-gutters" v-for="(name, key) in UnitType"
+         :class="{ 'attacker-participates': participates(BattleSide.attacker, name),
+               'defender-participates': participates(BattleSide.defender, name) }">
+        <div class="col text-light">
+			    {{displayName(name)}}
+        </div>
+        <div class="col-auto">
+          <div class="input-group rounded-0">
+            <button type="button" class="btn btn-secondary rounded-0" title="Remove unit"
+                @click="decrement(defenderUnits[key])">-
+            </button>
+            <input v-model.number="defenderUnits[key].count" class="form-control unit-input" type="number" min="0">
+            <button type="button" class="btn btn-secondary rounded-0" title="Add unit"
+                @click="increment(defenderUnits[key])">+
+            </button>
+            <button type="button" class="btn btn-secondary rounded-0"
+                :class="{ 'c-button--brand': defenderUnits[key].upgraded,
+                      'c-button--ghost-brand': !defenderUnits[key].upgraded,
+                       hidden: !upgradeable(options.defender.race, key) }"
+                :title="defenderUnits[key].upgraded ? 'Un-upgrade' : 'Upgrade'"
+                @click="defenderUnits[key].upgraded = !defenderUnits[key].upgraded">
+              {{ defenderUnits[key].upgraded ? '\u25B2' : '\u25b3' }}
+            </button>
+            <select v-model="defenderUnits[key].damaged" class="form-control unit-input rounded-0"
+                :class="{ hidden: !damageable(options.defender.race, key, defenderUnits[key].upgraded) }"
+                title="Units already damaged before the battle">
+              <option v-for="c in damageableCount(defenderUnits[key].count)" v-bind:value="c">{{ c }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <!-- row for cost -->
+      <div class="row">
+        <div class="col text-light text-center">
+          <span>Totals:</span>
+          <span>{{costs.defender.cost}} res</span>
+          <span class="count">{{costs.defender.count}}</span>
+        </div>
+      </div>
+      <!-- clear units -->
+      <div class="row">
+        <div class="col">
+          <button type="button" class="btn btn-secondary rounded-0 w-100"
+              @click="clear('defender')">Clear Defender
+          </button>
+        </div>
+      </div>
+    </div>
 	</div>
+  <!-- battle type and options -->
+	<div class="row no-gutters">
+    <div class="col">
+      <div class="btn-group w-100" role="group">
+        <button type="button" class="btn rounded-0 w-33"
+            :class="{ 'btn-primary': battleType === BattleType.Space,
+                  'btn-secondary': battleType !== BattleType.Space }"
+            @click="battleType = BattleType.Space">Space Battle
+        </button>
+        <button type="button" class="btn rounded-0 w-33"
+            :class="{ 'btn-primary': battleType === BattleType.Ground,
+                  'btn-secondary': battleType !== BattleType.Ground }"
+            @click="battleType = BattleType.Ground">Invasion
+        </button>
+        <button type="button" class="btn rounded-0 w-33"
+            :class="{ 'btn-secondary-outline': showOptions,
+                  'btn-secondary': !showOptions }"
+            @click="showOptions = !showOptions">Options
+        </button>
+      </div>
+		</div>
+	</div>
+	<div id="options" class="text-light" :class="{ collapsed: !showOptions }">
+		<div class="heading"><strong>Technologies</strong></div>
+		<option-pair v-for="(option, key) in Technologies"
+					  :option-name="key" :option="option" :options="options"></option-pair>
+		<div v-for="pair in raceTechnologies">
+			<left-option :option-name="pair.attacker.key" :option="pair.attacker.option" :options="options" side="attacker"></left-option>
+			<help-mark :option="pair.attacker.option" :class="{ hidden: !pair.attacker.option.availableFor('attacker') }"></help-mark>
+			<help-mark :option="pair.defender.option" :class="{ hidden: !pair.defender.option.availableFor('defender') }"></help-mark>
+			<right-option :option-name="pair.defender.key" :option="pair.defender.option" :options="options" side="defender"></right-option>
+		</div>
+		<div class="heading"><strong>Action Cards</strong></div>
+		<option-pair v-for="(option, key) in ActionCards"
+					  :option-name="key" :option="option" :options="options"></option-pair>
+		<div class="heading"><strong>Agendas / Promissory / Racial</strong></div>
+		<option-pair v-for="(option, key) in Agendas"
+					 :option-name="key" :option="option" :options="options"></option-pair>
+		<option-pair v-for="(option, key) in Promissory"
+					 :option-name="key" :option="option" :options="options"></option-pair>
+		<p id="chart-size-selector" class="o-grid center-grid"><span>Chart size:&nbsp;</span>
+			<select class="o-grid__cell c-field block" v-model="canvasSize">
+				<option v-for="(size, key) in CanvasSizes" v-bind:value="key">
+					{{ size.width + '*' + size.height }}
+				</option>
+			</select>
+		</p>
+	</div>
+
+</div>
+<div class="o-container o-container--small">
+  <div id="result-area" :style="{ width: canvasWidth, height: canvasHeight }">
+    <canvas id="chart-area" :width="canvasWidth" :height="canvasHeight"></canvas>
+    <canvas id="chart-area-overlay" :width="canvasWidth" :height="canvasHeight"></canvas>
+    <div id="spinner-container" :style="{ width: canvasWidth, height: canvasHeight }" :class="{ collapsed: !computing }">
+      <div class="loading-spinner"></div>
+    </div>
+  </div>
 </div>
 </div>
 <script type="text/javascript" src="index.js"></script>
