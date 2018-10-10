@@ -22,11 +22,15 @@
 		showHelp: false,
 		computing: false,
 		forceSlow: false, // do `app.forceSlow = true;` in developers console to force slow but robust calculation
+                windowWidth: window.innerWidth,
+                windowHeight: window.innerHeight,
 	};
+        console.log(Object.assign(input, transientProperties));
 
 	app = new Vue({
 		el: '#root',
 		data: Object.assign(input, transientProperties),
+                ready: function () { alert("blah"); },
 		methods: {
 			increment: function (unitInput) {
 				unitInput.count++;
@@ -234,8 +238,22 @@
 						this.displayDistribution(lastComputed);
 					});
 			},
+			canvasWidth: function () {
+				persistInput();
+				var self = this;
+				if (lastComputed)
+					this.$nextTick(function () {
+						this.displayDistribution(lastComputed);
+					});
+			},
 			forceSlow: recomputeHandler,
 		},
+                mounted() {
+                      window.addEventListener('resize', () => {
+                                this.windowWidth = window.innerWidth;
+                                this.windowHeight = window.innerHeight;
+                      })
+                },
 		computed: {
 			raceTechnologies: function () {
 				var attackerTech = RaceSpecificTechnologies[this.options.attacker.race] || {};
@@ -272,8 +290,8 @@
 			},
 			canvasWidth: function () {
                                 // make canvas full width on mobile
-                                if ($( window ).width() <= 600) {
-                                    return $( window ).width() + 'px';
+                                if (this.windowWidth <= 600) {
+                                    return this.windowWidth + 'px';
                                 }
 				return window.CanvasSizes[this.canvasSize].width + 'px';
 			},
