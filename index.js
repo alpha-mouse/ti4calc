@@ -289,14 +289,26 @@
 				}
 			},
 			canvasWidth: function () {
+                                // if not set to responsive, choose width from array
+                                if (this.canvasSize >= 1){
+				    return window.CanvasSizes[this.canvasSize-1].width + 'px';
+                                }
                                 // make canvas full width on mobile
-                                if (this.windowWidth <= 600) {
+                                if (this.windowWidth <= 720) {
                                     return this.windowWidth + 'px';
                                 }
-				return window.CanvasSizes[this.canvasSize].width + 'px';
+                                // default to first option in list
+				return window.CanvasSizes[0].width + 'px';
 			},
 			canvasHeight: function () {
-				return window.CanvasSizes[this.canvasSize].height + 'px';
+                                if (this.canvasSize >= 1){
+				    return window.CanvasSizes[this.canvasSize-1].height + 'px';
+                                }
+                                // make height a ratio of the width
+                                if (this.windowWidth <= 720) {
+                                    return this.windowWidth*(4/6) + 'px';
+                                }
+				return window.CanvasSizes[0].height + 'px';
 			},
 		},
 	});

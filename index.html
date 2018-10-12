@@ -319,7 +319,10 @@
 					 :option-name="key" :option="option" :options="options"></option-pair>
 		<p id="chart-size-selector" class="o-grid center-grid"><span>Chart size:&nbsp;</span>
 			<select class="o-grid__cell c-field block" v-model="canvasSize">
-				<option v-for="(size, key) in CanvasSizes" v-bind:value="key">
+				<option v-bind:value="0">
+          Responsive
+				</option>
+				<option v-for="(size, key) in CanvasSizes" v-bind:value="key+1">
 					{{ size.width + '*' + size.height }}
 				</option>
 			</select>
