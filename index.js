@@ -216,6 +216,21 @@
 					result.push(i);
 				return result;
 			},
+                        // will compute canvas width to match the width of the
+                        // 'container' bootstrap class
+                        computeCanvasWidth: function () {
+                                if (this.windowWidth < 540) {
+                                        return this.windowWidth;
+                                } else if (this.windowWidth < 768) {
+                                        return 540;
+                                } else if (this.windowWidth < 992) {
+                                        return 720;
+                                } else if (this.windowWidth < 1200) {
+                                        return 960;
+                                } else {
+                                        return 1140;
+                                }
+                        },
 		},
 		watch: {
 			'options.attacker.race': resetUpdatesAndTechnologies('attacker'),
@@ -239,6 +254,14 @@
 					});
 			},
 			canvasWidth: function () {
+				persistInput();
+				var self = this;
+				if (lastComputed)
+					this.$nextTick(function () {
+						this.displayDistribution(lastComputed);
+					});
+			},
+			canvasHeight: function () {
 				persistInput();
 				var self = this;
 				if (lastComputed)
@@ -293,22 +316,14 @@
                                 if (this.canvasSize >= 1){
 				    return window.CanvasSizes[this.canvasSize-1].width + 'px';
                                 }
-                                // make canvas full width on mobile
-                                if (this.windowWidth <= 720) {
-                                    return this.windowWidth + 'px';
-                                }
-                                // default to first option in list
-				return window.CanvasSizes[0].width + 'px';
+                                return this.computeCanvasWidth() + 'px';
 			},
 			canvasHeight: function () {
                                 if (this.canvasSize >= 1){
 				    return window.CanvasSizes[this.canvasSize-1].height + 'px';
                                 }
                                 // make height a ratio of the width
-                                if (this.windowWidth <= 720) {
-                                    return this.windowWidth*(4/6) + 'px';
-                                }
-				return window.CanvasSizes[0].height + 'px';
+                                return this.computeCanvasWidth()*(4/6) + 'px';
 			},
 		},
 	});
