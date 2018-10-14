@@ -149,11 +149,16 @@
 					var canvasWidth = canvas.width;
 					var canvasHeight = canvas.height;
 					context.font = 'bold 100px Arial';
+
 					context.fillStyle = 'rgba(256, 100, 100, 0.5)';
-					context.fillText(Math.round(attackerWinProbability * 100) + '%', canvasWidth / 12, 3 * canvasHeight / 4);
+					var roundedAttackerProbability = Math.round(attackerWinProbability * 100);
+					context.fillText(roundedAttackerProbability + '%', canvasWidth / 12, 3 * canvasHeight / 4);
+
 					context.fillStyle = 'rgba(100, 100, 256, 0.5)';
-					context.fillText(Math.round(defenderWinProbability * 100) + '%', 7 * canvasWidth / 12, 3 * canvasHeight / 4);
-					if (drawProbability > .03) {
+					var roundedDefenderProbability = Math.round(defenderWinProbability * 100);
+					context.fillText(roundedDefenderProbability + '%', 7 * canvasWidth / 12, 3 * canvasHeight / 4);
+
+					if (drawProbability > .005 && (roundedAttackerProbability + roundedDefenderProbability) < 100 ) {
 						context.font = 'bold 80px Arial';
 						context.fillStyle = 'rgba(160, 160, 160, 0.5)';
 						context.fillText(Math.round(drawProbability * 100) + '%', 5 * canvasWidth / 12, 3 * canvasHeight / 8);
