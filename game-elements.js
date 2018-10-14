@@ -593,7 +593,19 @@
 			var damagedOrder = (unit1.damaged ? 1 : 0) - (unit2.damaged ? 1 : 0); // damaged units come after undamaged ones (within one type of course)
 			if (thisSideOptions.riskDirectHit) {
 				// means damage ghosts will come last
-				return damageGhostOrder * 1000 + typeOrder * 10 + damagedOrder;
+				var defaultComparison = damageGhostOrder * 1000 + typeOrder * 10 + damagedOrder;
+				if (thisSideOptions.race !== root.Race.Letnev) {
+					return defaultComparison;
+				} else {
+					// damage ghosts will still come last, but Flagship ghost should be the very very last, as the Flagship can repair itself
+					if (unit1.type === UnitType.Flagship && unit1.isDamageGhost) {
+						return unit2.type === UnitType.Flagship && unit2.isDamageGhost ? 0 : 1;
+					} else if (unit2.type === UnitType.Flagship && unit2.isDamageGhost) {
+						return -1;
+					} else {
+						return defaultComparison;
+					}
+				}
 			} else {
 				// means units are grouped with their damage ghosts
 				return typeOrder * 1000 + damageGhostOrder * 10 + damagedOrder;
