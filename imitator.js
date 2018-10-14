@@ -111,6 +111,12 @@
 
 			while (hasUnits(attacker) && hasUnits(defender) || (doAtLeastOneRound && round === 0)) {
 				round++;
+
+				if (options.attacker.race === game.Race.Letnev)
+					repairFlagships(attacker);
+				if (options.defender.race === game.Race.Letnev)
+					repairFlagships(defender);
+
 				var attackerBoost = boost(battleType, round, options.attacker, attacker, options.defender);
 				var defenderBoost = boost(battleType, round, options.defender, defender, options.attacker);
 				var attackerReroll = false;
@@ -170,10 +176,6 @@
 					repairUnit(attacker);
 				if (options.defender.duraniumArmor)
 					repairUnit(defender);
-				if (options.attacker.race === game.Race.Letnev)
-					repairFlagships(attacker);
-				if (options.defender.race === game.Race.Letnev)
-					repairFlagships(defender);
 
 				if (options.attacker.race === game.Race.L1Z1X && battleType === game.BattleType.Ground) { // Harrow
 					actions.find(function (a) {

@@ -1849,6 +1849,26 @@ exports.letnevRacialNonEuclideanMoraleBoost = function (test) {
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
 
+exports.letnevFlagshipRepairsAtTheStartOfARound = function (test) {
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Flagship] = { count: 1 };
+	defender[game.UnitType.Destroyer] = { count: 2 };
+
+	var options = { attacker: { race: game.Race.Letnev, }, defender: {} };
+
+	var fromUndamaged = im.estimateProbabilities(new Input(attacker, defender, game.BattleType.Space, options)).distribution;
+	attacker[game.UnitType.Flagship] = { count: 1, damaged: 1 };
+	var fromDamaged = im.estimateProbabilities(new Input(attacker, defender, game.BattleType.Space, options)).distribution;
+
+	//console.log('u', fromUndamaged.toString());
+	//console.log('d', fromDamaged.toString());
+
+	test.ok(distributionsEqual(fromUndamaged, fromDamaged), 'Letnev Flagship not repaired at the start of the round');
+
+	test.done();
+};
+
 exports.sardakkRacialValkyrieParticleWeave = function (test) {
 
 	var attacker = {};
@@ -2650,6 +2670,7 @@ if (useGrouping) {
 	exports.nonEuclidean = group(exports, 'nonEuclidean');
 	exports.plasmaScoring = group(exports, 'plasmaScoring');
 	exports.prophecy = group(exports, 'prophecyOfIxth');
+	exports.letnev = group(exports, 'letnev');
 	exports.sardakk = group(exports, 'sardakk');
 	exports.tekklar = group(exports, 'tekklarLegion');
 	exports.valkyrieParticleWeave = group(exports, 'valkyrieParticleWeave');
