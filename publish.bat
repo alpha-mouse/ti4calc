@@ -1,1 +1,1 @@
-aws s3 sync . s3://alphamou.se/ti4calc --exclude ".git/*" --exclude ".idea/*" --exclude "test/*" --exclude ".gitignore" --exclude "demo.js" --exclude "publish.bat" --exclude "README.md"
+aws s3 sync . s3://alphamou.se/ti4calc --exclude ".git/*" --exclude ".idea/*" --exclude "test/*" --exclude ".gitignore" --exclude "demo.js" --exclude "publish.bat" --exclude "README.md" --exclude "CHANGELOG.md"
