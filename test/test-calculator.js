@@ -454,6 +454,47 @@ exports.expansionLetnevFlagshipRiskDirectHit = function (test) {
 	}
 };
 
+exports.expansionLetnevFlagshipDontRiskDirectHit = function (test) {
+	var fleet = {};
+	fleet[game.UnitType.Flagship] = { count: 1, };
+	fleet[game.UnitType.WarSun] = { count: 3, damaged: 1 };
+	fleet[game.UnitType.Dreadnought] = { count: 4, damaged: 2 };
+
+	var expansion = game.expandFleet(new Input(fleet, null, game.BattleType.Space, {
+		attacker: {
+			race: game.Race.Letnev,
+			riskDirectHit: false
+		},
+	}), game.BattleSide.attacker);
+
+	var u = game.UnitType;
+	var expected = [
+		game.RaceSpecificUnits[game.Race.Letnev][u.Flagship],
+		game.RaceSpecificUnits[game.Race.Letnev][u.Flagship].toDamageGhost(),
+
+		damage(game.StandardUnits[u.WarSun]),
+		game.StandardUnits[u.WarSun],
+		game.StandardUnits[u.WarSun],
+		game.StandardUnits[u.WarSun].toDamageGhost(),
+		game.StandardUnits[u.WarSun].toDamageGhost(),
+
+		damage(game.StandardUnits[u.Dreadnought]),
+		damage(game.StandardUnits[u.Dreadnought]),
+		game.StandardUnits[u.Dreadnought],
+		game.StandardUnits[u.Dreadnought],
+		game.StandardUnits[u.Dreadnought].toDamageGhost(),
+		game.StandardUnits[u.Dreadnought].toDamageGhost(),
+	];
+
+	testExpansion(test, expansion, expected);
+
+	function damage(unit) {
+		var result = unit.clone();
+		result.damaged = true;
+		return result;
+	}
+};
+
 exports.symmetricImitator = function (test) {
 	var fleet = {};
 	fleet[game.UnitType.Dreadnought] = 2;
