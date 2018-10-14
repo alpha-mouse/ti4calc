@@ -40,10 +40,14 @@ function testBattle(test, attacker, defender, battleType, options) {
 	var got = calc.computeProbabilities(input).distribution;
 	var expected = im.estimateProbabilities(input).distribution;
 
-	//console.log('i', expected.toString());
-	//console.log('c', got.toString());
 
-	test.ok(distributionsEqual(expected, got), 'empirical differs from analytical');
+	var equal = distributionsEqual(expected, got);
+	if (!equal) {
+		console.log('i', expected.toString());
+		console.log('c', got.toString());
+	}
+
+	test.ok(equal, 'empirical differs from analytical');
 
 	test.done();
 }
@@ -387,15 +391,15 @@ exports.expansionDamaged = function (test) {
 
 	var u = game.UnitType;
 	var expected = [
-		game.RaceSpecificUnits[game.Race.Sol][u.Flagship],
 		damage(game.RaceSpecificUnits[game.Race.Sol][u.Flagship]),
+		game.RaceSpecificUnits[game.Race.Sol][u.Flagship],
+		damage(game.StandardUnits[u.WarSun]),
+		damage(game.StandardUnits[u.WarSun]),
 		game.StandardUnits[u.WarSun],
-		damage(game.StandardUnits[u.WarSun]),
-		damage(game.StandardUnits[u.WarSun]),
+		damage(game.StandardUnits[u.Dreadnought]),
+		damage(game.StandardUnits[u.Dreadnought]),
+		damage(game.StandardUnits[u.Dreadnought]),
 		game.StandardUnits[u.Dreadnought],
-		damage(game.StandardUnits[u.Dreadnought]),
-		damage(game.StandardUnits[u.Dreadnought]),
-		damage(game.StandardUnits[u.Dreadnought]),
 		game.RaceSpecificUnits[game.Race.Sol][u.Flagship].toDamageGhost(),
 		game.StandardUnits[u.WarSun].toDamageGhost(),
 		game.StandardUnits[u.Dreadnought].toDamageGhost(),
@@ -416,18 +420,23 @@ exports.expansionLetnevFlagshipRiskDirectHit = function (test) {
 	fleet[game.UnitType.WarSun] = { count: 3, damaged: 1 };
 	fleet[game.UnitType.Dreadnought] = { count: 4, damaged: 2 };
 
-	var expansion = game.expandFleet(new Input(fleet, null, game.BattleType.Space, { attacker: { race: game.Race.Letnev, riskDirectHit: true }, }), game.BattleSide.attacker);
+	var expansion = game.expandFleet(new Input(fleet, null, game.BattleType.Space, {
+		attacker: {
+			race: game.Race.Letnev,
+			riskDirectHit: true
+		},
+	}), game.BattleSide.attacker);
 
 	var u = game.UnitType;
 	var expected = [
 		game.RaceSpecificUnits[game.Race.Letnev][u.Flagship],
-		game.StandardUnits[u.WarSun],
-		game.StandardUnits[u.WarSun],
 		damage(game.StandardUnits[u.WarSun]),
-		game.StandardUnits[u.Dreadnought],
-		game.StandardUnits[u.Dreadnought],
+		game.StandardUnits[u.WarSun],
+		game.StandardUnits[u.WarSun],
 		damage(game.StandardUnits[u.Dreadnought]),
 		damage(game.StandardUnits[u.Dreadnought]),
+		game.StandardUnits[u.Dreadnought],
+		game.StandardUnits[u.Dreadnought],
 
 		game.StandardUnits[u.WarSun].toDamageGhost(),
 		game.StandardUnits[u.WarSun].toDamageGhost(),
@@ -1476,6 +1485,38 @@ exports.duraniumArmorRepairAlreadyDamaged = function (test) {
 	var distribution = im.estimateProbabilities(new Input(attacker, defender, game.BattleType.Space, options)).distribution;
 	//console.log(distribution.toString());
 	test.equals(distribution.max, 12, 'Dreadnought not repaired for free');
+
+	test.done();
+};
+
+exports.duraniumArmorDestroyUnrepairableFirst = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Dreadnought] = { count: 2 };
+
+	defender[game.UnitType.Dreadnought] = { count: 2 };
+
+	var options = {
+		attacker: {},
+		defender: { duraniumArmor: true },
+	};
+
+	var distribution = im.estimateProbabilities(new Input(attacker, defender, game.BattleType.Space, options)).distribution;
+	//console.log(distribution.toString());
+	var expected = Object.assign(new structs.DistributionBase(-4, 3), {
+		'-4': 0.005,
+		'-3': 0.04,
+		'-2': 0.112,
+		'-1': 0.141,
+		0: 0.06,
+		1: 0.088,
+		2: 0.183,
+		3: 0.248,
+		4: 0.123
+	}); // this distribution is obtained from one run of the version of the estimator considered correct
+
+	test.ok(distributionsEqual(distribution, expected), 'wrong result distribution');
 
 	test.done();
 };

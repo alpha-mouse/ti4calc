@@ -243,17 +243,14 @@
 							unit.damagedThisRound = false;
 						} else {
 							if (!somethingRepaired) {
-								var damageGhost = unit.toDamageGhost();
-								// find proper place for the new damage ghost
-								var index = structs.binarySearch(fleet, damageGhost, fleet.comparer);
-								if (index < 0)
-									index = -index - 1;
-								fleet.splice(index, 0, damageGhost);
+								fleet.push(unit.toDamageGhost());
 								somethingRepaired = true;
 							}
 						}
 					}
 				}
+
+				fleet.sort(fleet.comparer);
 			}
 
 			function repairFlagships(fleet) {

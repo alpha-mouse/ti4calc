@@ -589,8 +589,11 @@
 
 		function defaultComparer(unit1, unit2) {
 			var typeOrder = unitOrder[unit1.type] - unitOrder[unit2.type];
-			var damageGhostOrder = (unit1.isDamageGhost ? 1 : 0) - (unit2.isDamageGhost ? 1 : 0); // damage ghosts come after corresponding units
-			var damagedOrder = (unit1.damaged ? 1 : 0) - (unit2.damaged ? 1 : 0); // damaged units come after undamaged ones (within one type of course)
+			// damage ghosts come after corresponding units
+			var damageGhostOrder = (unit1.isDamageGhost ? 1 : 0) - (unit2.isDamageGhost ? 1 : 0);
+			// Damaged units come _before_ undamaged ones (within one type of course), which means they die later,
+			// this way more Duranium armor has better chance to be applied.
+			var damagedOrder = (unit2.damaged ? 1 : 0) - (unit1.damaged ? 1 : 0);
 			if (thisSideOptions.riskDirectHit) {
 				// means damage ghosts will come last
 				var defaultComparison = damageGhostOrder * 1000 + typeOrder * 10 + damagedOrder;
