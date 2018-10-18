@@ -430,10 +430,6 @@
 			battleValue: 6,
 			cost: 2,
 		}),
-		Carrier: new root.UnitInfo(UnitType.Cruiser, {
-			battleValue: 9,
-			cost: 3,
-		}),
 		Destroyer: new root.UnitInfo(UnitType.Destroyer, {
 			battleValue: 8,
 			barrageValue: 6,
