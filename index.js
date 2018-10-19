@@ -329,13 +329,16 @@
 	});
 	Vue.component('left-option', {
 		props: ['optionName', 'option', 'options', 'side'],
-		template:
-		'<div class="left-option col" :class="{ hidden: !option.availableFor(side) }">' +
-		'	<label class="float-right" v-bind:for="side + \'.\' + optionName"' +
-		'		   v-bind:title="option.description">{{option.title}}</label>' +
-		'	<input type="checkbox" class="float-right" v-bind:id="side + \'.\' + optionName"' +
-		'		   v-model="options[side][optionName]">' +
-		'</div>',
+		template: `
+		<div class="w-50" :class="{ hidden: !option.availableFor(side) }"
+                       <button type="button" class="btn rounded-0 w-50"
+                               :class="{ 'btn-secondary-outline': !options[side][optionName],
+                               'btn-secondary': !options[side][optionName] }"
+                               @click="options[side][optionName] = !options[side][optionName]">
+                               {{option.title}}
+                       </button>
+		</div>
+                `,
 	});
 	Vue.component('right-option', {
 		props: ['optionName', 'option', 'options', 'side'],
