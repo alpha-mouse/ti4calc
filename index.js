@@ -330,13 +330,15 @@
 	Vue.component('left-option', {
 		props: ['optionName', 'option', 'options', 'side'],
 		template: `
-		<div :class="{ hidden: !option.availableFor(side) }"
-                       <button type="button" class="btn rounded-0 w-47"
-                               :class="{ 'btn-secondary-outline': !options[side][optionName],
-                               'btn-secondary': !options[side][optionName] }"
-                               @click="options[side][optionName] = !options[side][optionName]">
-                               {{option.title}}
-                       </button>
+		<div class="col-5" :class="{ hidden: !option.availableFor(side) }"
+                        <div class="col-5">
+                               <button type="button" class="btn rounded-0 w-100"
+                                       :class="{ 'btn-secondary-outline': !options[side][optionName],
+                                       'btn-secondary': !options[side][optionName] }"
+                                       @click="options[side][optionName] = !options[side][optionName]">
+                                       {{option.title}}
+                               </button>
+		        </div>
 		</div>
                 `,
 	});
@@ -344,19 +346,21 @@
 		props: ['optionName', 'option', 'options', 'side'],
 		template: `
 		<div :class="{ hidden: !option.availableFor(side) }"
-                       <button type="button" class="btn rounded-0 w-47"
-                               :class="{ 'btn-secondary-outline': !options[side][optionName],
-                               'btn-secondary': !options[side][optionName] }"
-                               @click="options[side][optionName] = !options[side][optionName]">
-                               {{option.title}}
-                       </button>
+                        <div class="col-5">
+                               <button type="button" class="btn rounded-0 w-100"
+                                       :class="{ 'btn-secondary-outline': !options[side][optionName],
+                                       'btn-secondary': !options[side][optionName] }"
+                                       @click="options[side][optionName] = !options[side][optionName]">
+                                       {{option.title}}
+                               </button>
+		        </div>
 		</div>
                 `,
 	});
 	Vue.component('option-pair', {
 		props: ['optionName', 'option', 'options',],
 		template:
-		'<div class="row">' +
+		'<div class="row no-gutters">' +
 		'	<left-option :option-name="optionName" :option="option" :options="options" side="attacker"></left-option>' +
 		'	<help-mark :option="option"></help-mark>' +
 		'	<right-option :option-name="optionName" :option="option" :options="options" side="defender"></right-option>' +
@@ -364,8 +368,13 @@
 	});
 	Vue.component('help-mark', {
 		props: ['option'],
-		template:
-		'<button type="button" class="btn btn-primary rounded-0 w-6" v-bind:title="option.description" @click="showHelp">?</button>',
+		template:`
+                <div class="col-2">
+                        <button type="button" class="btn btn-primary rounded-0 w-100" 
+                                v-bind:title="option.description" @click="showHelp">?
+                        </button>
+                </div>
+                `,
 		methods: {
 			showHelp: function () {
 				alert(this.option.title + ':\n' + this.option.description);
