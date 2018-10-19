@@ -330,8 +330,8 @@
 	Vue.component('left-option', {
 		props: ['optionName', 'option', 'options', 'side'],
 		template: `
-		<div class="w-50" :class="{ hidden: !option.availableFor(side) }"
-                       <button type="button" class="btn rounded-0 w-50"
+		<div :class="{ hidden: !option.availableFor(side) }"
+                       <button type="button" class="btn rounded-0 w-47"
                                :class="{ 'btn-secondary-outline': !options[side][optionName],
                                'btn-secondary': !options[side][optionName] }"
                                @click="options[side][optionName] = !options[side][optionName]">
@@ -342,13 +342,16 @@
 	});
 	Vue.component('right-option', {
 		props: ['optionName', 'option', 'options', 'side'],
-		template:
-		'<div class="col right-option" :class="{ hidden: !option.availableFor(side) }">' +
-		'	<input type="checkbox" class="" v-bind:id="side + \'.\' + optionName"' +
-		'		   v-model="options[side][optionName]">' +
-		'	<label class="" v-bind:for="side + \'.\' + optionName"' +
-		'		   v-bind:title="option.description">{{option.title}}</label>' +
-		'</div>',
+		template: `
+		<div :class="{ hidden: !option.availableFor(side) }"
+                       <button type="button" class="btn rounded-0 w-47"
+                               :class="{ 'btn-secondary-outline': !options[side][optionName],
+                               'btn-secondary': !options[side][optionName] }"
+                               @click="options[side][optionName] = !options[side][optionName]">
+                               {{option.title}}
+                       </button>
+		</div>
+                `,
 	});
 	Vue.component('option-pair', {
 		props: ['optionName', 'option', 'options',],
@@ -362,9 +365,7 @@
 	Vue.component('help-mark', {
 		props: ['option'],
 		template:
-		'<div class="col-auto">' +
-		'	<button type="button" class="help" v-bind:title="option.description" @click="showHelp"></button>' +
-		'</div>',
+		'<button type="button" class="btn btn-primary rounded-0 w-6" v-bind:title="option.description" @click="showHelp">?</button>',
 		methods: {
 			showHelp: function () {
 				alert(this.option.title + ':\n' + this.option.description);
