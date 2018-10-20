@@ -317,16 +317,21 @@
 					 :option-name="key" :option="option" :options="options"></option-pair>
 		<option-pair v-for="(option, key) in Promissory"
 					 :option-name="key" :option="option" :options="options"></option-pair>
-		<p id="chart-size-selector" class="row"><span>Chart size:&nbsp;</span>
-			<select class="o-grid__cell c-field block" v-model="canvasSize">
-				<option v-bind:value="0">
-          Responsive
-				</option>
-				<option v-for="(size, key) in CanvasSizes" v-bind:value="key+1">
-					{{ size.width + '*' + size.height }}
-				</option>
-			</select>
-		</p>
+    <div class="row">
+      <div class="col"></div>
+      <div id="chart-size-selector" class="col form-inline">
+        <label for="canvasSize">Chart size:&nbsp;</label>
+        <select id="canvasSize" class="form-control rounded-0" v-model="canvasSize">
+          <option v-bind:value="0">
+            Responsive
+          </option>
+          <option v-for="(size, key) in CanvasSizes" v-bind:value="key+1">
+            {{ size.width + '*' + size.height }}
+          </option>
+        </select>
+      </div>
+      <div class="col"></div>
+    </div>
 	</div>
 
 </div>
