@@ -323,7 +323,14 @@
 				    return window.CanvasSizes[this.canvasSize-1].height + 'px';
                                 }
                                 // make height a ratio of the width
-                                return this.computeCanvasWidth()*(4/6) + 'px';
+                                let locCanvasWidth = parseInt(this.canvasWidth);
+                                if (locCanvasWidth > 600) {
+                                    return this.computeCanvasWidth()*(4/6) + 'px';
+                                } else if (locCanvasWidth > 460) {
+                                    return this.computeCanvasWidth()*(5/6) + 'px';
+                                } else {
+                                    return '380px'; // 380 is the lowest height that won't cut off the labels at the top
+                                }
 			},
 		},
 	});
