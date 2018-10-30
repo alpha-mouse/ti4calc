@@ -217,18 +217,18 @@
 				return result;
 			},
                         // will compute canvas width to match the width of the
-                        // 'container' bootstrap class
+                        // 'container' bootstrap class (minus 30px padding)
                         computeCanvasWidth: function () {
-                                if (this.windowWidth < 540) {
-                                        return this.windowWidth;
+                                if (this.windowWidth < 576) {
+                                        return this.windowWidth - 48;
                                 } else if (this.windowWidth < 768) {
-                                        return 540;
+                                        return 510;
                                 } else if (this.windowWidth < 992) {
-                                        return 720;
+                                        return 690;
                                 } else if (this.windowWidth < 1200) {
-                                        return 960;
+                                        return 930;
                                 } else {
-                                        return 1140;
+                                        return 1110;
                                 }
                         },
 		},

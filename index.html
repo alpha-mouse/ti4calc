@@ -335,8 +335,8 @@
 	</div>
 
 </div>
-<div>
-  <div id="result-area" :style="{ width: canvasWidth, height: canvasHeight }">
+<div class="container">
+  <div id="result-area" class="bg-light" :style="{ width: canvasWidth, height: canvasHeight }">
     <canvas id="chart-area" :width="canvasWidth" :height="canvasHeight"></canvas>
     <canvas id="chart-area-overlay" :width="canvasWidth" :height="canvasHeight"></canvas>
     <div id="spinner-container" :style="{ width: canvasWidth, height: canvasHeight }" :class="{ collapsed: !computing }">
