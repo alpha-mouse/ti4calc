@@ -332,7 +332,7 @@
 		template: `
 		<div class="col-5" :class="{ hidden: !option.availableFor(side) }"
                         <div class="col-5">
-                               <button type="button" class="btn rounded-0 w-100"
+                               <button type="button" class="btn rounded-0 w-100" style="white-space: normal;"
                                        :class="{ 'btn-secondary-outline': !options[side][optionName],
                                        'btn-secondary': !options[side][optionName] }"
                                        @click="options[side][optionName] = !options[side][optionName]">
@@ -347,7 +347,7 @@
 		template: `
 		<div :class="{ hidden: !option.availableFor(side) }"
                         <div class="col-5">
-                               <button type="button" class="btn rounded-0 w-100"
+                               <button type="button" class="btn rounded-0 w-100" style="white-space: normal;"
                                        :class="{ 'btn-secondary-outline': !options[side][optionName],
                                        'btn-secondary': !options[side][optionName] }"
                                        @click="options[side][optionName] = !options[side][optionName]">
@@ -370,7 +370,7 @@
 		props: ['option'],
 		template:`
                 <div class="col-2">
-                        <button type="button" class="btn btn-primary rounded-0 w-100" 
+                        <button type="button" class="btn btn-primary rounded-0 w-100 h-100" 
                                 v-bind:title="option.description" @click="showHelp">?
                         </button>
                 </div>
