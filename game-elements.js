@@ -52,8 +52,8 @@
 	root.Race = {
 		Arborec: 'Arborec',
 		Creuss: 'Creuss',
-		JolNar: 'JolNar',
 		Hacan: 'Hacan',
+		JolNar: 'JolNar',
 		L1Z1X: 'L1Z1X',
 		Letnev: 'Letnev',
 		Mentak: 'Mentak',
@@ -72,8 +72,8 @@
 	root.RacesDisplayNames = {
 		Arborec: 'Arborec',
 		Creuss: 'Creuss',
-		JolNar: 'Jol-Nar',
 		Hacan: 'Hacan',
+		JolNar: 'Jol-Nar',
 		L1Z1X: 'L1Z1X',
 		Letnev: 'Letnev',
 		Mentak: 'Mentak',
