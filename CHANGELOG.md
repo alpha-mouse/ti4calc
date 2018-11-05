@@ -1,5 +1,9 @@
 # Changelog
 
+## Upcoming
+### Fixed
+- Jol-Nar Flagship special ability (+2 hits on 9 or 10) is now properly handled. Previously it wasn't applied at all.
+
 ## [1.0.4] - 2018-10-15
 ### Changed
 - When Risk Direct Hit is set, Letnev flagship is damaged before other damageable units as it can repair itself next round.

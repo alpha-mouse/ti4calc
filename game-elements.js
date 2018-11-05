@@ -166,6 +166,7 @@
 			this.damaged = false;
 			this.damagedThisRound = false;
 
+			this.race = stats.race;
 			this.cost = stats.cost;
 		}
 
@@ -264,6 +265,7 @@
 				sustainDamageHits: 1,
 				battleValue: 6,
 				battleDice: 2,
+				race: root.Race.Sardakk,
 				cost: 8,
 			}),
 			Dreadnought: new root.UnitInfo(UnitType.Dreadnought, {
@@ -279,6 +281,7 @@
 				sustainDamageHits: 1,
 				battleValue: 6,
 				battleDice: 2,
+				race: root.Race.JolNar,
 				cost: 8,
 			}),
 		},
@@ -287,6 +290,7 @@
 				sustainDamageHits: 1,
 				battleValue: 7,
 				battleDice: undefined,
+				race: root.Race.Winnu,
 				cost: 8,
 			}),
 		},
@@ -297,6 +301,7 @@
 				battleDice: 2,
 				spaceCannonValue: 5,
 				spaceCannonDice: 3,
+				race: root.Race.Xxcha,
 				cost: 8,
 			}),
 		},
@@ -305,6 +310,7 @@
 				sustainDamageHits: 1,
 				battleValue: 9,
 				battleDice: 2,
+				race: root.Race.Yin,
 				cost: 8,
 			}),
 		},
@@ -313,6 +319,7 @@
 				sustainDamageHits: 1,
 				battleValue: 5,
 				battleDice: 2,
+				race: root.Race.Yssaril,
 				cost: 8,
 			}),
 		},
@@ -321,6 +328,7 @@
 				sustainDamageHits: 1,
 				battleValue: 5,
 				battleDice: 2,
+				race: root.Race.Sol,
 				cost: 8,
 			}),
 			Ground: new root.UnitInfo(UnitType.Ground, {
@@ -333,6 +341,7 @@
 				sustainDamageHits: 1,
 				battleValue: 5,
 				battleDice: 1,
+				race: root.Race.Creuss,
 				cost: 8,
 			}),
 		},
@@ -341,6 +350,7 @@
 				sustainDamageHits: 1,
 				battleValue: 5,
 				battleDice: 2,
+				race: root.Race.L1Z1X,
 				cost: 8,
 			}),
 		},
@@ -349,6 +359,7 @@
 				sustainDamageHits: 1,
 				battleValue: 7,
 				battleDice: 2,
+				race: root.Race.Mentak,
 				cost: 8,
 			}),
 		},
@@ -357,6 +368,7 @@
 				sustainDamageHits: 1,
 				battleValue: 9,
 				battleDice: 2,
+				race: root.Race.Naalu,
 				cost: 8,
 			}),
 			Fighter: new root.UnitInfo(UnitType.Fighter, {
@@ -368,6 +380,7 @@
 				sustainDamageHits: 1,
 				battleValue: 9,
 				battleDice: 2,
+				race: root.Race.Virus,
 				cost: 8,
 			}),
 		},
@@ -376,6 +389,7 @@
 				sustainDamageHits: 1,
 				battleValue: 7,
 				battleDice: 2,
+				race: root.Race.Arborec,
 				cost: 8,
 			}),
 		},
@@ -386,6 +400,7 @@
 				battleDice: 2,
 				bombardmentValue: 5,
 				bombardmentDice: 3,
+				race: root.Race.Letnev,
 				cost: 8,
 			}),
 		},
@@ -396,6 +411,7 @@
 				battleDice: 2,
 				barrageValue: 6,
 				barrageDice: 4,
+				race: root.Race.Saar,
 				cost: 8,
 			}),
 		},
@@ -404,6 +420,7 @@
 				sustainDamageHits: 1,
 				battleValue: 5,
 				battleDice: 2,
+				race: root.Race.Muaat,
 				cost: 8,
 			}),
 		},
@@ -412,6 +429,7 @@
 				sustainDamageHits: 1,
 				battleValue: 7,
 				battleDice: 2,
+				race: root.Race.Hacan,
 				cost: 8,
 			}),
 		},

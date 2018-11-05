@@ -2157,6 +2157,37 @@ exports.jolNarFlagship = function (test) {
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
 
+exports.jolNarFlagshipSanityCheck = function (test) {
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Flagship] = { count: 1, damaged: 1 };
+
+	defender[game.UnitType.Fighter] = { count: 3 };
+
+	var options = { attacker: { race: game.Race.JolNar, }, defender: {} };
+
+	var input = new Input(attacker, defender, game.BattleType.Space, options);
+
+	var distr = calc.computeProbabilities(input).distribution;
+
+	var flagshipProbability = distr.at(-1)+ distr.at(0);
+	test.ok(0.36 < flagshipProbability, "Jol-Nar flagship is not strong enough: " + flagshipProbability);
+
+	test.done();
+};
+
+exports.jolNarFlagshipMunitionsFundingMoraleBoost = function (test) {
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Flagship] = { count: 1, damaged: 1 };
+
+	defender[game.UnitType.Fighter] = { count: 3 };
+
+	var options = { attacker: { race: game.Race.JolNar, letnevMunitionsFunding: true, moraleBoost: true }, defender: {} };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
 exports.jolNarFlagshipMoraleBoost = function (test) {
 	var attacker = {};
 	var defender = {};

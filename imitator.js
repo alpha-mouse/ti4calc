@@ -322,7 +322,7 @@
 						totalRoll += 2;
 					if (battleValue <= rollResult + modifierFunction(unit))
 						totalRoll++;
-					else if (reroll) {
+					else if (reroll) { // There is an assumption that Jol-Nar Flagship won't re-roll rolls that produced hits but not +2 hits. Seems reasonable on expectation.
 						rollResult = rollDie();
 						if (unit.type === game.UnitType.Flagship && unit.race === game.Race.JolNar && 8 < rollResult)
 							totalRoll += 2;
