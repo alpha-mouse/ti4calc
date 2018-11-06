@@ -1,10 +1,10 @@
 # Changelog
 
-## Upcoming
+## [1.1.0] - 2018-11-06 (h/t Joakim Andersson)
 ### Fixed
 - Jol-Nar Flagship special ability (+2 hits on 9 or 10) is now properly handled. Previously it wasn't applied at all.
 
-## [1.0.4] - 2018-10-15
+## [1.0.4] - 2018-10-15 (h/t Joakim Andersson)
 ### Changed
 - When Risk Direct Hit is set, Letnev flagship is damaged before other damageable units as it can repair itself next round.
 - When Duranium Armor is active, units that were healthy at the start of the round are killed off before the ones that were already damaged. This way, one of those latter could use Duranium Armor.
