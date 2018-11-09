@@ -116,3 +116,4 @@ As much as I tried, I failed to imagine any good algorithm to compute probabilit
 ## Credits ##
 
 * Ling Weak, Edward Nickson, and L0ft3r – for various improvements to the calculator for the third edition of the game. This calculator is heavily based on that one.
+* Joakim Andersson (j.ason a⁣t live.se) – proposed fixes to Duranium Armor, Letnev and Jol-Nar flagships handling.

@@ -111,6 +111,12 @@
 
 			while (hasUnits(attacker) && hasUnits(defender) || (doAtLeastOneRound && round === 0)) {
 				round++;
+
+				if (options.attacker.race === game.Race.Letnev)
+					repairFlagships(attacker);
+				if (options.defender.race === game.Race.Letnev)
+					repairFlagships(defender);
+
 				var attackerBoost = boost(battleType, round, options.attacker, attacker, options.defender);
 				var defenderBoost = boost(battleType, round, options.defender, defender, options.attacker);
 				var attackerReroll = false;
@@ -170,10 +176,6 @@
 					repairUnit(attacker);
 				if (options.defender.duraniumArmor)
 					repairUnit(defender);
-				if (options.attacker.race === game.Race.Letnev)
-					repairFlagships(attacker);
-				if (options.defender.race === game.Race.Letnev)
-					repairFlagships(defender);
 
 				if (options.attacker.race === game.Race.L1Z1X && battleType === game.BattleType.Ground) { // Harrow
 					actions.find(function (a) {
@@ -241,17 +243,14 @@
 							unit.damagedThisRound = false;
 						} else {
 							if (!somethingRepaired) {
-								var damageGhost = unit.toDamageGhost();
-								// find proper place for the new damage ghost
-								var index = structs.binarySearch(fleet, damageGhost, fleet.comparer);
-								if (index < 0)
-									index = -index - 1;
-								fleet.splice(index, 0, damageGhost);
+								fleet.push(unit.toDamageGhost());
 								somethingRepaired = true;
 							}
 						}
 					}
 				}
+
+				fleet.sort(fleet.comparer);
 			}
 
 			function repairFlagships(fleet) {
@@ -323,7 +322,7 @@
 						totalRoll += 2;
 					if (battleValue <= rollResult + modifierFunction(unit))
 						totalRoll++;
-					else if (reroll) {
+					else if (reroll) { // There is an assumption that Jol-Nar Flagship won't re-roll rolls that produced hits but not +2 hits. Seems reasonable on expectation.
 						rollResult = rollDie();
 						if (unit.type === game.UnitType.Flagship && unit.race === game.Race.JolNar && 8 < rollResult)
 							totalRoll += 2;

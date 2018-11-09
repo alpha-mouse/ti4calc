@@ -52,8 +52,8 @@
 	root.Race = {
 		Arborec: 'Arborec',
 		Creuss: 'Creuss',
-		JolNar: 'JolNar',
 		Hacan: 'Hacan',
+		JolNar: 'JolNar',
 		L1Z1X: 'L1Z1X',
 		Letnev: 'Letnev',
 		Mentak: 'Mentak',
@@ -72,8 +72,8 @@
 	root.RacesDisplayNames = {
 		Arborec: 'Arborec',
 		Creuss: 'Creuss',
-		JolNar: 'Jol-Nar',
 		Hacan: 'Hacan',
+		JolNar: 'Jol-Nar',
 		L1Z1X: 'L1Z1X',
 		Letnev: 'Letnev',
 		Mentak: 'Mentak',
@@ -166,6 +166,7 @@
 			this.damaged = false;
 			this.damagedThisRound = false;
 
+			this.race = stats.race;
 			this.cost = stats.cost;
 		}
 
@@ -264,6 +265,7 @@
 				sustainDamageHits: 1,
 				battleValue: 6,
 				battleDice: 2,
+				race: root.Race.Sardakk,
 				cost: 8,
 			}),
 			Dreadnought: new root.UnitInfo(UnitType.Dreadnought, {
@@ -279,6 +281,7 @@
 				sustainDamageHits: 1,
 				battleValue: 6,
 				battleDice: 2,
+				race: root.Race.JolNar,
 				cost: 8,
 			}),
 		},
@@ -287,6 +290,7 @@
 				sustainDamageHits: 1,
 				battleValue: 7,
 				battleDice: undefined,
+				race: root.Race.Winnu,
 				cost: 8,
 			}),
 		},
@@ -297,6 +301,7 @@
 				battleDice: 2,
 				spaceCannonValue: 5,
 				spaceCannonDice: 3,
+				race: root.Race.Xxcha,
 				cost: 8,
 			}),
 		},
@@ -305,6 +310,7 @@
 				sustainDamageHits: 1,
 				battleValue: 9,
 				battleDice: 2,
+				race: root.Race.Yin,
 				cost: 8,
 			}),
 		},
@@ -313,6 +319,7 @@
 				sustainDamageHits: 1,
 				battleValue: 5,
 				battleDice: 2,
+				race: root.Race.Yssaril,
 				cost: 8,
 			}),
 		},
@@ -321,6 +328,7 @@
 				sustainDamageHits: 1,
 				battleValue: 5,
 				battleDice: 2,
+				race: root.Race.Sol,
 				cost: 8,
 			}),
 			Ground: new root.UnitInfo(UnitType.Ground, {
@@ -333,6 +341,7 @@
 				sustainDamageHits: 1,
 				battleValue: 5,
 				battleDice: 1,
+				race: root.Race.Creuss,
 				cost: 8,
 			}),
 		},
@@ -341,6 +350,7 @@
 				sustainDamageHits: 1,
 				battleValue: 5,
 				battleDice: 2,
+				race: root.Race.L1Z1X,
 				cost: 8,
 			}),
 		},
@@ -349,6 +359,7 @@
 				sustainDamageHits: 1,
 				battleValue: 7,
 				battleDice: 2,
+				race: root.Race.Mentak,
 				cost: 8,
 			}),
 		},
@@ -357,6 +368,7 @@
 				sustainDamageHits: 1,
 				battleValue: 9,
 				battleDice: 2,
+				race: root.Race.Naalu,
 				cost: 8,
 			}),
 			Fighter: new root.UnitInfo(UnitType.Fighter, {
@@ -368,6 +380,7 @@
 				sustainDamageHits: 1,
 				battleValue: 9,
 				battleDice: 2,
+				race: root.Race.Virus,
 				cost: 8,
 			}),
 		},
@@ -376,6 +389,7 @@
 				sustainDamageHits: 1,
 				battleValue: 7,
 				battleDice: 2,
+				race: root.Race.Arborec,
 				cost: 8,
 			}),
 		},
@@ -386,6 +400,7 @@
 				battleDice: 2,
 				bombardmentValue: 5,
 				bombardmentDice: 3,
+				race: root.Race.Letnev,
 				cost: 8,
 			}),
 		},
@@ -396,6 +411,7 @@
 				battleDice: 2,
 				barrageValue: 6,
 				barrageDice: 4,
+				race: root.Race.Saar,
 				cost: 8,
 			}),
 		},
@@ -404,6 +420,7 @@
 				sustainDamageHits: 1,
 				battleValue: 5,
 				battleDice: 2,
+				race: root.Race.Muaat,
 				cost: 8,
 			}),
 		},
@@ -412,6 +429,7 @@
 				sustainDamageHits: 1,
 				battleValue: 7,
 				battleDice: 2,
+				race: root.Race.Hacan,
 				cost: 8,
 			}),
 		},
@@ -589,11 +607,26 @@
 
 		function defaultComparer(unit1, unit2) {
 			var typeOrder = unitOrder[unit1.type] - unitOrder[unit2.type];
-			var damageGhostOrder = (unit1.isDamageGhost ? 1 : 0) - (unit2.isDamageGhost ? 1 : 0); // damage ghosts come after corresponding units
-			var damagedOrder = (unit1.damaged ? 1 : 0) - (unit2.damaged ? 1 : 0); // damaged units come after undamaged ones (within one type of course)
+			// damage ghosts come after corresponding units
+			var damageGhostOrder = (unit1.isDamageGhost ? 1 : 0) - (unit2.isDamageGhost ? 1 : 0);
+			// Damaged units come _before_ undamaged ones (within one type of course), which means they die later,
+			// this way more Duranium armor has better chance to be applied.
+			var damagedOrder = (unit2.damaged ? 1 : 0) - (unit1.damaged ? 1 : 0);
 			if (thisSideOptions.riskDirectHit) {
 				// means damage ghosts will come last
-				return damageGhostOrder * 1000 + typeOrder * 10 + damagedOrder;
+				var defaultComparison = damageGhostOrder * 1000 + typeOrder * 10 + damagedOrder;
+				if (thisSideOptions.race !== root.Race.Letnev) {
+					return defaultComparison;
+				} else {
+					// damage ghosts will still come last, but Flagship ghost should be the very very last, as the Flagship can repair itself
+					if (unit1.type === UnitType.Flagship && unit1.isDamageGhost) {
+						return unit2.type === UnitType.Flagship && unit2.isDamageGhost ? 0 : 1;
+					} else if (unit2.type === UnitType.Flagship && unit2.isDamageGhost) {
+						return -1;
+					} else {
+						return defaultComparison;
+					}
+				}
 			} else {
 				// means units are grouped with their damage ghosts
 				return typeOrder * 1000 + damageGhostOrder * 10 + damagedOrder;
