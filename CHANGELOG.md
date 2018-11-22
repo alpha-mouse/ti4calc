@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.1] - 2018-11-22
+### Fixed
+- Fix the problem where when the calculator is opened for the first time ever on the specific machine/browser, "Publicize Weapon Schematics" agenda option was not synchronized between attacker and defender.
+
 ## [1.1.0] - 2018-11-06 (h/t Joakim Andersson)
 ### Fixed
 - Jol-Nar Flagship special ability (+2 hits on 9 or 10) is now properly handled. Previously it wasn't applied at all.
