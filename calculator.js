@@ -664,11 +664,8 @@
 
 							var ensemble = new structs.EnsembleSplit(problem);
 
-							var attackerBoost = options.attacker.moraleBoost ? 1 : 0;
-							var defenderBoost = options.defender.moraleBoost ? 1 : 0;
-
-							var attackerTransitions = computeSelectedUnitsTransitions(problem.attacker, game.ThrowType.Barrage, hasBarrage, attackerBoost);
-							var defenderTransitions = computeSelectedUnitsTransitions(problem.defender, game.ThrowType.Barrage, hasBarrage, defenderBoost);
+							var attackerTransitions = computeSelectedUnitsTransitions(problem.attacker, game.ThrowType.Barrage, hasBarrage);
+							var defenderTransitions = computeSelectedUnitsTransitions(problem.defender, game.ThrowType.Barrage, hasBarrage);
 
 							var attackerVulnerable = getVulnerableUnitsRange(problem.attacker, unitIs(game.UnitType.Fighter));
 							var defenderVulnerable = getVulnerableUnitsRange(problem.defender, unitIs(game.UnitType.Fighter));
@@ -900,13 +897,13 @@
 			}
 		}
 
-		function fleetTransitionsVectorWithPlasmaScoring(fleet, throwType, modifier, reroll) {
-			var fleetInflicted = computeFleetTransitions(fleet, throwType, modifier, reroll).pop();
+		function fleetTransitionsVectorWithPlasmaScoring(fleet, throwType, modifier) {
+			var fleetInflicted = computeFleetTransitions(fleet, throwType, modifier).pop();
 			var bestUnit = getUnitWithLowest(fleet, game.ThrowValues[throwType]);
 			if (bestUnit) {
 				var unitWithOneDie = bestUnit.clone();
 				unitWithOneDie[game.ThrowDice[throwType]] = 1;
-				var unitTransitions = computeUnitTransitions(unitWithOneDie, throwType, modifier, reroll);
+				var unitTransitions = computeUnitTransitions(unitWithOneDie, throwType, modifier);
 				fleetInflicted = slideMultiply(unitTransitions, fleetInflicted);
 			}
 			return fleetInflicted;

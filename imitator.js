@@ -458,13 +458,10 @@
 					appliesTo: game.BattleType.Space,
 					execute: function (attacker, defender, attackerFull, defenderFull, options) {
 
-						var attackerBoost = options.attacker.moraleBoost ? 1 : 0;
-						var defenderBoost = options.defender.moraleBoost ? 1 : 0;
-
 						var attackerBarrageUnits = attacker.filter(hasBarrage);
 						var defenderBarrageUnits = defender.filter(hasBarrage);
-						var attackerInflicted = rollDice(attackerBarrageUnits, game.ThrowType.Barrage, attackerBoost);
-						var defenderInflicted = rollDice(defenderBarrageUnits, game.ThrowType.Barrage, defenderBoost);
+						var attackerInflicted = rollDice(attackerBarrageUnits, game.ThrowType.Barrage);
+						var defenderInflicted = rollDice(defenderBarrageUnits, game.ThrowType.Barrage);
 						applyDamage(attacker, defenderInflicted, options.attacker, unitIs(game.UnitType.Fighter));
 						applyDamage(defender, attackerInflicted, options.defender, unitIs(game.UnitType.Fighter));
 

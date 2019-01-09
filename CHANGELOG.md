@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased]
+### Fixed
+- Morale Boost now doesn't affect Barrage Rolls.
+
 ## [1.1.1] - 2018-11-22
 ### Fixed
 - Fix the problem where when the calculator is opened for the first time ever on the specific machine/browser, "Publicize Weapon Schematics" agenda option was not synchronized between attacker and defender.
