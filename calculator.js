@@ -625,8 +625,10 @@
 							if (options.attacker.race !== game.Race.Mentak && options.defender.race !== game.Race.Mentak)
 								return;
 
-							function createMentakTransitions(fleet) {
+							function createMentakTransitions(fleet, sideOptions) {
 								var firedShips = 0;
+								// motivated by timing order discussed at https://boardgamegeek.com/thread/2007331/mentak-ambush
+								var boost = sideOptions.moraleBoost ? 1 : 0;
 								return computeSelectedUnitsTransitions(fleet, game.ThrowType.Battle, function (ship) {
 									if (2 <= firedShips) {
 										return false;
@@ -635,17 +637,17 @@
 										return true;
 									}
 									return false;
-								});
+								}, boost);
 							}
 
 							var attackerTransitions;
 							var defenderTransitions;
 							if (options.attacker.race === game.Race.Mentak)
-								attackerTransitions = createMentakTransitions(problem.attacker);
+								attackerTransitions = createMentakTransitions(problem.attacker, options.attacker);
 							else
 								attackerTransitions = scale([1], problem.attacker.length + 1);
 							if (options.defender.race === game.Race.Mentak)
-								defenderTransitions = createMentakTransitions(problem.defender);
+								defenderTransitions = createMentakTransitions(problem.defender, options.defender);
 							else
 								defenderTransitions = scale([1], problem.defender.length + 1);
 							applyTransitions(problem, attackerTransitions, defenderTransitions, options);
