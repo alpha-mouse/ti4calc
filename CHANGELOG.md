@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [1.2.0] - 2019-01-10
 ### Fixed
 - Morale Boost now doesn't affect Barrage Rolls.
 - Morale Boost now affects Mentak Ambush racial ability.
