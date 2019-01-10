@@ -22,15 +22,13 @@
 		showHelp: false,
 		computing: false,
 		forceSlow: false, // do `app.forceSlow = true;` in developers console to force slow but robust calculation
-                windowWidth: window.innerWidth,
-                windowHeight: window.innerHeight,
+		windowWidth: window.innerWidth,
+		windowHeight: window.innerHeight,
 	};
-        console.log(Object.assign(input, transientProperties));
 
 	app = new Vue({
 		el: '#root',
 		data: Object.assign(input, transientProperties),
-                ready: function () { alert("blah"); },
 		methods: {
 			increment: function (unitInput) {
 				unitInput.count++;
@@ -162,7 +160,7 @@
 					var roundedDefenderProbability = Math.round(defenderWinProbability * 100);
 					context.fillText(roundedDefenderProbability + '%', 7 * canvasWidth / 12, 3 * canvasHeight / 4);
 
-					if (drawProbability > .005 && (roundedAttackerProbability + roundedDefenderProbability) < 100 ) {
+					if (drawProbability > .005 && (roundedAttackerProbability + roundedDefenderProbability) < 100) {
 						context.font = 'bold 80px Arial';
 						context.fillStyle = 'rgba(160, 160, 160, 0.5)';
 						context.fillText(Math.round(drawProbability * 100) + '%', 5 * canvasWidth / 12, 3 * canvasHeight / 8);
@@ -221,21 +219,21 @@
 					result.push(i);
 				return result;
 			},
-                        // will compute canvas width to match the width of the
-                        // 'container' bootstrap class (minus 30px padding)
-                        computeCanvasWidth: function () {
-                                if (this.windowWidth < 576) {
-                                        return this.windowWidth - 48;
-                                } else if (this.windowWidth < 768) {
-                                        return 510;
-                                } else if (this.windowWidth < 992) {
-                                        return 690;
-                                } else if (this.windowWidth < 1200) {
-                                        return 930;
-                                } else {
-                                        return 1110;
-                                }
-                        },
+			// will compute canvas width to match the width of the
+			// 'container' bootstrap class (minus 30px padding)
+			computeCanvasWidth: function () {
+				if (this.windowWidth < 576) {
+					return this.windowWidth - 48;
+				} else if (this.windowWidth < 768) {
+					return 510;
+				} else if (this.windowWidth < 992) {
+					return 690;
+				} else if (this.windowWidth < 1200) {
+					return 930;
+				} else {
+					return 1110;
+				}
+			},
 		},
 		watch: {
 			'options.attacker.race': resetUpdatesAndTechnologies('attacker'),
@@ -276,12 +274,13 @@
 			},
 			forceSlow: recomputeHandler,
 		},
-                mounted() {
-                      window.addEventListener('resize', () => {
-                                this.windowWidth = window.innerWidth;
-                                this.windowHeight = window.innerHeight;
-                      })
-                },
+		mounted: function () {
+			var self = this;
+			window.addEventListener('resize', function () {
+				self.windowWidth = window.innerWidth;
+				self.windowHeight = window.innerHeight;
+			});
+		},
 		computed: {
 			raceTechnologies: function () {
 				var attackerTech = RaceSpecificTechnologies[this.options.attacker.race] || {};
@@ -317,76 +316,57 @@
 				}
 			},
 			canvasWidth: function () {
-                                // if not set to responsive, choose width from array
-                                if (this.canvasSize >= 1){
-				    return window.CanvasSizes[this.canvasSize-1].width + 'px';
-                                }
-                                return this.computeCanvasWidth() + 'px';
+				// if not set to responsive, choose width from array
+				if (this.canvasSize >= 1) {
+					return window.CanvasSizes[this.canvasSize - 1].width + 'px';
+				}
+				return this.computeCanvasWidth() + 'px';
 			},
 			canvasHeight: function () {
-                                if (this.canvasSize >= 1){
-				    return window.CanvasSizes[this.canvasSize-1].height + 'px';
-                                }
-                                // make height a ratio of the width
-                                let locCanvasWidth = parseInt(this.canvasWidth);
-                                if (locCanvasWidth > 600) {
-                                    return this.computeCanvasWidth()*(4/6) + 'px';
-                                } else if (locCanvasWidth > 460) {
-                                    return this.computeCanvasWidth()*(5/6) + 'px';
-                                } else {
-                                    return '380px'; // 380 is the lowest height that won't cut off the labels at the top
-                                }
+				if (this.canvasSize >= 1) {
+					return window.CanvasSizes[this.canvasSize - 1].height + 'px';
+				}
+				// make height a ratio of the width
+				let locCanvasWidth = parseInt(this.canvasWidth);
+				if (locCanvasWidth > 600) {
+					return this.computeCanvasWidth() * (4 / 6) + 'px';
+				} else if (locCanvasWidth > 460) {
+					return this.computeCanvasWidth() * (5 / 6) + 'px';
+				} else {
+					return '380px'; // 380 is the lowest height that won't cut off the labels at the top
+				}
 			},
 		},
 	});
-	Vue.component('left-option', {
+	Vue.component('side-option', {
 		props: ['optionName', 'option', 'options', 'side'],
-		template: `
-		<div class="col-5" :class="{ hidden: !option.availableFor(side) }"
-                        <div class="col-5">
-                               <button type="button" class="btn rounded-0 w-100" style="white-space: normal;"
-                                       :class="{ 'btn-secondary-outline': !options[side][optionName],
-                                       'btn-secondary': !options[side][optionName] }"
-                                       @click="options[side][optionName] = !options[side][optionName]">
-                                       {{option.title}}
-                               </button>
-		        </div>
-		</div>
-                `,
-	});
-	Vue.component('right-option', {
-		props: ['optionName', 'option', 'options', 'side'],
-		template: `
-		<div :class="{ hidden: !option.availableFor(side) }"
-                        <div class="col-5">
-                               <button type="button" class="btn rounded-0 w-100" style="white-space: normal;"
-                                       :class="{ 'btn-secondary-outline': !options[side][optionName],
-                                       'btn-secondary': !options[side][optionName] }"
-                                       @click="options[side][optionName] = !options[side][optionName]">
-                                       {{option.title}}
-                               </button>
-		        </div>
-		</div>
-                `,
+		template:
+		'<div class="col-5" :class="{ hidden: !option.availableFor(side) }">' +
+		'	<button type="button" class="btn rounded-0 w-100"' +
+		'			:class="{ \'btn-secondary-outline\': !options[side][optionName],' +
+		'					  \'btn-secondary\': !options[side][optionName] }"' +
+		'			@click="options[side][optionName] = !options[side][optionName]">' +
+		'			{{option.title}}<span :class="{ hidden: !options[side][optionName]}"> ✓</span>' +
+		'	</button>' +
+		'</div>',
 	});
 	Vue.component('option-pair', {
 		props: ['optionName', 'option', 'options',],
 		template:
 		'<div class="row no-gutters">' +
-		'	<left-option :option-name="optionName" :option="option" :options="options" side="attacker"></left-option>' +
-		'	<help-mark :option="option"></help-mark>' +
-		'	<right-option :option-name="optionName" :option="option" :options="options" side="defender"></right-option>' +
+		'	<side-option :option-name="optionName" :option="option" :options="options" side="attacker"></side-option>' +
+		'	<help-mark :option="option" col="2"></help-mark>' +
+		'	<side-option :option-name="optionName" :option="option" :options="options" side="defender"></side-option>' +
 		'</div>',
 	});
 	Vue.component('help-mark', {
-		props: ['option'],
-		template:`
-                <div class="col-2">
-                        <button type="button" class="btn btn-primary rounded-0 w-100 h-100" 
-                                v-bind:title="option.description" @click="showHelp">?
-                        </button>
-                </div>
-                `,
+		props: ['option', 'col'],
+		template:
+		'<div :class="\'col-\'+col">' +
+		'	<button type="button" class="btn btn-primary rounded-0 w-100 h-100"' +
+		'		v-bind:title="option.description" @click="showHelp">?' +
+		'	</button>' +
+		'</div>',
 		methods: {
 			showHelp: function () {
 				alert(this.option.title + ':\n' + this.option.description);
@@ -447,6 +427,11 @@
 
 		for (var technology in Technologies) {
 			result.options.attacker[technology] = false;
+		}
+		for (var race in RaceSpecificTechnologies) {
+			for (var technology in RaceSpecificTechnologies[race]) {
+				result.options.attacker[technology] = false;
+			}
 		}
 		for (var actionCard in ActionCards) {
 			result.options.attacker[actionCard] = false;

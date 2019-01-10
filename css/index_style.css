@@ -182,26 +182,6 @@ input[type=number] {
 	margin-left: -1px;
 }
 
-.left-option {
-	display: flex;
-	text-align: right;
-	align-items: center;
-}
-
-.left-option input {
-	margin-left: .3em;
-}
-
-.right-option {
-	display: flex;
-	text-align: left;
-	align-items: center;
-}
-
-.right-option input {
-	margin-right: .3em;
-}
-
 #counters .o-grid.attacker-participates.defender-participates .unit-name {
 	background: #f0f0ff;
 }
@@ -252,22 +232,22 @@ input[type=number] {
 }
 
 .unit-input {
-    max-width: 2.5em;
-    padding-left: 10px;
-    padding-right: 10px;
+	max-width: 2.5em;
+	padding-left: 10px;
+	padding-right: 10px;
 }
 
 @media only screen and (max-width: 600px) {
 }
 
 .w-33 {
-    width: 34%;
+	width: 34%;
 }
 
 .w-47 {
-    width: 47%;
+	width: 47%;
 }
 
 .w-6 {
-    width: 6%;
+	width: 6%;
 }
