@@ -23,6 +23,7 @@
 	<script type="text/javascript" src="game-elements.js"></script>
 	<script type="text/javascript" src="calculator.js"></script>
 	<script type="text/javascript" src="imitator.js"></script>
+	<script type="text/javascript" src="version.js"></script>
 
 </head>
 <body>
@@ -182,6 +183,7 @@
 
 	<div id="help" :class="{ collapsed: !showHelp }">
 		<h1>Twilight Imperium IV Edition Battle Calculator</h1>
+		<p>For more mobile-friendly UI try <a href="mobile/">this</a>.</p>
 		<p>Add and remove units to the battle by using '+' and '-' buttons.</p>
 		<p>Toggle unit upgrades with '&#x25b3' buttons.</p>
 		<p>Select number of units already damaged before the battle from the corresponding drop-downs.</p>
@@ -293,7 +295,7 @@
 		</ul>
 		</p>
 		<p>Any suggestions and bug reports are welcome at ivan.bachtin@gmail.com</p>
-		<p><a href="https://github.com/alpha-mouse/ti4calc/blob/master/CHANGELOG.md">Version 1.2.0. Released 2019-01-10</a>.</p>
+		<p><a href="https://github.com/alpha-mouse/ti4calc/blob/master/CHANGELOG.md">Version {{appInfo.version}}. Released {{appInfo.date}}</a>.</p>
 	</div>
 </div>
 <div id="result-area" :style="{ width: canvasWidth, height: canvasHeight }">
@@ -303,6 +305,11 @@
 		<div class="loading-spinner"></div>
 	</div>
 </div>
+	<div class="o-container o-container--small">
+		<div class="o-grid center-grid">
+			<a href="mobile/">Go to mobile-friendly version</a>
+		</div>
+	</div>
 </div>
 <script type="text/javascript" src="index.js"></script>
 </body>

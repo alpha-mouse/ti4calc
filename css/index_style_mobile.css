@@ -1,0 +1,149 @@
+@media (max-width: 576px) {
+	html {
+		font-size: 0.7rem;
+	}
+}
+
+body {
+	padding-top: .2em;
+	padding-bottom: .2em;
+}
+
+#counters .counter input {
+	text-align: center;
+	padding-left: 0;
+	padding-right: 0;
+	width: 2.5rem;
+}
+
+#counters .counter select {
+	text-align: center;
+	padding-left: 0;
+	padding-right: 0;
+	width: 2.5rem;
+}
+
+#options .heading {
+	margin-top: .6em;
+	margin-bottom: .3em;
+	text-align: center;
+}
+
+#result-area {
+	margin-left: auto;
+	margin-right: auto;
+}
+
+/* stolen from http://stackoverflow.com/questions/3790935/can-i-hide-the-html5-number-inputs-spin-box*/
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+	/* display: none; <- Crashes Chrome on hover */
+	-webkit-appearance: none;
+	margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+}
+
+input[type=number] {
+	-moz-appearance: textfield;
+}
+
+.hidden {
+	visibility: hidden;
+}
+
+.collapsed {
+	display: none !important;
+}
+
+#chart-area {
+	position: absolute;
+	z-index: 1;
+}
+
+#chart-area-overlay {
+	position: absolute;
+	z-index: 0;
+}
+
+.help::after {
+	content: "?";
+}
+
+.help {
+	background: lightblue;
+	border-radius: 20px;
+	width: 20px;
+	display: inline-block;
+	text-align: center;
+	border: 1px solid cornflowerblue;
+	font-weight: bold;
+	color: darkblue;
+	padding: 0;
+}
+
+#help .letter {
+	width: 3em;
+	text-align: center;
+}
+
+#counters .participates {
+	background: #424b52;
+}
+
+#counters .unit-name {
+	display: flex;
+	justify-content:center;
+	flex-direction:column;
+}
+
+#chart-size-selector {
+	display: flex;
+	align-items: center;
+	margin-top: .5em;
+}
+
+#spinner-container {
+	position: absolute;
+	z-index: 10;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+@keyframes rotate-forever {
+	0% {
+		transform: rotate(0deg);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+.loading-spinner {
+	animation-duration: 0.75s;
+	animation-iteration-count: infinite;
+	animation-name: rotate-forever;
+	animation-timing-function: linear;
+	height: 30px;
+	width: 30px;
+	border: 8px solid black;
+	border-right-color: transparent;
+	border-radius: 50%;
+	display: inline-block;
+	margin: 0 auto;
+}
+
+.btn {
+	white-space: normal;
+}
+
+.w-33 {
+	width: 34%;
+}
+
+.w-47 {
+	width: 47%;
+}
+
+.w-6 {
+	width: 6%;
+}
