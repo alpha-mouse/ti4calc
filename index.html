@@ -149,7 +149,7 @@
 		<p>Any suggestions and bug reports are welcome at ivan.bachtin@gmail.com</p>
 		<p><a href="https://github.com/alpha-mouse/ti4calc/blob/master/CHANGELOG.md">Version 1.2.0. Released 2019-01-10</a>.</p>
 	</div>
-	<div class="row no-gutters">
+	<div id="counters" class="row no-gutters">
 		<!-- attacker column -->
 		<div class="col-md">
 			<div class="row text-center text-light">
@@ -166,18 +166,17 @@
 				</div> 
 			</div>
 			<!-- rows for units -->
-			<div class="row no-gutters" v-for="(name, key) in UnitType"
-				 :class="{ 'attacker-participates': participates(BattleSide.attacker, name),
-							 'defender-participates': participates(BattleSide.defender, name) }">
-				<div class="col text-light">
+			<div class="row no-gutters" v-for="(name, key) in UnitType">
+				<div class="unit-name col text-light px-3"
+					 :class="{ participates: participates(BattleSide.attacker, name) }">
 					{{displayName(name)}}
 				</div>
 				<div class="col-auto">
-					<div class="input-group rounded-0">
+					<div class="counter input-group rounded-0">
 						<button type="button" class="btn btn-secondary rounded-0" title="Remove unit"
 								@click="decrement(attackerUnits[key])">-
 						</button>
-						<input v-model.number="attackerUnits[key].count" class="form-control unit-input" type="number" min="0">
+						<input v-model.number="attackerUnits[key].count" class="form-control" type="number" min="0">
 						<button type="button" class="btn btn-secondary rounded-0" title="Add unit"
 								@click="increment(attackerUnits[key])">+
 						</button>
@@ -189,7 +188,7 @@
 								@click="attackerUnits[key].upgraded = !attackerUnits[key].upgraded">
 							{{ attackerUnits[key].upgraded ? '\u25B2' : '\u25b3' }}
 						</button>
-						<select v-model="attackerUnits[key].damaged" class="form-control unit-input rounded-0"
+						<select v-model="attackerUnits[key].damaged" class="form-control rounded-0"
 								:class="{ hidden: !damageable(options.attacker.race, key, attackerUnits[key].upgraded) }"
 								title="Units already damaged before the battle">
 							<option v-for="c in damageableCount(attackerUnits[key].count)" v-bind:value="c">{{ c }}</option>
@@ -200,9 +199,8 @@
 			<!-- row for cost -->
 			<div class="row">
 				<div class="col text-light text-center">
-					<span>Totals:</span>
-					<span>{{costs.attacker.cost}} res</span>
-					<span class="count">{{costs.attacker.count}}</span>
+					<span>Cost: {{costs.attacker.cost}}.</span>
+					<span class="count">Count: {{costs.attacker.count}}.</span>
 				</div>
 			</div>
 			<!-- clear units -->
@@ -230,18 +228,17 @@
 				</div> 
 			</div>
 			<!-- rows for units -->
-			<div class="row no-gutters" v-for="(name, key) in UnitType"
-				 :class="{ 'attacker-participates': participates(BattleSide.attacker, name),
-							 'defender-participates': participates(BattleSide.defender, name) }">
-				<div class="col text-light">
+			<div class="row no-gutters" v-for="(name, key) in UnitType">
+				<div class="unit-name col text-light px-3"
+					 :class="{ participates: participates(BattleSide.defender, name) }">
 					{{displayName(name)}}
 				</div>
 				<div class="col-auto">
-					<div class="input-group rounded-0">
+					<div class="counter input-group rounded-0">
 						<button type="button" class="btn btn-secondary rounded-0" title="Remove unit"
 								@click="decrement(defenderUnits[key])">-
 						</button>
-						<input v-model.number="defenderUnits[key].count" class="form-control unit-input" type="number" min="0">
+						<input v-model.number="defenderUnits[key].count" class="form-control" type="number" min="0">
 						<button type="button" class="btn btn-secondary rounded-0" title="Add unit"
 								@click="increment(defenderUnits[key])">+
 						</button>
@@ -253,7 +250,7 @@
 								@click="defenderUnits[key].upgraded = !defenderUnits[key].upgraded">
 							{{ defenderUnits[key].upgraded ? '\u25B2' : '\u25b3' }}
 						</button>
-						<select v-model="defenderUnits[key].damaged" class="form-control unit-input rounded-0"
+						<select v-model="defenderUnits[key].damaged" class="form-control rounded-0"
 								:class="{ hidden: !damageable(options.defender.race, key, defenderUnits[key].upgraded) }"
 								title="Units already damaged before the battle">
 							<option v-for="c in damageableCount(defenderUnits[key].count)" v-bind:value="c">{{ c }}</option>
@@ -264,9 +261,8 @@
 			<!-- row for cost -->
 			<div class="row">
 				<div class="col text-light text-center">
-					<span>Totals:</span>
-					<span>{{costs.defender.cost}} res</span>
-					<span class="count">{{costs.defender.count}}</span>
+					<span>Cost: {{costs.defender.cost}}.</span>
+					<span class="count">Count: {{costs.defender.count}}.</span>
 				</div>
 			</div>
 			<!-- clear units -->
