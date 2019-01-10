@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.3.0] - 2019-01-11 (h/t Alex Grant)
+### Added
+- Mobile friendly UI by Alex Grant
+
 ## [1.2.0] - 2019-01-10
 ### Fixed
 - Morale Boost now doesn't affect Barrage Rolls.
