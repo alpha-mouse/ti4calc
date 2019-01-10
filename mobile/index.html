@@ -1,0 +1,352 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Twilight Imperium IV battle calculator</title>
+
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css" integrity="sha384-Smlep5jCw/wG7hdkwQ/Z5nLIefveQRIY9nfy6xoR1uRYBtpZgI6339F5dgvm/e9B" crossorigin="anonymous">
+	<link href="../css/index_style_mobile.css" type="text/css" rel="stylesheet"/>
+	<link rel="shortcut icon" href="../favicon.gif" type="image/x-icon"/>
+
+	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/js/bootstrap.min.js" integrity="sha384-o+RDsa0aLu++PJvFqy8fFScvbHFLtbvScb8AjopnFD+iEQ7wo/CG0xlczd+2O/em" crossorigin="anonymous"></script>
+	<script type="text/javascript" src="../js/vue.min.js"></script>
+	<script type="text/javascript" src="../js/RGraph.min.js"></script>
+	<script type="text/javascript" src="../structs.js"></script>
+	<script type="text/javascript" src="../game-elements.js"></script>
+	<script type="text/javascript" src="../calculator.js"></script>
+	<script type="text/javascript" src="../imitator.js"></script>
+	<script type="text/javascript" src="../version.js"></script>
+
+</head>
+<body class="bg-dark">
+<div id="root">
+<div class="container">
+	<!-- help -->
+	<div class="row">
+		<div class="col">
+			<button type="button" class="btn rounded-0 w-100"
+					:class="{ 'btn-secondary-outline': showHelp,
+					 			'btn-secondary': !showHelp }"
+					@click="showHelp = !showHelp">Help
+			</button>
+		</div>
+	</div>
+	<div id="help" class="text-light" :class="{ collapsed: !showHelp }">
+		<h1>Twilight Imperium IV Edition Battle Calculator</h1>
+		<p>Add and remove units to the battle by using '+' and '-' buttons.</p>
+		<p>Toggle unit upgrades with '&#x25b3' buttons.</p>
+		<p>Select number of units already damaged before the battle from the corresponding drop-downs.</p>
+		<p>Switch battle type between Space Combat and Invasion.</p>
+		<p>Read the chart. Huge red and blue percent figures tell the probabilities of either side winning the
+			battle.</p>
+		<p>Characters below the horizontal axis designate units participating in the battle. Small case letters indicate
+			the use of sustain damage abilities.</p>
+		<table id="letters-legend">
+			<tr>
+				<td class="letter">X</td>
+				<td>Flagship - characteristics depend on selected race</td>
+			</tr>
+			<tr>
+				<td class="letter">W</td>
+				<td>War Sun</td>
+			</tr>
+			<tr>
+				<td class="letter">D</td>
+				<td>Dreadnought</td>
+			</tr>
+			<tr>
+				<td class="letter">C</td>
+				<td>Cruiser</td>
+			</tr>
+			<tr>
+				<td class="letter">V</td>
+				<td>Carrier</td>
+			</tr>
+			<tr>
+				<td class="letter">+</td>
+				<td>Destroyer</td>
+			</tr>
+			<tr>
+				<td class="letter">F</td>
+				<td>Fighter</td>
+			</tr>
+			<tr>
+				<td class="letter">G</td>
+				<td>Ground Force</td>
+			</tr>
+			<tr>
+				<td class="letter">=</td>
+				<td>Battle ends in a draw</td>
+			</tr>
+		</table>
+		<p>Graph shows probabilities of battle outcomes. '=' represents a draw outcome.
+			Any other point represents an outcome in which units between this point and '=' sign survive.
+			Tooltips show probabilities that at least that many units will survive the battle.</p>
+		<p>Options allow calculator to take into account some Technologies, Action Cards, Agendas, and Promissory Notes.</p>
+		<p>Units are ordered in what I consider reasonable sequence of dying. Though this order could be questionable,
+			e.g sometimes War Suns are more valuable than Flagships. I was lazy to implement manual ordering.</p>
+		<p>Game aspects <strong>not</strong> taken into account by this calculator:</p>
+		<ul>
+			<li><strong>Nekro Virus</strong> gaining unit upgrade technology during a battle thereby changing participating units' battle value,</li>
+			<li><strong>Nekro Virus</strong> obtaining race-specific unit upgrades</li>
+			<li><strong>Assault Cannon</strong> handling is questionable. Implemented preference for unit dying order is
+				Destroyer, Carrier, Cruiser, Dreadnought, War Sun, Flagship.
+				In real life depending on the situation I can imagine each of Destroyer, Carrier, Cruiser,
+				and Dreadnought being selected to fall victim to Assault Cannon,
+			</li>
+			<li><strong>Courageous to the End</strong>, <strong>Emergency Repairs</strong> and <strong>Shields Holding</strong> Action Cards.
+				I wasn't able to imagine any obvious way to algorithmically decide when to play these cards during the battle,
+			</li>
+			<li><strong>Yin Brotherhood</strong> <strong>Devotion</strong>, <strong>Indoctrination</strong> racial abilities and <strong>Impulse Core</strong> technology,</li>
+			<li><strong>Mentak</strong> <strong>Salvage Operations</strong> technology,</li>
+			<li><strong>Sardakk N'orr</strong> <strong>Exotrireme II</strong> "kamikaze" ability,</li>
+			<li><strong>Ghosts of Creuss</strong> <strong>Dimensional Splicer</strong> technology,</li>
+			<li><strong>Emirates of Hacan</strong> flagship ability of adding 1 to die result,</li>
+			<li><strong>The Crown of Thanlos</strong> Agenda card.</li>
+		</ul>
+		<p>Some other notes and limitations:</p>
+		<ul>
+			<li>If defender activates <strong>Magen Defense</strong> Grid while <strong>Morale Boost</strong> is selected for the attacker,
+				the card effect is applied to the second round. <strong>Fire Team</strong> is handled the same way,
+			</li>
+			<li>When "Risk <strong>Direct Hit</strong>" is selected, first all damageable units take damage then other units start to die.
+				When "Risk Direct Hit" is not selected, damageable units take hits only after all "cheaper" units are dead (except for upgraded Dreadnoughts which take damage before anything else).
+				This is questionable, but I don't know any better clear-cut approach,
+			</li>
+			<li>When either <strong>Duranium Armor</strong> or <strong>L1Z1X Flagship</strong> or <strong>Letnev Flagship</strong> is active, Space Combats are calculated much slower, as another algorithm is used,</li>
+			<li>As it is implemented at the moment, when <strong>Graviton Laser</strong> is active, PDS might kill a
+				Carrier, because it's "less valuable" than other units. But if there are Fighters in this Carrier, they
+				participate in the battle, though according to the rules, they should have died before the battle,
+			</li>
+			<li>Although you can send multiple <strong>Sardakk</strong> <strong>Flagships</strong> into the battle
+				(in game there is maximum one, obviously), their +1 effects won't be stacked,</li>
+			<li>I consider <strong>Virus</strong> <strong>Flagship</strong> ability (let Ground Forces participate in the Space Combat)
+				interaction with <strong>Assault Cannon</strong> to be timing dependent. Each one of this abilities
+				could kick in first. If the attacker is Virus with Flagship, I count him to enlist Ground Forces into
+				combat first, and then absorb Assault Cannon hit into Ground Forces. If the Virus is the defender, then
+				I consider Assault cannon to activate first. Anyway, such fine-grained details are likely to be overwhelmed
+				by other simplifying assumptions (e.g. fixed units death order),
+			</li>
+			<li>In similar vein if <strong>Mentak</strong> is an attacker, Mentak racial is applied before <strong>Assault Cannon</strong>,
+				otherwise <strong>Assault Cannon</strong> is executed first.
+			</li>
+		</ul>
+		</p>
+		<p>Code and some more info could be found on <a
+				href="https://github.com/alpha-mouse/ti4calc">GitHub</a>.</p>
+		<p>Thanks to:
+		<ul>
+			<li>Ling Weak, Edward Nickson, and L0ft3r​ – for various improvements to the calculator for the third
+				edition of the game. This calculator is heavily based on that one.
+			</li>
+			<li>Joakim Andersson (j.ason a&#8291;t live.se) – proposed fixes to Duranium Armor, Letnev and Jol-Nar flagships handling.
+			</li>
+		</ul>
+		</p>
+		<p>Any suggestions and bug reports are welcome at ivan.bachtin@gmail.com</p>
+		<p><a href="https://github.com/alpha-mouse/ti4calc/blob/master/CHANGELOG.md">Version {{appInfo.version}}. Released {{appInfo.date}}</a>.</p>
+	</div>
+	<div id="counters" class="row no-gutters">
+		<!-- attacker column -->
+		<div class="col-md">
+			<div class="row text-center text-light">
+				<div class="col"><strong>Attacker</strong></div>
+			</div>
+			<!-- row for race selector -->
+			<div class="row">
+				<div class="col">
+					<select v-model="options.attacker.race" class="form-control rounded-0">
+						<option v-for="(name, key) in RacesDisplayNames" v-bind:value="key">
+							{{ name }}
+						</option>
+					</select>
+				</div> 
+			</div>
+			<!-- rows for units -->
+			<div class="row no-gutters" v-for="(name, key) in UnitType">
+				<div class="unit-name col text-light px-3"
+					 :class="{ participates: participates(BattleSide.attacker, name) }">
+					{{displayName(name)}}
+				</div>
+				<div class="col-auto">
+					<div class="counter input-group rounded-0">
+						<button type="button" class="btn btn-secondary rounded-0" title="Remove unit"
+								@click="decrement(attackerUnits[key])">-
+						</button>
+						<input v-model.number="attackerUnits[key].count" class="form-control" type="number" min="0">
+						<button type="button" class="btn btn-secondary rounded-0" title="Add unit"
+								@click="increment(attackerUnits[key])">+
+						</button>
+						<button type="button" class="btn btn-secondary rounded-0"
+								:class="{ 'c-button--brand': attackerUnits[key].upgraded,
+											'c-button--ghost-brand': !attackerUnits[key].upgraded,
+											 hidden: !upgradeable(options.attacker.race, key) }"
+								:title="attackerUnits[key].upgraded ? 'Un-upgrade' : 'Upgrade'"
+								@click="attackerUnits[key].upgraded = !attackerUnits[key].upgraded">
+							{{ attackerUnits[key].upgraded ? '\u25B2' : '\u25b3' }}
+						</button>
+						<select v-model="attackerUnits[key].damaged" class="form-control rounded-0"
+								:class="{ hidden: !damageable(options.attacker.race, key, attackerUnits[key].upgraded) }"
+								title="Units already damaged before the battle">
+							<option v-for="c in damageableCount(attackerUnits[key].count)" v-bind:value="c">{{ c }}</option>
+						</select>
+					</div>
+				</div>
+			</div>
+			<!-- row for cost -->
+			<div class="row">
+				<div class="col text-light text-center">
+					<span>Cost: {{costs.attacker.cost}}.</span>
+					<span class="count">Count: {{costs.attacker.count}}.</span>
+				</div>
+			</div>
+			<!-- clear units -->
+			<div class="row">
+				<div class="col">
+					<button type="button" class="btn btn-secondary rounded-0 w-100"
+							@click="clear('attacker')">Clear Attacker
+					</button>
+				</div>
+			</div>
+		</div>
+		<!-- defender column -->
+		<div class="col-md">
+			<div class="row text-center text-light">
+				<div class="col"><strong>Defender</strong></div>
+			</div>
+			<!-- row for race selector -->
+			<div class="row">
+				<div class="col">
+					<select v-model="options.defender.race" class="form-control rounded-0">
+						<option v-for="(name, key) in RacesDisplayNames" v-bind:value="key">
+							{{ name }}
+						</option>
+					</select>
+				</div> 
+			</div>
+			<!-- rows for units -->
+			<div class="row no-gutters" v-for="(name, key) in UnitType">
+				<div class="unit-name col text-light px-3"
+					 :class="{ participates: participates(BattleSide.defender, name) }">
+					{{displayName(name)}}
+				</div>
+				<div class="col-auto">
+					<div class="counter input-group rounded-0">
+						<button type="button" class="btn btn-secondary rounded-0" title="Remove unit"
+								@click="decrement(defenderUnits[key])">-
+						</button>
+						<input v-model.number="defenderUnits[key].count" class="form-control" type="number" min="0">
+						<button type="button" class="btn btn-secondary rounded-0" title="Add unit"
+								@click="increment(defenderUnits[key])">+
+						</button>
+						<button type="button" class="btn btn-secondary rounded-0"
+								:class="{ 'c-button--brand': defenderUnits[key].upgraded,
+											'c-button--ghost-brand': !defenderUnits[key].upgraded,
+											 hidden: !upgradeable(options.defender.race, key) }"
+								:title="defenderUnits[key].upgraded ? 'Un-upgrade' : 'Upgrade'"
+								@click="defenderUnits[key].upgraded = !defenderUnits[key].upgraded">
+							{{ defenderUnits[key].upgraded ? '\u25B2' : '\u25b3' }}
+						</button>
+						<select v-model="defenderUnits[key].damaged" class="form-control rounded-0"
+								:class="{ hidden: !damageable(options.defender.race, key, defenderUnits[key].upgraded) }"
+								title="Units already damaged before the battle">
+							<option v-for="c in damageableCount(defenderUnits[key].count)" v-bind:value="c">{{ c }}</option>
+						</select>
+					</div>
+				</div>
+			</div>
+			<!-- row for cost -->
+			<div class="row">
+				<div class="col text-light text-center">
+					<span>Cost: {{costs.defender.cost}}.</span>
+					<span class="count">Count: {{costs.defender.count}}.</span>
+				</div>
+			</div>
+			<!-- clear units -->
+			<div class="row">
+				<div class="col">
+					<button type="button" class="btn btn-secondary rounded-0 w-100"
+							@click="clear('defender')">Clear Defender
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- battle type and options -->
+	<div class="row no-gutters">
+		<div class="col">
+			<div class="btn-group w-100" role="group">
+				<button type="button" class="btn rounded-0 w-33"
+						:class="{ 'btn-primary': battleType === BattleType.Space,
+									'btn-secondary': battleType !== BattleType.Space }"
+						@click="battleType = BattleType.Space">Space Battle
+				</button>
+				<button type="button" class="btn rounded-0 w-33"
+						:class="{ 'btn-primary': battleType === BattleType.Ground,
+									'btn-secondary': battleType !== BattleType.Ground }"
+						@click="battleType = BattleType.Ground">Invasion
+				</button>
+				<button type="button" class="btn rounded-0 w-33"
+						:class="{ 'btn-secondary-outline': showOptions,
+									'btn-secondary': !showOptions }"
+						@click="showOptions = !showOptions">Options
+				</button>
+			</div>
+		</div>
+	</div>
+	<div id="options" class="text-light" :class="{ collapsed: !showOptions }">
+		<div class="heading"><strong>Technologies</strong></div>
+		<option-pair v-for="(option, key) in Technologies"
+						:option-name="key" :option="option" :options="options"></option-pair>
+		<div class="row no-gutters" v-for="pair in raceTechnologies">
+			<side-option :option-name="pair.attacker.key" :option="pair.attacker.option" :options="options" side="attacker"></side-option>
+			<help-mark :option="pair.attacker.option" col="1" :class="{ hidden: !pair.attacker.option.availableFor('attacker') }"></help-mark>
+			<help-mark :option="pair.defender.option" col="1" :class="{ hidden: !pair.defender.option.availableFor('defender') }"></help-mark>
+			<side-option :option-name="pair.defender.key" :option="pair.defender.option" :options="options" side="defender"></side-option>
+		</div>
+		<div class="heading"><strong>Action Cards</strong></div>
+		<option-pair v-for="(option, key) in ActionCards"
+						:option-name="key" :option="option" :options="options"></option-pair>
+		<div class="heading"><strong>Agendas / Promissory / Racial</strong></div>
+		<option-pair v-for="(option, key) in Agendas"
+					 :option-name="key" :option="option" :options="options"></option-pair>
+		<option-pair v-for="(option, key) in Promissory"
+					 :option-name="key" :option="option" :options="options"></option-pair>
+		<div class="row">
+			<div class="col"></div>
+			<div id="chart-size-selector" class="col form-inline">
+				<label for="canvasSize">Chart size:&nbsp;</label>
+				<select id="canvasSize" class="form-control rounded-0" v-model="canvasSize">
+					<option v-bind:value="0">
+						Responsive
+					</option>
+					<option v-for="(size, key) in CanvasSizes" v-bind:value="key+1">
+						{{ size.width + '*' + size.height }}
+					</option>
+				</select>
+			</div>
+			<div class="col"></div>
+		</div>
+	</div>
+
+</div>
+<div class="container">
+	<div id="result-area" class="bg-light" :style="{ width: canvasWidth, height: canvasHeight }">
+		<canvas id="chart-area" :width="canvasWidth" :height="canvasHeight"></canvas>
+		<canvas id="chart-area-overlay" :width="canvasWidth" :height="canvasHeight"></canvas>
+		<div id="spinner-container" :style="{ width: canvasWidth, height: canvasHeight }" :class="{ collapsed: !computing }">
+			<div class="loading-spinner"></div>
+		</div>
+	</div>
+</div>
+<div class="container text-center">
+	<a href="../">Go to classical version</a>
+</div>
+</div>
+<script type="text/javascript" src="index.js"></script>
+</body>
+</html>

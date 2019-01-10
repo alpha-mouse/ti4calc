@@ -1,32 +1,105 @@
-@media (max-width: 576px) {
-	html {
-		font-size: 0.7rem;
-	}
-}
-
 body {
 	padding-top: .2em;
 	padding-bottom: .2em;
 }
 
-#counters .counter input {
-	text-align: center;
-	padding-left: 0;
-	padding-right: 0;
-	width: 2.5rem;
+.center-grid {
+	justify-content: center;
 }
 
-#counters .counter select {
+#options .o-grid {
+	align-items: center;
+	margin: .3em 0;
+}
+
+.center-grid .unit-name {
+	flex-basis: 10em;
+	flex-grow: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.center-grid .block {
+	flex-basis: 9em;
+	flex-grow: 0;
+	width: auto;
+}
+
+.center-grid .damaged {
+	flex-basis: 2.5em;
+	flex-shrink: 0;
+	flex-grow: 0;
+}
+
+.center-grid .block:first-child {
+	text-align: right;
+}
+
+.spread-grid {
+	justify-content: space-between;
+}
+
+.spread-grid .o-grid__cell {
+	flex-basis: auto;
+	flex-grow: 0;
+	width: auto;
+}
+
+#counters .counter input {
 	text-align: center;
-	padding-left: 0;
-	padding-right: 0;
-	width: 2.5rem;
+}
+
+#counters .counter {
+	flex-basis: 11.5em;
+	flex-grow: 0;
+	flex-shrink: 0;
+}
+
+#counters .counter .c-button {
+	padding: .2em .3em;
+}
+
+#counters .c-button.upgrade {
+	min-width: 2em;
+}
+
+#counters .counter .count-stepper {
+	padding-left: .8em;
+	padding-right: .8em;
+}
+
+#totals .block {
+	flex-basis: 11.5em;
+	flex-grow: 0;
+	flex-shrink: 0;
+}
+
+#totals .block .count {
+	width: 2.6em;
+	display: inline-block;
+	text-align: center;
+}
+
+#totals .block .count:first-child {
+	margin-left: 2.1em;
+}
+
+#totals .block .count:last-child {
+	margin-right: 2.4em;
 }
 
 #options .heading {
 	margin-top: .6em;
 	margin-bottom: .3em;
 	text-align: center;
+}
+
+#options .o-grid__cell {
+	flex-basis: auto;
+	flex-grow: 0;
+	width: auto;
+	padding: 0 .5em;
 }
 
 #result-area {
@@ -85,14 +158,60 @@ input[type=number] {
 	text-align: center;
 }
 
-#counters .participates {
-	background: #424b52;
+.o-grid {
+	margin-top: .1em;
+	margin-bottom: .1em;
 }
 
-#counters .unit-name {
+.c-button {
+	padding: .3em;
+}
+
+.c-field {
+	padding: .3em;
+}
+
+/* workaround blazecss input groups handling a bit */
+.c-input-group .c-button.hidden + .c-button {
+	border-left-width: 1px;
+	margin-left: -1px;
+}
+
+.c-input-group .damaged.hidden + .c-button {
+	border-left-width: 1px;
+	margin-left: -1px;
+}
+
+.left-option {
 	display: flex;
-	justify-content:center;
-	flex-direction:column;
+	text-align: right;
+	align-items: center;
+}
+
+.left-option input {
+	margin-left: .3em;
+}
+
+.right-option {
+	display: flex;
+	text-align: left;
+	align-items: center;
+}
+
+.right-option input {
+	margin-right: .3em;
+}
+
+#counters .o-grid.attacker-participates.defender-participates .unit-name {
+	background: #f0f0ff;
+}
+
+#counters .o-grid.attacker-participates .unit-name {
+	background: linear-gradient(0.25turn, #f0f0ff, #f0f0ff 70%, white 90%, white);
+}
+
+#counters .o-grid.defender-participates .unit-name {
+	background: linear-gradient(-0.25turn, #f0f0ff, #f0f0ff 70%, white 90%, white);
 }
 
 #chart-size-selector {
@@ -130,20 +249,4 @@ input[type=number] {
 	border-radius: 50%;
 	display: inline-block;
 	margin: 0 auto;
-}
-
-.btn {
-	white-space: normal;
-}
-
-.w-33 {
-	width: 34%;
-}
-
-.w-47 {
-	width: 47%;
-}
-
-.w-6 {
-	width: 6%;
 }
