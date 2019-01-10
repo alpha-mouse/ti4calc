@@ -1,3 +1,9 @@
+@media (max-width: 576px) {
+	html {
+		font-size: 0.7rem;
+	}
+}
+
 body {
 	padding-top: .2em;
 	padding-bottom: .2em;
@@ -126,7 +132,8 @@ input[type=number] {
 	margin: 0 auto;
 }
 
-@media only screen and (max-width: 600px) {
+.btn {
+	white-space: normal;
 }
 
 .w-33 {
