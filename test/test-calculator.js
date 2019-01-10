@@ -887,6 +887,21 @@ exports.mentakRacial = function (test) {
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
 
+exports.mentakRacialMoraleBoost = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Cruiser] = { count: 1 };
+	attacker[game.UnitType.Destroyer] = { count: 1 };
+
+	defender[game.UnitType.Cruiser] = { count: 1 };
+	defender[game.UnitType.Destroyer] = { count: 1 };
+
+	var options = { attacker: { race: game.Race.Mentak, moraleBoost: true }, defender: { race: defaultRace } };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
 exports.mentakRacialWithBarrageAndPds = function (test) {
 
 	var attacker = {};

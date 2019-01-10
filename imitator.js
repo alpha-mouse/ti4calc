@@ -430,21 +430,22 @@
 					appliesTo: game.BattleType.Space,
 					execute: function (attacker, defender, attackerFull, defenderFull, options) {
 
-						function getInflicted(fleet) {
+						function getInflicted(fleet, sideOptions) {
 							var firing = fleet.filter(unitIs(game.UnitType.Cruiser));
 							if (firing.length < 2)
 								firing = firing.concat(fleet.filter(unitIs(game.UnitType.Destroyer)));
 							if (firing.length > 2)
 								firing = firing.slice(0, 2);
-							return rollDice(firing, game.ThrowType.Battle);
+							var boost = sideOptions.moraleBoost ? 1 : 0;
+							return rollDice(firing, game.ThrowType.Battle, boost);
 						}
 
 						var attackerInflicted = 0;
 						var defenderInflicted = 0;
 						if (options.attacker.race === game.Race.Mentak)
-							attackerInflicted = getInflicted(attacker);
+							attackerInflicted = getInflicted(attacker, options.attacker);
 						if (options.defender.race === game.Race.Mentak)
-							defenderInflicted = getInflicted(defender);
+							defenderInflicted = getInflicted(defender, options.defender);
 						var attackerYinFlagshipDied = applyDamage(attacker, defenderInflicted, options.attacker);
 						var defenderYinFlagshipDied = applyDamage(defender, attackerInflicted, options.defender);
 						if (attackerYinFlagshipDied || defenderYinFlagshipDied) {
@@ -458,13 +459,10 @@
 					appliesTo: game.BattleType.Space,
 					execute: function (attacker, defender, attackerFull, defenderFull, options) {
 
-						var attackerBoost = options.attacker.moraleBoost ? 1 : 0;
-						var defenderBoost = options.defender.moraleBoost ? 1 : 0;
-
 						var attackerBarrageUnits = attacker.filter(hasBarrage);
 						var defenderBarrageUnits = defender.filter(hasBarrage);
-						var attackerInflicted = rollDice(attackerBarrageUnits, game.ThrowType.Barrage, attackerBoost);
-						var defenderInflicted = rollDice(defenderBarrageUnits, game.ThrowType.Barrage, defenderBoost);
+						var attackerInflicted = rollDice(attackerBarrageUnits, game.ThrowType.Barrage);
+						var defenderInflicted = rollDice(defenderBarrageUnits, game.ThrowType.Barrage);
 						applyDamage(attacker, defenderInflicted, options.attacker, unitIs(game.UnitType.Fighter));
 						applyDamage(defender, attackerInflicted, options.defender, unitIs(game.UnitType.Fighter));
 

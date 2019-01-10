@@ -451,6 +451,12 @@
 		for (var actionCard in ActionCards) {
 			result.options.attacker[actionCard] = false;
 		}
+		for (var agenda in Agendas) {
+			result.options.attacker[agenda] = false;
+		}
+		for (var promissory in Promissory) {
+			result.options.attacker[promissory] = false;
+		}
 		result.options.attacker.riskDirectHit = true;
 
 		result.options.defender = Object.assign({}, result.options.attacker);

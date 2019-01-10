@@ -625,8 +625,10 @@
 							if (options.attacker.race !== game.Race.Mentak && options.defender.race !== game.Race.Mentak)
 								return;
 
-							function createMentakTransitions(fleet) {
+							function createMentakTransitions(fleet, sideOptions) {
 								var firedShips = 0;
+								// motivated by timing order discussed at https://boardgamegeek.com/thread/2007331/mentak-ambush
+								var boost = sideOptions.moraleBoost ? 1 : 0;
 								return computeSelectedUnitsTransitions(fleet, game.ThrowType.Battle, function (ship) {
 									if (2 <= firedShips) {
 										return false;
@@ -635,17 +637,17 @@
 										return true;
 									}
 									return false;
-								});
+								}, boost);
 							}
 
 							var attackerTransitions;
 							var defenderTransitions;
 							if (options.attacker.race === game.Race.Mentak)
-								attackerTransitions = createMentakTransitions(problem.attacker);
+								attackerTransitions = createMentakTransitions(problem.attacker, options.attacker);
 							else
 								attackerTransitions = scale([1], problem.attacker.length + 1);
 							if (options.defender.race === game.Race.Mentak)
-								defenderTransitions = createMentakTransitions(problem.defender);
+								defenderTransitions = createMentakTransitions(problem.defender, options.defender);
 							else
 								defenderTransitions = scale([1], problem.defender.length + 1);
 							applyTransitions(problem, attackerTransitions, defenderTransitions, options);
@@ -664,11 +666,8 @@
 
 							var ensemble = new structs.EnsembleSplit(problem);
 
-							var attackerBoost = options.attacker.moraleBoost ? 1 : 0;
-							var defenderBoost = options.defender.moraleBoost ? 1 : 0;
-
-							var attackerTransitions = computeSelectedUnitsTransitions(problem.attacker, game.ThrowType.Barrage, hasBarrage, attackerBoost);
-							var defenderTransitions = computeSelectedUnitsTransitions(problem.defender, game.ThrowType.Barrage, hasBarrage, defenderBoost);
+							var attackerTransitions = computeSelectedUnitsTransitions(problem.attacker, game.ThrowType.Barrage, hasBarrage);
+							var defenderTransitions = computeSelectedUnitsTransitions(problem.defender, game.ThrowType.Barrage, hasBarrage);
 
 							var attackerVulnerable = getVulnerableUnitsRange(problem.attacker, unitIs(game.UnitType.Fighter));
 							var defenderVulnerable = getVulnerableUnitsRange(problem.defender, unitIs(game.UnitType.Fighter));
@@ -900,13 +899,13 @@
 			}
 		}
 
-		function fleetTransitionsVectorWithPlasmaScoring(fleet, throwType, modifier, reroll) {
-			var fleetInflicted = computeFleetTransitions(fleet, throwType, modifier, reroll).pop();
+		function fleetTransitionsVectorWithPlasmaScoring(fleet, throwType, modifier) {
+			var fleetInflicted = computeFleetTransitions(fleet, throwType, modifier).pop();
 			var bestUnit = getUnitWithLowest(fleet, game.ThrowValues[throwType]);
 			if (bestUnit) {
 				var unitWithOneDie = bestUnit.clone();
 				unitWithOneDie[game.ThrowDice[throwType]] = 1;
-				var unitTransitions = computeUnitTransitions(unitWithOneDie, throwType, modifier, reroll);
+				var unitTransitions = computeUnitTransitions(unitWithOneDie, throwType, modifier);
 				fleetInflicted = slideMultiply(unitTransitions, fleetInflicted);
 			}
 			return fleetInflicted;
