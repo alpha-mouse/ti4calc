@@ -371,6 +371,11 @@
 							defender.splice(0);
 						}
 
+						if (defenderInflicted)
+							markDamagedNotThisRound(attacker);
+						if (attackerInflicted)
+							markDamagedNotThisRound(defender);
+
 						function hasSpaceCannon(unit) {
 							return unit.spaceCannonDice !== 0;
 						}
@@ -383,6 +388,16 @@
 
 						function notGroundForce(unit) {
 							return /*because Virus Flagship*/ unit.type !== game.UnitType.Ground;
+						}
+
+						function markDamagedNotThisRound(fleet) {
+							for (var i = 0; i < fleet.length; i++) {
+								if (fleet[i].damagedThisRound) {
+									fleet[i].damagedThisRound = false;
+								}
+							}
+
+							fleet.sort(fleet.comparer);
 						}
 					},
 				},

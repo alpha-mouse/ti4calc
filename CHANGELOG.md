@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.4.0] - 2019-02-12 (h/t Joakim Andersson)
+### Fixed
+- Duranium Armor was not applied during the first battle round to units damaged by Space Cannon Offence.
+
 ## [1.3.0] - 2019-01-11 (h/t Alex Grant)
 ### Added
 - Mobile friendly UI by Alex Grant

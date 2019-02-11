@@ -46,6 +46,7 @@
 			}
 			result += ']';
 			result += ' ' + round(sum, 3);
+			result += '. ' + round(this.downTo(-1), 3) + ':' + round(this.downTo(1), 3);
 			return result;
 		}
 

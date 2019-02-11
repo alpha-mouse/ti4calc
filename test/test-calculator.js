@@ -1577,6 +1577,27 @@ exports.duraniumArmorDestroyUnrepairableFirst = function (test) {
 	test.done();
 };
 
+exports.duraniumArmorPds = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Dreadnought] = { count: 2, upgraded: true };
+
+	defender[game.UnitType.Cruiser] = { count: 4 };
+	defender[game.UnitType.PDS] = { count: 1 };
+
+	var options = {
+		attacker: { duraniumArmor: true },
+		defender: { },
+	};
+
+	var distribution = im.estimateProbabilities(new Input(attacker, defender, game.BattleType.Space, options)).distribution;
+	//console.log(distribution.toString());
+	test.ok(distribution.downTo(-1) > 0.52, 'Duranium Armor not applied not applied at the first round');
+
+	test.done();
+};
+
 exports.fighterPrototypeSimple = function (test) {
 
 	var attacker = {};
