@@ -36,7 +36,7 @@
 			var result = 'Min: ' + this.min + ', Max: ' + this.max + '. ';
 			var sum = 0;
 			result += '[';
-			for (var i = this.min; i <= this.max; ++i) {
+			for (var i = Math.min(this.min, -1); i <= Math.max(this.max, 1); ++i) {
 				if (i === 0)
 					result += '| ';
 				result += round(this.at(i), 3) + ' ';
@@ -59,8 +59,6 @@
 	root.DistributionBase.prototype.downTo = function (index) {
 		if (index === 0)
 			return this.at(index);
-		if (index < this.min || index > this.max)
-			return 0;
 		var result = 0;
 		if (index < 0)
 			for (var i = this.min; i <= index; i++)

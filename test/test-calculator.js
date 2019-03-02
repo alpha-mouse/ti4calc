@@ -1122,6 +1122,22 @@ exports.assaultCannonPds = function (test) {
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
 
+exports.assaultCannonPds2 = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Dreadnought] = { count: 2 };
+
+	defender[game.UnitType.Cruiser] = { count: 3 };
+	defender[game.UnitType.PDS] = { count: 1 };
+
+	var options = {
+		defender: { assaultCannon: true },
+	};
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
 exports.assaultCannonMorePdsNoDirectHit = function (test) {
 
 	var attacker = {};

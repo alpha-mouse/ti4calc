@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.0] - 2019-03-04
+### Fixed
+- Assault Cannon combined with Space Cannon Offence miscalculation introduced in 1.4.0.
+
 ## [1.4.0] - 2019-02-12 (h/t Joakim Andersson)
 ### Fixed
 - Duranium Armor was not applied during the first battle round to units damaged by Space Cannon Offence.

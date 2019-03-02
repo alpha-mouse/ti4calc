@@ -102,6 +102,8 @@
 						throw new Error('first pre-battle action not Space Cannon -> Ships');
 				}
 			}
+			attacker.sort(attacker.comparer);
+			defender.sort(defender.comparer);
 			var round = 0;
 
 			var magenDefenseActivated = battleType === game.BattleType.Ground &&
@@ -396,8 +398,6 @@
 									fleet[i].damagedThisRound = false;
 								}
 							}
-
-							fleet.sort(fleet.comparer);
 						}
 					},
 				},
