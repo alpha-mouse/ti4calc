@@ -373,6 +373,7 @@
 			}),
 			Fighter: new root.UnitInfo(UnitType.Fighter, {
 				battleValue: 8,
+				cost: 0.5,
 			}),
 		},
 		Virus: {
