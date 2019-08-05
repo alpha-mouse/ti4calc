@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.5.1] - 2019-08-01 (h/t Dan Johnson)
+### Fixed
+- Naalu fleet cost calculation now doesn't fail when Fighters are present.
+
 ## [1.5.0] - 2019-03-04
 ### Fixed
 - Assault Cannon combined with Space Cannon Offence miscalculation introduced in 1.4.0.

@@ -118,3 +118,4 @@ As much as I tried, I failed to imagine any good algorithm to compute probabilit
 * Ling Weak, Edward Nickson, and L0ft3r – for various improvements to the calculator for the third edition of the game. This calculator is heavily based on that one.
 * Joakim Andersson (j.ason a⁣t live.se) – invaluable contribution to finding subtle miscalculations in Duranium Armor, Letnev and Jol-Nar flagships handling. Other great suggestions.
 * Alex Grant – mobile-friendly UI version.
+* Dan Johnson – Naalu fleet cost calculation fix.
