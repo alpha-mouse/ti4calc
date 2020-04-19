@@ -176,8 +176,6 @@
 
 	root.EnsembleSplit.prototype._subproblemKey = function (attackerVictims, defenderVictimms) {
 		return 'a' + attackerVictims.rangesKey() + 'd' + defenderVictimms.rangesKey();
-
-
 	};
 
 

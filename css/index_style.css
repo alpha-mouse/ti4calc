@@ -102,6 +102,16 @@ body {
 	padding: 0 .5em;
 }
 
+#options .o-grid__cell.left-option {
+  flex: 1 0 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+#options .o-grid__cell.right-option {
+	flex: 1 0 0;
+}
+
 #result-area {
 	margin-left: auto;
 	margin-right: auto;
