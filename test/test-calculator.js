@@ -2664,7 +2664,7 @@ exports.x89Omega = function (test) {
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
 
-exports.l1z1xRacialHarrowX89Omega = function (test) {
+exports.x89OmegaL1z1xRacialHarrow = function (test) {
 
 	var attacker = {};
 	var defender = {};
@@ -2674,6 +2674,118 @@ exports.l1z1xRacialHarrowX89Omega = function (test) {
 	defender[game.UnitType.Ground] = { count: 4 };
 
 	var options = { attacker: { race: game.Race.L1Z1X, x89Omega: true }, defender: { } };
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
+exports.magenOmega = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Ground] = { count: 3 };
+
+	defender[game.UnitType.Ground] = { count: 3 };
+	defender[game.UnitType.PDS] = { count: 1 };
+
+	var options = { attacker: { }, defender: { magenDefenseOmega: true } };
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
+exports.magenOmegaDock = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Ground] = { count: 3 };
+
+	defender[game.UnitType.Ground] = { count: 2 };
+
+	var options = { attacker: { }, defender: { magenDefenseOmega: true, hasDock: true } };
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
+exports.magenOmegaPdsDock = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Ground] = { count: 3 };
+
+	defender[game.UnitType.Ground] = { count: 2 };
+	defender[game.UnitType.PDS] = { count: 1 };
+
+	var options = { attacker: { }, defender: { magenDefenseOmega: true } };
+
+	var input1 = new Input(attacker, defender, game.BattleType.Ground, options);
+	var got1 = calc.computeProbabilities(input1).distribution;
+
+	options.defender.hasDock = true;
+	var input2 = new Input(attacker, defender, game.BattleType.Ground, options);
+	var got2 = calc.computeProbabilities(input2).distribution;
+
+	var equal = distributionsEqual(got1, got2);
+	if (!equal) {
+		console.log('  no Dock', got1.toString());
+		console.log('with Dock', got2.toString());
+	}
+
+	test.ok(equal, 'Dock changed the result though shouldn\'t have');
+
+	test.done();
+};
+
+exports.magenOmegaWarsun = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.WarSun] = { count: 1 };
+	attacker[game.UnitType.Ground] = { count: 3 };
+
+	defender[game.UnitType.Ground] = { count: 5 };
+	defender[game.UnitType.PDS] = { count: 1 };
+
+	var options = { attacker: { }, defender: { } };
+
+	var input1 = new Input(attacker, defender, game.BattleType.Ground, options);
+	var got1 = calc.computeProbabilities(input1).distribution;
+
+	options.defender.magenDefenseOmega = true;
+	var input2 = new Input(attacker, defender, game.BattleType.Ground, options);
+	var got2 = calc.computeProbabilities(input2).distribution;
+
+	var equal = distributionsEqual(got1, got2);
+
+	test.ok(!equal, 'Magen Defence Omega didn\'t change the result though should have');
+
+	test.done();
+};
+
+exports.magenOmegaL1z1xRacialHarrow = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Ground] = { count: 3 };
+
+	defender[game.UnitType.Ground] = { count: 3 };
+	defender[game.UnitType.PDS] = { count: 1 };
+
+	var options = { attacker: { race: game.Race.L1Z1X }, defender: { magenDefenseOmega: true } };
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
+exports.magenOmegaNaalu = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Flagship] = { count: 1 };
+	attacker[game.UnitType.Fighter] = { count: 2 };
+	attacker[game.UnitType.Ground] = { count: 2 };
+
+	defender[game.UnitType.Ground] = { count: 2 };
+	defender[game.UnitType.PDS] = { count: 1 };
+
+	var options = { attacker: { race: game.Race.Naalu, upgraded: true }, defender: { magenDefenseOmega: true } };
 
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
@@ -2871,4 +2983,5 @@ if (useGrouping) {
 	exports.winnu = group(exports, 'winnuFlagship');
 	exports.yin = group(exports, 'yinFlagship');
 	exports.x89Omega = group(exports, 'x89Omega');
+	exports.magenOmega = group(exports, 'magenOmega');
 }

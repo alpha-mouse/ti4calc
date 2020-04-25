@@ -115,8 +115,8 @@
 		plasmaScoring: new Option('Plasma Scoring', 'One additional die for one unit during Space Cannon or Bombardment'),
 		magenDefense: new Option('Magen Defense Grid', 'Opponent doesn\'t throw dice for one round if you have Planetary Shield', 'defender'),
 		x89Omega: new Option('X-89 Bacterial Weapon Ω', 'Destroy all by bombardment if at least one destroyed', 'attacker'),
-		magenDefenseOmega: new Option('Magen Defense Grid Ω', '1 hit by each structure', 'defender'),
-		hasDock: new Option('Has Dock', 'Defender has a dock as well for Magen Defence Grid Ω', 'defender'), // not a technology itself, but it's nice to show it close to Magen Defence Grid Ω
+		magenDefenseOmega: new Option('Magen Defense Grid Ω', '1 hit at the start of ground combat when having structures', 'defender'),
+		hasDock: new Option('Has Dock', 'Defender has a dock for Magen Defence Grid Ω', 'defender'), // not a technology itself, but it's nice to show it close to Magen Defence Grid Ω
 		duraniumArmor: new Option('Duranium Armor', 'After each round repair 1 unit that wasn\'t damaged this round'),
 		assaultCannon: new Option('Assault Cannon', 'Opponent destroys 1 non-Fighter ship if you have at least 3 non-Fighters'),
 	};
