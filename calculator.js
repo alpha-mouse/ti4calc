@@ -889,10 +889,19 @@
 
 			var attackerModifier = options.defender.bunker ? -4 : 0;
 			var bombardmentAttacker = attackerFull.filter(hasBombardment);
-			if (options.attacker.plasmaScoring)
-				return fleetTransitionsVectorWithPlasmaScoring(bombardmentAttacker, game.ThrowType.Bombardment, attackerModifier);
-			else
-				return fleetTransitionsVector(bombardmentAttacker, game.ThrowType.Bombardment, attackerModifier);
+			var resultTransitionsVector = options.attacker.plasmaScoring ?
+				fleetTransitionsVectorWithPlasmaScoring(bombardmentAttacker, game.ThrowType.Bombardment, attackerModifier) :
+				fleetTransitionsVector(bombardmentAttacker, game.ThrowType.Bombardment, attackerModifier);
+
+			if (options.attacker.x89Omega) {
+				var x89TransitionsVector = new Array(defenderFull.length + 1);
+				x89TransitionsVector.fill(0);
+				x89TransitionsVector[0] = resultTransitionsVector[0];
+				x89TransitionsVector[x89TransitionsVector.length - 1] = resultTransitionsVector.reduce((a, b) => a + b) - resultTransitionsVector[0]
+				resultTransitionsVector = x89TransitionsVector;
+			}
+
+			return resultTransitionsVector;
 
 			function hasBombardment(unit) {
 				return unit.bombardmentDice !== 0;

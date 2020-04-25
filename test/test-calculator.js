@@ -2650,6 +2650,34 @@ exports.mentakDefenderAssaultCannonAttacker = function (test) {
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
 
+exports.x89Omega = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Dreadnought] = { count: 1 };
+	attacker[game.UnitType.Ground] = { count: 2 };
+
+	defender[game.UnitType.Ground] = { count: 4 };
+
+	var options = { attacker: { x89Omega: true }, defender: { } };
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
+exports.l1z1xRacialHarrowX89Omega = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Dreadnought] = { count: 1 };
+	attacker[game.UnitType.Ground] = { count: 2 };
+
+	defender[game.UnitType.Ground] = { count: 4 };
+
+	var options = { attacker: { race: game.Race.L1Z1X, x89Omega: true }, defender: { } };
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
 var chaoticProfile = {
 	Flagship: { count: 1, zeroBias: 1 },
 	WarSun: { count: 2, zeroBias: 2 },
@@ -2842,4 +2870,5 @@ if (useGrouping) {
 	exports.virus = group(exports, 'virus');
 	exports.winnu = group(exports, 'winnuFlagship');
 	exports.yin = group(exports, 'yinFlagship');
+	exports.x89Omega = group(exports, 'x89Omega');
 }
