@@ -1,6 +1,6 @@
 (function(){
 	window.appInfo = {
-		version: '1.5.1',
-		date: '2019-08-01'
+		version: '1.6.0',
+		date: '2020-04-26'
 	};
 })();
