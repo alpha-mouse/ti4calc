@@ -244,6 +244,16 @@
 			'options.defender.publicizeSchematics': function (value) {
 				this.options.attacker.publicizeSchematics = value;
 			},
+			'options.defender.magenDefense': function (value) {
+				if (value)
+					this.options.defender.magenDefenseOmega = false;
+			},
+			'options.defender.magenDefenseOmega': function (value) {
+				if (value)
+					this.options.defender.magenDefense = false;
+				else
+					this.options.defender.hasDock = false;
+			},
 			battleType: recomputeHandler,
 			attackerUnits: updateDamageableCountAndRecomputeHandler('attacker'),
 			defenderUnits: updateDamageableCountAndRecomputeHandler('defender'),
@@ -282,6 +292,35 @@
 			});
 		},
 		computed: {
+			technologies: function() {
+				var result = [];
+				var techKeys = Object.keys(Technologies);
+				for (var i = 0; i < techKeys.length; ++i){
+					var tech = Technologies[techKeys[i]];
+					if (tech.limitedTo === BattleSide.attacker && (i + 1 < techKeys.length) && Technologies[techKeys[i+1]].limitedTo === BattleSide.defender){
+						// special collapsing of Ω techs into one row
+						result.push({
+							pair: {
+							[BattleSide.attacker]: {
+								key: techKeys[i],
+								option: Technologies[techKeys[i]],
+							},
+							[BattleSide.defender]: {
+								key: techKeys[i + 1],
+								option: Technologies[techKeys[i + 1]],
+							}
+						}});
+						i++;
+					} else {
+						result.push({
+							key: techKeys[i],
+							option: tech
+						});
+					}
+				}
+
+				return result;
+			},
 			raceTechnologies: function () {
 				var attackerTech = RaceSpecificTechnologies[this.options.attacker.race] || {};
 				var defenderTech = RaceSpecificTechnologies[this.options.defender.race] || {};
@@ -344,19 +383,21 @@
 		'<div class="col-5" :class="{ hidden: !option.availableFor(side) }">' +
 		'	<button type="button" class="btn rounded-0 w-100"' +
 		'			:class="{ \'btn-secondary-outline\': !options[side][optionName],' +
-		'					  \'btn-secondary\': !options[side][optionName] }"' +
+		'						\'btn-secondary\': !options[side][optionName] }"' +
 		'			@click="options[side][optionName] = !options[side][optionName]">' +
 		'			{{option.title}}<span :class="{ hidden: !options[side][optionName]}"> ✓</span>' +
 		'	</button>' +
 		'</div>',
 	});
 	Vue.component('option-pair', {
-		props: ['optionName', 'option', 'options',],
+		props: ['optionName', 'option', 'options', 'pair', 'visible'],
 		template:
-		'<div class="row no-gutters">' +
-		'	<side-option :option-name="optionName" :option="option" :options="options" side="attacker"></side-option>' +
-		'	<help-mark :option="option" col="2"></help-mark>' +
-		'	<side-option :option-name="optionName" :option="option" :options="options" side="defender"></side-option>' +
+		'<div class="row no-gutters" v-if="visible !== false">' +
+		'	<side-option :option-name="option ? optionName : pair.attacker.key" :option="option || pair.attacker.option" :options="options" side="attacker"></side-option>' +
+		'	<help-mark v-if="option" :option="option" col="2"></help-mark>' +
+		'	<help-mark v-if="pair" :option="pair.attacker.option" :class="{ hidden: !pair.attacker.option.availableFor(\'attacker\') }" col="1"></help-mark>' +
+		'	<help-mark v-if="pair" :option="pair.defender.option" :class="{ hidden: !pair.defender.option.availableFor(\'defender\') }" col="1"></help-mark>' +
+		'	<side-option :option-name="option ? optionName : pair.defender.key" :option="option || pair.defender.option" :options="options" side="defender"></side-option>' +
 		'</div>',
 	});
 	Vue.component('help-mark', {
@@ -409,7 +450,29 @@
 	}
 
 	function getInput() {
-		return Object.assign(getDefaultInput(), getPersistedInput());
+		return mergeDeep(getDefaultInput(), getPersistedInput());
+
+		function isObject(item) {
+			return (item && typeof item === 'object' && !Array.isArray(item));
+		}
+
+		function mergeDeep(target, ...sources) {
+			if (!sources.length) return target;
+			const source = sources.shift();
+
+			if (isObject(target) && isObject(source)) {
+				for (const key in source) {
+					if (isObject(source[key])) {
+						if (!target[key]) Object.assign(target, { [key]: {} });
+						mergeDeep(target[key], source[key]);
+					} else {
+						Object.assign(target, { [key]: source[key] });
+					}
+				}
+			}
+
+			return mergeDeep(target, ...sources);
+		}
 	}
 
 	function getDefaultInput() {

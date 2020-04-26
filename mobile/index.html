@@ -30,7 +30,7 @@
 		<div class="col">
 			<button type="button" class="btn rounded-0 w-100"
 					:class="{ 'btn-secondary-outline': showHelp,
-					 			'btn-secondary': !showHelp }"
+								'btn-secondary': !showHelp }"
 					@click="showHelp = !showHelp">Help
 			</button>
 		</div>
@@ -307,14 +307,9 @@
 	</div>
 	<div id="options" class="text-light" :class="{ collapsed: !showOptions }">
 		<div class="heading"><strong>Technologies</strong></div>
-		<option-pair v-for="(option, key) in Technologies"
-						:option-name="key" :option="option" :options="options"></option-pair>
-		<div class="row no-gutters" v-for="pair in raceTechnologies">
-			<side-option :option-name="pair.attacker.key" :option="pair.attacker.option" :options="options" side="attacker"></side-option>
-			<help-mark :option="pair.attacker.option" col="1" :class="{ hidden: !pair.attacker.option.availableFor('attacker') }"></help-mark>
-			<help-mark :option="pair.defender.option" col="1" :class="{ hidden: !pair.defender.option.availableFor('defender') }"></help-mark>
-			<side-option :option-name="pair.defender.key" :option="pair.defender.option" :options="options" side="defender"></side-option>
-		</div>
+		<option-pair v-for="technology in technologies"
+					:option-name="technology.key" :option="technology.option" :pair="technology.pair" :options="options" :visible="technology.key !== 'hasDock' || !!options.defender.magenDefenseOmega"></option-pair>
+		<option-pair v-for="pair in raceTechnologies" :pair="pair" :options="options"></option-pair>
 		<div class="heading"><strong>Action Cards</strong></div>
 		<option-pair v-for="(option, key) in ActionCards"
 						:option-name="key" :option="option" :options="options"></option-pair>

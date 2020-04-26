@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.1] - 2020-04-26
+### Fixed
+- Better omega techs view on mobile view.
+
 ## [1.6.0] - 2020-04-26
 ### Added
 - Omega tech variants (Magen Defense Grid Ω and X-89 Bacterial Weapon Ω).
