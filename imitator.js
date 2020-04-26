@@ -111,6 +111,15 @@
 				defenderFull.some(unitIs(game.UnitType.PDS)) &&
 				!attackerFull.some(unitIs(game.UnitType.WarSun));
 
+			if (battleType === game.BattleType.Ground && options.defender.magenDefenseOmega &&
+				(options.defender.hasDock || defenderFull.some(unitIs(game.UnitType.PDS))) &&
+				hasUnits(attacker) && hasUnits(defender)) {
+				// Naalu Fighters are considered to be vulnerable to Magen Omega.
+				// Also, I don't try to be clever with which Naalu unit will be killed, GF of a Fighter, even though it's defencers choice
+				// https://www.reddit.com/r/twilightimperium/comments/g82tk6/ground_combat_when_one_side_didnt_come/
+				applyDamage(attacker, 1, options.attacker);
+			}
+
 			while (hasUnits(attacker) && hasUnits(defender) || (doAtLeastOneRound && round === 0)) {
 				round++;
 
@@ -180,6 +189,8 @@
 					repairUnit(defender);
 
 				if (options.attacker.race === game.Race.L1Z1X && battleType === game.BattleType.Ground) { // Harrow
+					// https://www.reddit.com/r/twilightimperium/comments/g82tk6/ground_combat_when_one_side_didnt_come/
+					// https://boardgamegeek.com/thread/2286628/does-ground-combat-still-occur-if-invading-ground
 					actions.find(function (a) {
 						return a.name === 'Bombardment';
 					}).execute(attacker, defender, attackerFull, defenderFull, options);
@@ -503,9 +514,13 @@
 							attackerInflicted += fromPlasmaScoring(attackerFull, game.ThrowType.Bombardment, attackerModifier);
 						}
 
-						for (var i = defender.length - 1; 0 <= i && 0 < attackerInflicted; i--) {
-							defender.splice(i, 1);
-							attackerInflicted--;
+						if (options.attacker.x89Omega && attackerInflicted > 0) {
+							defender.splice(0);
+						} else {
+							for (var i = defender.length - 1; 0 <= i && 0 < attackerInflicted; i--) {
+								defender.splice(i, 1);
+								attackerInflicted--;
+							}
 						}
 
 						function hasBombardment(unit) {

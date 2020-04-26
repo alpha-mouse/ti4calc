@@ -156,14 +156,9 @@
 	</div>
 	<div id="options" :class="{ collapsed: !showOptions }">
 		<div class="heading"><strong>Technologies</strong></div>
-		<option-pair v-for="(option, key) in Technologies"
-					  :option-name="key" :option="option" :options="options"></option-pair>
-		<div class="o-grid center-grid" v-for="pair in raceTechnologies">
-			<left-option :option-name="pair.attacker.key" :option="pair.attacker.option" :options="options" side="attacker"></left-option>
-			<help-mark :option="pair.attacker.option" :class="{ hidden: !pair.attacker.option.availableFor('attacker') }"></help-mark>
-			<help-mark :option="pair.defender.option" :class="{ hidden: !pair.defender.option.availableFor('defender') }"></help-mark>
-			<right-option :option-name="pair.defender.key" :option="pair.defender.option" :options="options" side="defender"></right-option>
-		</div>
+		<option-pair v-for="technology in technologies"
+					:option-name="technology.key" :option="technology.option" :pair="technology.pair" :options="options" :visible="technology.key !== 'hasDock' || options.defender.magenDefenseOmega"></option-pair>
+		<option-pair v-for="pair in raceTechnologies" :pair="pair" :options="options"></option-pair>
 		<div class="heading"><strong>Action Cards</strong></div>
 		<option-pair v-for="(option, key) in ActionCards"
 					  :option-name="key" :option="option" :options="options"></option-pair>
@@ -260,7 +255,7 @@
 			<li>If defender activates <strong>Magen Defense</strong> Grid while <strong>Morale Boost</strong> is selected for the attacker,
 				the card effect is applied to the second round. <strong>Fire Team</strong> is handled the same way,
 			</li>
-			<li>When "Risk <strong>Direct Hit</strong>" is selected, first all damageable units take damage then other units start to die.
+			<li>When "<strong>Risk Direct Hit</strong>" is selected, first all damageable units take damage then other units start to die.
 				When "Risk Direct Hit" is not selected, damageable units take hits only after all "cheaper" units are dead (except for upgraded Dreadnoughts which take damage before anything else).
 				This is questionable, but I don't know any better clear-cut approach,
 			</li>
@@ -280,6 +275,9 @@
 			</li>
 			<li>In similar vein if <strong>Mentak</strong> is an attacker, Mentak racial is applied before <strong>Assault Cannon</strong>,
 				otherwise <strong>Assault Cannon</strong> is executed first.
+			</li>
+			<li>When defender has <strong>Magen Defense Grid Ω</strong> and attacker is <strong>Naalu</strong> with Fighters participating in the Ground Combat, Fighters are considered vulnerable to Magen Defence hit.
+				When defender has no defending units there is no Ground Combat and <strong>Magen Defense Grid Ω</strong> is not applied.
 			</li>
 		</ul>
 		</p>

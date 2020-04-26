@@ -114,6 +114,15 @@
 				winnuFlagship: battleType === game.BattleType.Space,
 			};
 
+			if (battleType === game.BattleType.Ground && options.defender.magenDefenseOmega && (options.defender.hasDock || defenderFull.some(unitIs(game.UnitType.PDS)))) {
+				// Naalu Fighters are considered to be vulnerable to Magen Omega.
+				// Also, I don't try to be clever with which Naalu unit will be killed, GF of a Fighter, even though it's defencers choice
+				var attackerTransitions = scale([1], problem.attacker.length + 1); // attacker does not fire
+				var defenderTransitions = scale([0, 1], problem.defender.length); // defender inflicts one hit if there is anyone present
+				defenderTransitions.unshift([1]); // otherwise there is no Ground Comband and hence no Magen Defence Grid Ω
+				applyTransitions(problem, attackerTransitions, defenderTransitions, options);
+			}
+
 			if (attackerBoost !== undefined || defenderBoost !== undefined || // boosts apply to the first round only
 				magenDefenseActivated || // Magen Defence applies to the first round
 				attackerReroll || defenderReroll // re-rolls apply to the first round
@@ -889,10 +898,19 @@
 
 			var attackerModifier = options.defender.bunker ? -4 : 0;
 			var bombardmentAttacker = attackerFull.filter(hasBombardment);
-			if (options.attacker.plasmaScoring)
-				return fleetTransitionsVectorWithPlasmaScoring(bombardmentAttacker, game.ThrowType.Bombardment, attackerModifier);
-			else
-				return fleetTransitionsVector(bombardmentAttacker, game.ThrowType.Bombardment, attackerModifier);
+			var resultTransitionsVector = options.attacker.plasmaScoring ?
+				fleetTransitionsVectorWithPlasmaScoring(bombardmentAttacker, game.ThrowType.Bombardment, attackerModifier) :
+				fleetTransitionsVector(bombardmentAttacker, game.ThrowType.Bombardment, attackerModifier);
+
+			if (options.attacker.x89Omega) {
+				var x89TransitionsVector = new Array(defenderFull.length + 1);
+				x89TransitionsVector.fill(0);
+				x89TransitionsVector[0] = resultTransitionsVector[0];
+				x89TransitionsVector[x89TransitionsVector.length - 1] = resultTransitionsVector.reduce(function(a, b) { return a + b }) - resultTransitionsVector[0]
+				resultTransitionsVector = x89TransitionsVector;
+			}
+
+			return resultTransitionsVector;
 
 			function hasBombardment(unit) {
 				return unit.bombardmentDice !== 0;

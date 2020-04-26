@@ -227,6 +227,16 @@
 			'options.defender.publicizeSchematics': function (value) {
 				this.options.attacker.publicizeSchematics = value;
 			},
+			'options.defender.magenDefense': function (value) {
+				if (value)
+					this.options.defender.magenDefenseOmega = false;
+			},
+			'options.defender.magenDefenseOmega': function (value) {
+				if (value)
+					this.options.defender.magenDefense = false;
+				else
+					this.options.defender.hasDock = false;
+			},
 			battleType: recomputeHandler,
 			attackerUnits: updateDamageableCountAndRecomputeHandler('attacker'),
 			defenderUnits: updateDamageableCountAndRecomputeHandler('defender'),
@@ -242,6 +252,35 @@
 			forceSlow: recomputeHandler,
 		},
 		computed: {
+			technologies: function() {
+				var result = [];
+				var techKeys = Object.keys(Technologies);
+				for (var i = 0; i < techKeys.length; ++i){
+					var tech = Technologies[techKeys[i]];
+					if (tech.limitedTo === BattleSide.attacker && (i + 1 < techKeys.length) && Technologies[techKeys[i+1]].limitedTo === BattleSide.defender){
+						// special collapsing of Ω techs into one row
+						result.push({
+							pair: {
+							[BattleSide.attacker]: {
+								key: techKeys[i],
+								option: Technologies[techKeys[i]],
+							},
+							[BattleSide.defender]: {
+								key: techKeys[i + 1],
+								option: Technologies[techKeys[i + 1]],
+							}
+						}});
+						i++;
+					} else {
+						result.push({
+							key: techKeys[i],
+							option: tech
+						});
+					}
+				}
+
+				return result;
+			},
 			raceTechnologies: function () {
 				var attackerTech = RaceSpecificTechnologies[this.options.attacker.race] || {};
 				var defenderTech = RaceSpecificTechnologies[this.options.defender.race] || {};
@@ -288,9 +327,9 @@
 		template:
 		'<div class="o-grid__cell left-option" :class="{ hidden: !option.availableFor(side) }">' +
 		'	<label class="" v-bind:for="side + \'.\' + optionName"' +
-		'		   v-bind:title="option.description">{{option.title}}</label>' +
+		'			v-bind:title="option.description">{{option.title}}</label>' +
 		'	<input type="checkbox" class="" v-bind:id="side + \'.\' + optionName"' +
-		'		   v-model="options[side][optionName]">' +
+		'			v-model="options[side][optionName]">' +
 		'</div>',
 	});
 	Vue.component('right-option', {
@@ -298,18 +337,20 @@
 		template:
 		'<div class="o-grid__cell right-option" :class="{ hidden: !option.availableFor(side) }">' +
 		'	<input type="checkbox" class="" v-bind:id="side + \'.\' + optionName"' +
-		'		   v-model="options[side][optionName]">' +
+		'			v-model="options[side][optionName]">' +
 		'	<label class="" v-bind:for="side + \'.\' + optionName"' +
-		'		   v-bind:title="option.description">{{option.title}}</label>' +
+		'			v-bind:title="option.description">{{option.title}}</label>' +
 		'</div>',
 	});
 	Vue.component('option-pair', {
-		props: ['optionName', 'option', 'options',],
+		props: ['optionName', 'option', 'options', 'pair', 'visible'],
 		template:
-		'<div class="o-grid center-grid">' +
-		'	<left-option :option-name="optionName" :option="option" :options="options" side="attacker"></left-option>' +
-		'	<help-mark :option="option"></help-mark>' +
-		'	<right-option :option-name="optionName" :option="option" :options="options" side="defender"></right-option>' +
+		'<div class="o-grid center-grid" v-if="visible !== false">' +
+		'	<left-option :option-name="option ? optionName : pair.attacker.key" :option="option || pair.attacker.option" :options="options" side="attacker"></left-option>' +
+		'	<help-mark v-if="option" :option="option"></help-mark>' +
+		'	<help-mark v-if="pair" :option="pair.attacker.option" :class="{ hidden: !pair.attacker.option.availableFor(\'attacker\') }"></help-mark>' +
+		'	<help-mark v-if="pair" :option="pair.defender.option" :class="{ hidden: !pair.defender.option.availableFor(\'defender\') }"></help-mark>' +
+		'	<right-option :option-name="option ? optionName : pair.defender.key" :option="option || pair.defender.option" :options="options" side="defender"></right-option>' +
 		'</div>',
 	});
 	Vue.component('help-mark', {

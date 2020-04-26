@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.6.0] - 2020-04-26
+### Added
+- Omega tech variants (Magen Defense Grid Ω and X-89 Bacterial Weapon Ω).
+
 ## [1.5.1] - 2019-08-01 (h/t Dan Johnson)
 ### Fixed
 - Naalu fleet cost calculation now doesn't fail when Fighters are present.
