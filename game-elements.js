@@ -53,46 +53,56 @@
 
 	root.Race = {
 		Arborec: 'Arborec',
+		Argent: 'Argent',
+		Cabal: 'Cabal',
 		Creuss: 'Creuss',
+		Empyrean: 'Empyrean', 
 		Hacan: 'Hacan',
 		JolNar: 'JolNar',
 		L1Z1X: 'L1Z1X',
 		Letnev: 'Letnev',
+		Mahact: 'Mahact',
 		Mentak: 'Mentak',
 		Muaat: 'Muaat',
 		Naalu: 'Naalu',
+		NRA: 'NRA',
+		Nomad: 'Nomad',
 		Saar: 'Saar',
 		Sardakk: 'Sardakk',
 		Sol: 'Sol',
+		Ul: 'Ul',
 		Virus: 'Virus',
 		Winnu: 'Winnu',
 		Xxcha: 'Xxcha',
 		Yin: 'Yin',
 		Yssaril: 'Yssaril',
-		// POK Races
-		//Nomad: 'Nomad',
 	};
 
 	root.RacesDisplayNames = {
 		Arborec: 'Arborec',
+		Argent: 'Argent Flight',
+		Cabal: 'Vuil\'Raith Cabal',
 		Creuss: 'Creuss',
+		Empyrean: 'Empyrean', 
 		Hacan: 'Hacan',
 		JolNar: 'Jol-Nar',
 		L1Z1X: 'L1Z1X',
 		Letnev: 'Letnev',
+		Mahact: 'Mahact',
 		Mentak: 'Mentak',
 		Muaat: 'Muaat',
 		Naalu: 'Naalu',
+		NRA: 'Naaz-Rokha Alliance',
+		Nomad: 'Nomad',
 		Virus: 'Nekro Virus',
 		Saar: 'Saar',
 		Sardakk: 'Sardakk N\'orr',
 		Sol: 'Sol',
+		Ul: 'Titans of Ul',
 		Winnu: 'Winnu',
 		Xxcha: 'Xxcha',
 		Yin: 'Yin',
 		Yssaril: 'Yssaril',
-		// POK Races
-		//Nomad: 'Nomad',
 	};
 
 	function Option(title, description, limitedTo) {
@@ -448,6 +458,74 @@
 				cost: 8,
 			}),
 		},
+
+		Argent: {
+			Flagship: new root.UnitInfo(UnitType.Flagship, {
+				sustainDamageHits: 1,
+				battleValue: 7,
+				battleDice: 2,
+				race: root.Race.Argent,
+				cost: 8,
+			}),
+		},
+		Empyrean: {
+			Flagship: new root.UnitInfo(UnitType.Flagship, {
+				sustainDamageHits: 1,
+				battleValue: 5,
+				battleDice: 2,
+				race: root.Race.Empyrean,
+				cost: 8,
+			}),
+		},
+		Mahact: {
+			Flagship: new root.UnitInfo(UnitType.Flagship, {
+				sustainDamageHits: 1,
+				battleValue: 5,
+				battleDice: 2,
+				race: root.Race.Mahact,
+				cost: 8,
+			}),
+		},
+		NRA: {
+			Flagship: new root.UnitInfo(UnitType.Flagship, {
+				sustainDamageHits: 1,
+				battleValue: 9,
+				battleDice: 2,
+				race: root.Race.NRA,
+				cost: 8,
+			}),
+		},
+		Nomad: {
+			Flagship: new root.UnitInfo(UnitType.Flagship, {
+				sustainDamageHits: 1,
+				barrageValue: 8,
+				barrageDice: 3,
+				battleValue: 7,
+				battleDice: 2,
+				race: root.Race.Nomad,
+				cost: 8,
+			}),
+		},
+		Ul: {
+			Flagship: new root.UnitInfo(UnitType.Flagship, {
+				sustainDamageHits: 1,
+				battleValue: 7,
+				battleDice: 2,
+				race: root.Race.Ul,
+				cost: 8,
+			}),
+		},
+		Cabal: {
+			Flagship: new root.UnitInfo(UnitType.Flagship, {
+				sustainDamageHits: 1,
+				bombardmentValue: 5,
+				bombardmentDice: 1,
+				battleValue: 5,
+				battleDice: 2,
+				race: root.Race.Cabal,
+				cost: 8,
+			}),
+		},
 	};
 
 	root.StandardUpgrades = {
@@ -518,6 +596,17 @@
 				bombardmentValue: 3,
 				bombardmentDice: 3,
 				cost: 10,
+			}),
+		},
+		Nomad: {
+			Flagship: new root.UnitInfo(UnitType.Flagship, {
+				sustainDamageHits: 1,
+				barrageValue: 5,
+				barrageDice: 3,
+				battleValue: 5,
+				battleDice: 2,
+				race: root.Race.Nomad,
+				cost: 8,
 			}),
 		},
 	};
