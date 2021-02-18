@@ -467,6 +467,12 @@
 				race: root.Race.Argent,
 				cost: 8,
 			}),
+			Destroyer: new root.UnitInfo(UnitType.Destroyer, {
+				battleValue: 8,
+				barrageValue: 9,
+				barrageDice: 2,
+				cost: 1,
+			}),
 		},
 		Empyrean: {
 			Flagship: new root.UnitInfo(UnitType.Flagship, {
@@ -494,6 +500,12 @@
 				race: root.Race.NRA,
 				cost: 8,
 			}),
+			Mech: new root.UnitInfo(UnitType.Mech, {
+				sustainDamageHits: 1,
+				battleValue: 6,
+				battleDice: 2,
+				cost: 2,
+			}),
 		},
 		Nomad: {
 			Flagship: new root.UnitInfo(UnitType.Flagship, {
@@ -513,6 +525,12 @@
 				battleDice: 2,
 				race: root.Race.Ul,
 				cost: 8,
+			}),
+			PDS: new root.UnitInfo(UnitType.PDS, {
+				sustainDamageHits: 1,
+				spaceCannonValue: 6,
+				spaceCannonDice: 1,
+				battleValue: 7,
 			}),
 		},
 		Cabal: {
@@ -598,6 +616,14 @@
 				cost: 10,
 			}),
 		},
+		Argent: {
+			Destroyer: new root.UnitInfo(UnitType.Destroyer, {
+				battleValue: 7,
+				barrageValue: 6,
+				barrageDice: 3,
+				cost: 1,
+			}),
+        },
 		Nomad: {
 			Flagship: new root.UnitInfo(UnitType.Flagship, {
 				sustainDamageHits: 1,
@@ -607,6 +633,14 @@
 				battleDice: 2,
 				race: root.Race.Nomad,
 				cost: 8,
+			}),
+		},
+		Ul: {
+			PDS: new root.UnitInfo(UnitType.PDS, {
+				sustainDamageHits: 1,
+				spaceCannonValue: 5,
+				spaceCannonDice: 1,
+				battleValue: 6,
 			}),
 		},
 	};
@@ -658,6 +692,7 @@
 			(thisSideCounters[UnitType.Flagship] || { count: 0 }).count !== 0;
 		var naaluFlagship = battleType === root.BattleType.Ground && thisSideOptions.race === root.Race.Naalu &&
 			(thisSideCounters[UnitType.Flagship] || { count: 0 }).count !== 0;
+		var titanUlPDS = battleType === root.BattleType.Ground && thisSideOptions.race === root.Race.Ul;
 
 		// TODO - Add mechs to space combat - Nomad Mechs can sustain damage for their ships (but not participate in space battle)
 		//var nomadMechs = battleType === root.BattleType.Space && thisSideOptions.race === root.Race.Nomad;
@@ -772,7 +807,8 @@
 				if (battleType === root.BattleType.Space)
 					return ships.indexOf(unit.type) >= 0 || virusFlagship && unit.type === root.UnitType.Ground;
 				else //battleType === root.BattleType.Ground
-					return unit.type === UnitType.Ground || unit.type === UnitType.Mech || naaluFlagship && unit.type === root.UnitType.Fighter;
+					return unit.type === UnitType.Ground || unit.type === UnitType.Mech || naaluFlagship && unit.type === root.UnitType.Fighter
+						|| titanUlPDS && unit.type === root.UnitType.PDS; // Ul PDS are also ground force
 			});
 			result.comparer = this.comparer;
 			return result;
