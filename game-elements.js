@@ -31,6 +31,7 @@
 		Carrier: 'Carrier',
 		Destroyer: 'Destroyer',
 		Fighter: 'Fighter',
+		Mech: 'Mech',
 		Ground: 'Ground',
 		PDS: 'PDS',
 	};
@@ -47,6 +48,7 @@
 		Fighter: 'F',
 		Ground: 'G',
 		PDS: 'P',
+		Mech: 'M',
 	};
 
 	root.Race = {
@@ -67,6 +69,8 @@
 		Xxcha: 'Xxcha',
 		Yin: 'Yin',
 		Yssaril: 'Yssaril',
+		// POK Races
+		//Nomad: 'Nomad',
 	};
 
 	root.RacesDisplayNames = {
@@ -87,6 +91,8 @@
 		Xxcha: 'Xxcha',
 		Yin: 'Yin',
 		Yssaril: 'Yssaril',
+		// POK Races
+		//Nomad: 'Nomad',
 	};
 
 	function Option(title, description, limitedTo) {
@@ -255,6 +261,11 @@
 		Ground: new root.UnitInfo(UnitType.Ground, {
 			battleValue: 8,
 			cost: 0.5,
+		}),
+		Mech: new root.UnitInfo(UnitType.Mech, {
+			sustainDamageHits: 1,
+			battleValue: 6,
+			cost: 2,
 		}),
 		ExperimentalBattlestation: new root.UnitInfo('Bloodthirsty Space Dock', {
 			spaceCannonValue: 5,
@@ -559,6 +570,9 @@
 		var naaluFlagship = battleType === root.BattleType.Ground && thisSideOptions.race === root.Race.Naalu &&
 			(thisSideCounters[UnitType.Flagship] || { count: 0 }).count !== 0;
 
+		// TODO - Add mechs to space combat - Nomad Mechs can sustain damage for their ships (but not participate in space battle)
+		//var nomadMechs = battleType === root.BattleType.Space && thisSideOptions.race === root.Race.Nomad;
+
 		var unitOrder = createUnitOrder(virusFlagship);
 		var naaluGoundUnitOrder = {};
 		naaluGoundUnitOrder[UnitType.Ground] = 1;
@@ -669,7 +683,7 @@
 				if (battleType === root.BattleType.Space)
 					return ships.indexOf(unit.type) >= 0 || virusFlagship && unit.type === root.UnitType.Ground;
 				else //battleType === root.BattleType.Ground
-					return unit.type === UnitType.Ground || naaluFlagship && unit.type === root.UnitType.Fighter;
+					return unit.type === UnitType.Ground || unit.type === UnitType.Mech || naaluFlagship && unit.type === root.UnitType.Fighter;
 			});
 			result.comparer = this.comparer;
 			return result;
