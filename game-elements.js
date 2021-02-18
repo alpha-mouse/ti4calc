@@ -623,7 +623,7 @@
 				barrageDice: 3,
 				cost: 1,
 			}),
-        },
+		},
 		Nomad: {
 			Flagship: new root.UnitInfo(UnitType.Flagship, {
 				sustainDamageHits: 1,
@@ -636,6 +636,11 @@
 			}),
 		},
 		Ul: {
+			Cruiser: new root.UnitInfo(UnitType.Cruiser, {
+				sustainDamageHits: 1,
+				battleValue: 6,
+				cost: 2,
+			}),
 			PDS: new root.UnitInfo(UnitType.PDS, {
 				sustainDamageHits: 1,
 				spaceCannonValue: 5,
