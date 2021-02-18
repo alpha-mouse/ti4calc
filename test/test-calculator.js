@@ -123,6 +123,7 @@ exports.expansionDefault = function (test) {
 	fleet[unit.Cruiser] = { count: 1 };
 	fleet[unit.Carrier] = { count: 1 };
 	fleet[unit.Destroyer] = { count: 1 };
+	fleet[unit.Mech] = { count: 1 };
 	fleet[unit.Ground] = { count: 1 };
 	fleet[unit.Fighter] = { count: 1 };
 	fleet[unit.PDS] = { count: 1 };
@@ -140,11 +141,13 @@ exports.expansionDefault = function (test) {
 		units[unit.Carrier],
 		units[unit.Destroyer],
 		units[unit.Fighter],
+		units[unit.Mech],
 		units[unit.Ground],
 		units[unit.PDS],
 		units[unit.Flagship].toDamageGhost(),
 		units[unit.WarSun].toDamageGhost(),
 		units[unit.Dreadnought].toDamageGhost(),
+		units[unit.Mech].toDamageGhost(),
 		game.StandardUnits.ExperimentalBattlestation,
 	];
 
@@ -155,6 +158,7 @@ exports.expansionRiskDirectHit = function (test) {
 	var fleet = {};
 	fleet[game.UnitType.Dreadnought] = { count: 4 };
 	fleet[game.UnitType.Cruiser] = { count: 3 };
+	fleet[game.UnitType.Mech] = { count: 2 };
 	fleet[game.UnitType.PDS] = { count: 2 };
 
 	var expansion = game.expandFleet(new Input(fleet, null, game.BattleType.Space, {
@@ -169,12 +173,16 @@ exports.expansionRiskDirectHit = function (test) {
 		game.StandardUnits[u.Cruiser],
 		game.StandardUnits[u.Cruiser],
 		game.StandardUnits[u.Cruiser],
+		game.StandardUnits[u.Mech],
+		game.StandardUnits[u.Mech],
 		game.StandardUnits[u.PDS],
 		game.StandardUnits[u.PDS],
 		game.StandardUnits[u.Dreadnought].toDamageGhost(),
 		game.StandardUnits[u.Dreadnought].toDamageGhost(),
 		game.StandardUnits[u.Dreadnought].toDamageGhost(),
-		game.StandardUnits[u.Dreadnought].toDamageGhost()];
+		game.StandardUnits[u.Dreadnought].toDamageGhost(),
+		game.StandardUnits[u.Mech].toDamageGhost(),
+		game.StandardUnits[u.Mech].toDamageGhost()];
 
 	testExpansion(test, expansion, expected);
 };
@@ -484,6 +492,34 @@ exports.expansionLetnevFlagshipDontRiskDirectHit = function (test) {
 		game.StandardUnits[u.Dreadnought],
 		game.StandardUnits[u.Dreadnought].toDamageGhost(),
 		game.StandardUnits[u.Dreadnought].toDamageGhost(),
+	];
+
+	testExpansion(test, expansion, expected);
+
+	function damage(unit) {
+		var result = unit.clone();
+		result.damaged = true;
+		return result;
+	}
+};
+
+exports.expansionGroundMechs = function (test) {
+	var fleet = {};
+	fleet[game.UnitType.Mech] = { count: 2, damaged: 1 };
+	fleet[game.UnitType.Ground] = { count: 3, };
+
+	var expansion = game.expandFleet(new Input(fleet, null, game.BattleType.Ground, {}), game.BattleSide.attacker);
+
+	var u = game.UnitType;
+	var expected = [
+		damage(game.StandardUnits[u.Mech]),
+		game.StandardUnits[u.Mech],
+
+		game.StandardUnits[u.Ground],
+		game.StandardUnits[u.Ground],
+		game.StandardUnits[u.Ground],
+
+		game.StandardUnits[u.Mech].toDamageGhost(),
 	];
 
 	testExpansion(test, expansion, expected);
@@ -2799,6 +2835,7 @@ var chaoticProfile = {
 	Destroyer: { count: 8, zeroBias: 4 },
 	Fighter: { count: 15, zeroBias: 5 },
 	Ground: { count: 10, zeroBias: 3 },
+	Mech: { count: 10, zeroBias: 3 },
 	PDS: { count: 6, zeroBias: 3 },
 };
 

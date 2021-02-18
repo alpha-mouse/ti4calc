@@ -60,7 +60,7 @@
 						self.options.defender.race === Race.L1Z1X && self.defenderUnits.Flagship.count !== 0;
 					var letnevFlagship = self.options.attacker.race === Race.Letnev && self.attackerUnits.Flagship.count !== 0 ||
 						self.options.defender.race === Race.Letnev && self.defenderUnits.Flagship.count !== 0;
-					if ((duraniumArmor || l1z1xFlagship || letnevFlagship) && self.battleType === BattleType.Space || self.forceSlow)
+					if ((l1z1xFlagship || letnevFlagship) && self.battleType === BattleType.Space || duraniumArmor || self.forceSlow)
 						lastComputed = imitator.estimateProbabilities(self);
 					else
 						lastComputed = calculator.computeProbabilities(self);
