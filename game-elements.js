@@ -526,11 +526,6 @@
 				race: root.Race.Ul,
 				cost: 8,
 			}),
-			Cruiser: new root.UnitInfo(UnitType.Cruiser, {
-				sustainDamageHits: 1,
-				battleValue: 7,
-				cost: 2,
-			}),
 			PDS: new root.UnitInfo(UnitType.PDS, {
 				sustainDamageHits: 1,
 				spaceCannonValue: 6,
