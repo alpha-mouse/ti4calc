@@ -31,6 +31,7 @@
 		Carrier: 'Carrier',
 		Destroyer: 'Destroyer',
 		Fighter: 'Fighter',
+		Mech: 'Mech',
 		Ground: 'Ground',
 		PDS: 'PDS',
 	};
@@ -47,21 +48,29 @@
 		Fighter: 'F',
 		Ground: 'G',
 		PDS: 'P',
+		Mech: 'M',
 	};
 
 	root.Race = {
 		Arborec: 'Arborec',
+		Argent: 'Argent',
+		Cabal: 'Cabal',
 		Creuss: 'Creuss',
+		Empyrean: 'Empyrean', 
 		Hacan: 'Hacan',
 		JolNar: 'JolNar',
 		L1Z1X: 'L1Z1X',
 		Letnev: 'Letnev',
+		Mahact: 'Mahact',
 		Mentak: 'Mentak',
 		Muaat: 'Muaat',
 		Naalu: 'Naalu',
+		NRA: 'NRA',
+		Nomad: 'Nomad',
 		Saar: 'Saar',
 		Sardakk: 'Sardakk',
 		Sol: 'Sol',
+		Ul: 'Ul',
 		Virus: 'Virus',
 		Winnu: 'Winnu',
 		Xxcha: 'Xxcha',
@@ -71,18 +80,25 @@
 
 	root.RacesDisplayNames = {
 		Arborec: 'Arborec',
+		Argent: 'Argent Flight',
+		Cabal: 'Vuil\'Raith Cabal',
 		Creuss: 'Creuss',
+		Empyrean: 'Empyrean', 
 		Hacan: 'Hacan',
 		JolNar: 'Jol-Nar',
 		L1Z1X: 'L1Z1X',
 		Letnev: 'Letnev',
+		Mahact: 'Mahact',
 		Mentak: 'Mentak',
 		Muaat: 'Muaat',
 		Naalu: 'Naalu',
+		NRA: 'Naaz-Rokha Alliance',
+		Nomad: 'Nomad',
 		Virus: 'Nekro Virus',
 		Saar: 'Saar',
 		Sardakk: 'Sardakk N\'orr',
 		Sol: 'Sol',
+		Ul: 'Titans of Ul',
 		Winnu: 'Winnu',
 		Xxcha: 'Xxcha',
 		Yin: 'Yin',
@@ -255,6 +271,11 @@
 		Ground: new root.UnitInfo(UnitType.Ground, {
 			battleValue: 8,
 			cost: 0.5,
+		}),
+		Mech: new root.UnitInfo(UnitType.Mech, {
+			sustainDamageHits: 1,
+			battleValue: 6,
+			cost: 2,
 		}),
 		ExperimentalBattlestation: new root.UnitInfo('Bloodthirsty Space Dock', {
 			spaceCannonValue: 5,
@@ -437,6 +458,92 @@
 				cost: 8,
 			}),
 		},
+
+		Argent: {
+			Flagship: new root.UnitInfo(UnitType.Flagship, {
+				sustainDamageHits: 1,
+				battleValue: 7,
+				battleDice: 2,
+				race: root.Race.Argent,
+				cost: 8,
+			}),
+			Destroyer: new root.UnitInfo(UnitType.Destroyer, {
+				battleValue: 8,
+				barrageValue: 9,
+				barrageDice: 2,
+				cost: 1,
+			}),
+		},
+		Empyrean: {
+			Flagship: new root.UnitInfo(UnitType.Flagship, {
+				sustainDamageHits: 1,
+				battleValue: 5,
+				battleDice: 2,
+				race: root.Race.Empyrean,
+				cost: 8,
+			}),
+		},
+		Mahact: {
+			Flagship: new root.UnitInfo(UnitType.Flagship, {
+				sustainDamageHits: 1,
+				battleValue: 5,
+				battleDice: 2,
+				race: root.Race.Mahact,
+				cost: 8,
+			}),
+		},
+		NRA: {
+			Flagship: new root.UnitInfo(UnitType.Flagship, {
+				sustainDamageHits: 1,
+				battleValue: 9,
+				battleDice: 2,
+				race: root.Race.NRA,
+				cost: 8,
+			}),
+			Mech: new root.UnitInfo(UnitType.Mech, {
+				sustainDamageHits: 1,
+				battleValue: 6,
+				battleDice: 2,
+				cost: 2,
+			}),
+		},
+		Nomad: {
+			Flagship: new root.UnitInfo(UnitType.Flagship, {
+				sustainDamageHits: 1,
+				barrageValue: 8,
+				barrageDice: 3,
+				battleValue: 7,
+				battleDice: 2,
+				race: root.Race.Nomad,
+				cost: 8,
+			}),
+		},
+		Ul: {
+			Flagship: new root.UnitInfo(UnitType.Flagship, {
+				sustainDamageHits: 1,
+				battleValue: 7,
+				battleDice: 2,
+				race: root.Race.Ul,
+				cost: 8,
+			}),
+			PDS: new root.UnitInfo(UnitType.PDS, {
+				sustainDamageHits: 1,
+				spaceCannonValue: 6,
+				spaceCannonDice: 1,
+				battleValue: 7,
+			}),
+		},
+		Cabal: {
+			Flagship: new root.UnitInfo(UnitType.Flagship, {
+				sustainDamageHits: 1,
+				bombardmentValue: 5,
+				bombardmentDice: 1,
+				battleValue: 5,
+				battleDice: 2,
+				race: root.Race.Cabal,
+				cost: 8,
+			}),
+		},
 	};
 
 	root.StandardUpgrades = {
@@ -509,6 +616,38 @@
 				cost: 10,
 			}),
 		},
+		Argent: {
+			Destroyer: new root.UnitInfo(UnitType.Destroyer, {
+				battleValue: 7,
+				barrageValue: 6,
+				barrageDice: 3,
+				cost: 1,
+			}),
+        },
+		Nomad: {
+			Flagship: new root.UnitInfo(UnitType.Flagship, {
+				sustainDamageHits: 1,
+				barrageValue: 5,
+				barrageDice: 3,
+				battleValue: 5,
+				battleDice: 2,
+				race: root.Race.Nomad,
+				cost: 8,
+			}),
+		},
+		Ul: {
+			Cruiser: new root.UnitInfo(UnitType.Cruiser, {
+				sustainDamageHits: 1,
+				battleValue: 6,
+				cost: 2,
+			}),
+			PDS: new root.UnitInfo(UnitType.PDS, {
+				sustainDamageHits: 1,
+				spaceCannonValue: 5,
+				spaceCannonDice: 1,
+				battleValue: 6,
+			}),
+		},
 	};
 
 	root.MergedUnits = {};
@@ -558,6 +697,10 @@
 			(thisSideCounters[UnitType.Flagship] || { count: 0 }).count !== 0;
 		var naaluFlagship = battleType === root.BattleType.Ground && thisSideOptions.race === root.Race.Naalu &&
 			(thisSideCounters[UnitType.Flagship] || { count: 0 }).count !== 0;
+		var titanUlPDS = battleType === root.BattleType.Ground && thisSideOptions.race === root.Race.Ul;
+
+		// TODO - Add mechs to space combat - Nomad Mechs can sustain damage for their ships (but not participate in space battle)
+		//var nomadMechs = battleType === root.BattleType.Space && thisSideOptions.race === root.Race.Nomad;
 
 		var unitOrder = createUnitOrder(virusFlagship);
 		var naaluGoundUnitOrder = {};
@@ -669,7 +812,8 @@
 				if (battleType === root.BattleType.Space)
 					return ships.indexOf(unit.type) >= 0 || virusFlagship && unit.type === root.UnitType.Ground;
 				else //battleType === root.BattleType.Ground
-					return unit.type === UnitType.Ground || naaluFlagship && unit.type === root.UnitType.Fighter;
+					return unit.type === UnitType.Ground || unit.type === UnitType.Mech || naaluFlagship && unit.type === root.UnitType.Fighter
+						|| titanUlPDS && unit.type === root.UnitType.PDS; // Ul PDS are also ground force
 			});
 			result.comparer = this.comparer;
 			return result;
