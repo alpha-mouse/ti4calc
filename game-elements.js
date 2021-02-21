@@ -692,19 +692,19 @@
 
 		var opponentMentakFlagship = battleType === root.BattleType.Space && opponentSideOptions.race === root.Race.Mentak &&
 			(input[root.SideUnits[opponentSide]][UnitType.Flagship] || { count: 0 }).count !== 0;
+			var opponentMentakMech = battleType === root.BattleType.Ground && opponentSideOptions.race === root.Race.Mentak &&
+			(input[root.SideUnits[opponentSide]][UnitType.Mech] || { count: 0 }).count !== 0;
 
 		var result = [];
 		var thisSideCounters = input[root.SideUnits[battleSide]];
 		for (var unitType in UnitType) {
 			var counter = thisSideCounters[unitType] || { count: 0 };
+			var canSustain = !(opponentMentakFlagship || opponentMentakMech || unitType === UnitType.WarSun && thisSideOptions.publicizeSchematics);
 			for (var i = 0; i < counter.count; i++) {
 				var unit = (counter.upgraded ? upgradedUnits : standardUnits)[unitType];
 				var addedUnit = unit.clone();
 				result.push(addedUnit);
-				if (unit.sustainDamageHits > 0 &&
-					!opponentMentakFlagship &&
-					!(unitType === UnitType.WarSun && thisSideOptions.publicizeSchematics)
-				) {
+				if (unit.sustainDamageHits > 0 &&	canSustain) {
 					if (i < counter.count - (counter.damaged || 0))
 						result.push(addedUnit.toDamageGhost());
 					else
