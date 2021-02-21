@@ -23,6 +23,11 @@
 		defender: 'defenderUnits',
 	};
 
+	root.UnitFeatures = {
+		PlanetaryShield: 'planetaryShield',
+		NegatePlanetaryShield: 'negatePlanetaryShield',
+	};
+
 	var UnitType = {
 		Flagship: 'Flagship',
 		WarSun: 'WarSun',

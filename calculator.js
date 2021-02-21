@@ -890,8 +890,8 @@
 
 		function bombardmentTransitionsVector(attackerFull, defenderFull, options) {
 			var bombardmentPossible = !options.defender.conventionsOfWar && (
-				!defenderFull.some(unitHas('planetaryShield'))
-				|| attackerFull.some(unitHas('negatePlanetaryShield'))
+				!defenderFull.some(unitHas(game.UnitFeatures.PlanetaryShield))
+				|| attackerFull.some(unitHas(game.UnitFeatures.NegatePlanetaryShield))
 			);
 			if (!bombardmentPossible) return [1];
 

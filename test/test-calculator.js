@@ -3100,4 +3100,5 @@ if (useGrouping) {
 	exports.yin = group(exports, 'yinFlagship');
 	exports.x89Omega = group(exports, 'x89Omega');
 	exports.magenOmega = group(exports, 'magenOmega');
+	exports.groundMech = group(exports, 'groundMech');
 }

@@ -510,8 +510,8 @@
 		result.options.defender = Object.assign({}, result.options.attacker);
 
 		for (var unitType in UnitType) {
-			result.attackerUnits[unitType] = { count: 0, upgraded: false, damaged: 0 };
-			result.defenderUnits[unitType] = { count: 0, upgraded: false, damaged: 0 };
+			result.attackerUnits[unitType] = getDefaultUnitInput();
+			result.defenderUnits[unitType] = getDefaultUnitInput();
 		}
 		return result;
 	}
@@ -528,6 +528,10 @@
 		return false;
 	}
 
+	function getDefaultUnitInput() {
+		return { count: 0, upgraded: false, damaged: 0 };
+	}
+
 	function getPersistedInput() {
 		if (!localStorage) return null;
 		var resultString = localStorage.getItem('ti4calc/input');
@@ -535,8 +539,16 @@
 		var result = JSON.parse(resultString);
 		for (var unitType in UnitType) {
 			// because previous published version didn't have already damaged units, persisted input might miss these fields
-			result.attackerUnits[unitType].damaged = result.attackerUnits[unitType].damaged || 0;
-			result.defenderUnits[unitType].damaged = result.defenderUnits[unitType].damaged || 0;
+			if (result.attackerUnits[unitType]) {
+				result.attackerUnits[unitType].damaged = result.attackerUnits[unitType].damaged || 0;
+			} else {
+				result.attackerUnits[unitType] = getDefaultUnitInput();
+			}
+			if (result.defenderUnits[unitType]) {
+				result.defenderUnits[unitType].damaged = result.defenderUnits[unitType].damaged || 0;
+			} else {
+				result.defenderUnits[unitType] = getDefaultUnitInput();
+			}
 		}
 		return result;
 	}
