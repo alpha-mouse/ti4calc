@@ -185,6 +185,9 @@
 			this.damaged = false;
 			this.damagedThisRound = false;
 
+			this.planetaryShield = stats.planetaryShield;
+			this.negatePlanetaryShield = stats.negatePlanetaryShield;
+
 			this.race = stats.race;
 			this.cost = stats.cost;
 		}
@@ -238,6 +241,7 @@
 			bombardmentValue: 3,
 			bombardmentDice: 3,
 			cost: 12,
+			negatePlanetaryShield: true,
 		}),
 		Dreadnought: new root.UnitInfo(UnitType.Dreadnought, {
 			sustainDamageHits: 1,
@@ -267,6 +271,7 @@
 		PDS: new root.UnitInfo(UnitType.PDS, {
 			spaceCannonValue: 6,
 			spaceCannonDice: 1,
+			planetaryShield: true,
 		}),
 		Ground: new root.UnitInfo(UnitType.Ground, {
 			battleValue: 8,
@@ -417,6 +422,12 @@
 				race: root.Race.Arborec,
 				cost: 8,
 			}),
+			Mech: new root.UnitInfo(UnitType.Mech, {
+				sustainDamageHits: 1,
+				battleValue: 6,
+				cost: 2,
+				planetaryShield: true,
+			}),
 		},
 		Letnev: {
 			Flagship: new root.UnitInfo(UnitType.Flagship, {
@@ -427,6 +438,7 @@
 				bombardmentDice: 3,
 				race: root.Race.Letnev,
 				cost: 8,
+				negatePlanetaryShield: true,
 			}),
 		},
 		Saar: {
@@ -531,6 +543,7 @@
 				spaceCannonValue: 6,
 				spaceCannonDice: 1,
 				battleValue: 7,
+				planetaryShield: true,
 			}),
 		},
 		Cabal: {
@@ -572,6 +585,7 @@
 		PDS: new root.UnitInfo(UnitType.PDS, {
 			spaceCannonValue: 5,
 			spaceCannonDice: 1,
+			planetaryShield: true,
 		}),
 		Ground: new root.UnitInfo(UnitType.Ground, {
 			battleValue: 7,
@@ -614,6 +628,7 @@
 				bombardmentValue: 3,
 				bombardmentDice: 3,
 				cost: 10,
+				negatePlanetaryShield: true,
 			}),
 		},
 		Argent: {
@@ -646,6 +661,7 @@
 				spaceCannonValue: 5,
 				spaceCannonDice: 1,
 				battleValue: 6,
+				planetaryShield: true,
 			}),
 		},
 	};

@@ -502,9 +502,8 @@
 					appliesTo: game.BattleType.Ground,
 					execute: function (attacker, defender, attackerFull, defenderFull, options) {
 						var bombardmentPossible = !options.defender.conventionsOfWar && (
-							!defenderFull.some(unitIs(game.UnitType.PDS)) // either there are no defending PDS
-							|| attackerFull.some(unitIs(game.UnitType.WarSun)) // or there are but attacking WarSuns negate their Planetary Shield
-							|| options.attacker.race === game.Race.Letnev && attackerFull.some(unitIs(game.UnitType.Flagship)) // Letnev Flagship negates Planetary Shield as well
+							!defenderFull.some(unitHas('planetaryShield'))
+							|| attackerFull.some(unitHas('negatePlanetaryShield'))
 						);
 						if (!bombardmentPossible) return;
 
@@ -661,6 +660,12 @@
 					}
 				},
 			];
+		}
+
+		function unitHas(feature) {
+			return function (unit) {
+				return !!unit[feature] && !unit.isDamageGhost;
+			};
 		}
 
 		function unitIs(unitType) {

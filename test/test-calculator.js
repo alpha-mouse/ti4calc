@@ -2826,6 +2826,85 @@ exports.magenOmegaNaalu = function (test) {
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
 
+exports.groundMech = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Ground] = { count: 2 };
+	attacker[game.UnitType.Mech] = { count: 2 };
+
+	defender[game.UnitType.Ground] = { count: 2 };
+	defender[game.UnitType.Mech] = { count: 1 };
+	defender[game.UnitType.PDS] = { count: 1 };
+
+	var options = { attacker: { }, defender: { } };
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
+exports.groundMechNRA = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Ground] = { count: 2 };
+	attacker[game.UnitType.Mech] = { count: 2 };
+
+	defender[game.UnitType.Ground] = { count: 2 };
+	defender[game.UnitType.Mech] = { count: 1 };
+
+	var options = { attacker: { }, defender: { race: game.Race.NRA } };
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
+exports.groundMechBombard = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Dreadnought] = { count: 10 };
+	attacker[game.UnitType.Ground] = { count: 2 };
+	attacker[game.UnitType.Mech] = { count: 2 };
+
+	defender[game.UnitType.Ground] = { count: 2 };
+	defender[game.UnitType.Mech] = { count: 1 };
+
+	var options = { attacker: { }, defender: {  } };
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
+exports.groundMechBombardArborec = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Dreadnought] = { count: 10 };
+	attacker[game.UnitType.Ground] = { count: 2 };
+	attacker[game.UnitType.Mech] = { count: 2 };
+
+	defender[game.UnitType.Ground] = { count: 2 };
+	defender[game.UnitType.Mech] = { count: 1 };
+
+	var options = { attacker: { }, defender: { race: game.Race.Arborec } };
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
+exports.groundMechBombardArborecWarsun = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.WarSun] = { count: 1 };
+	attacker[game.UnitType.Ground] = { count: 2 };
+	attacker[game.UnitType.Mech] = { count: 2 };
+
+	defender[game.UnitType.Ground] = { count: 2 };
+	defender[game.UnitType.Mech] = { count: 1 };
+
+	var options = { attacker: { }, defender: { race: game.Race.Arborec } };
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
 var chaoticProfile = {
 	Flagship: { count: 1, zeroBias: 1 },
 	WarSun: { count: 2, zeroBias: 2 },
