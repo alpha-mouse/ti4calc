@@ -57,14 +57,7 @@
 						title="Units already damaged before the battle">
 					<option v-for="c in damageableCount(attackerUnits[key].count)" v-bind:value="c">{{ c }}</option>
 				</select>
-				<button type="button" class="c-button upgrade"
-						:class="{ 'c-button--brand': attackerUnits[key].upgraded,
-									'c-button--ghost-brand': !attackerUnits[key].upgraded,
-									hidden: !upgradeable(options.attacker.race, key) }"
-						:title="attackerUnits[key].upgraded ? 'Un-upgrade' : 'Upgrade'"
-						@click="attackerUnits[key].upgraded = !attackerUnits[key].upgraded">
-					{{ attackerUnits[key].upgraded ? '\u25B2' : '\u25b3' }}
-				</button>
+				<upgrade-buff :units="attackerUnits" :options="options.attacker" :unit-type="key" ></upgrade-buff>
 				<button type="button" class="c-button c-button--ghost-brand count-stepper" title="Remove unit"
 						@click="decrement(attackerUnits[key])">-
 				</button>
@@ -86,14 +79,7 @@
 				<button type="button" class="c-button c-button--ghost-brand count-stepper" title="Add unit"
 						@click="increment(defenderUnits[key])">+
 				</button>
-				<button type="button" class="c-button upgrade"
-						:class="{ 'c-button--brand': defenderUnits[key].upgraded,
-									'c-button--ghost-brand': !defenderUnits[key].upgraded,
-									hidden: !upgradeable(options.defender.race, key) }"
-						:title="defenderUnits[key].upgraded ? 'Un-upgrade' : 'Upgrade'"
-						@click="defenderUnits[key].upgraded = !defenderUnits[key].upgraded">
-					{{ defenderUnits[key].upgraded ? '\u25B2' : '\u25b3' }}
-				</button>
+				<upgrade-buff :units="defenderUnits" :options="options.defender" :unit-type="key" ></upgrade-buff>
 				<select v-model="defenderUnits[key].damaged" class="damaged"
 						:class="{ hidden: !damageable(options.defender.race, key, defenderUnits[key].upgraded) }"
 						title="Units already damaged before the battle">

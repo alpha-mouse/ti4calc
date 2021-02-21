@@ -193,6 +193,8 @@
 			this.planetaryShield = stats.planetaryShield;
 			this.negatePlanetaryShield = stats.negatePlanetaryShield;
 
+			this.buffDescription = stats.buffDescription;
+
 			this.race = stats.race;
 			this.cost = stats.cost;
 		}
@@ -671,11 +673,31 @@
 		},
 	};
 
+	root.RaceSpecificBuffs = {
+		Naalu: {
+			Mech: new root.UnitInfo(UnitType.Mech, {
+				sustainDamageHits: 1,
+				battleValue: 4,
+				cost: 2,
+				buffDescription: '+2 when opponent has relic fragment'
+			}),
+		},
+		Virus: {
+			Mech: new root.UnitInfo(UnitType.Mech, {
+				sustainDamageHits: 1,
+				battleValue: 4,
+				cost: 2,
+				buffDescription: '+2 when opponent has relic fragment'
+			}),
+		},
+	};
+
 	root.MergedUnits = {};
 	root.MergedUpgrades = {};
 	for (var race in root.Race) {
 		root.MergedUnits[race] = Object.assign({}, root.StandardUnits, root.RaceSpecificUnits[race]);
-		root.MergedUpgrades[race] = Object.assign({}, root.StandardUpgrades, root.RaceSpecificUpgrades[race]);
+		// on the UI upgrades and buffs are shown a bit differently, but computation doesn't care
+		root.MergedUpgrades[race] = Object.assign({}, root.StandardUpgrades, root.RaceSpecificUpgrades[race], root.RaceSpecificBuffs[race]);
 	}
 
 	/** Make an array of units in their reversed order of dying */
@@ -846,6 +868,20 @@
 		return !!(root.StandardUpgrades.hasOwnProperty(unitType) ||
 			root.RaceSpecificUpgrades[race] &&
 			root.RaceSpecificUpgrades[race].hasOwnProperty(unitType));
+	};
+
+	/** Check whether under some external conditions the unit behaves differently */
+	root.buffable = function (race, unitType) {
+		return !!(
+			root.RaceSpecificBuffs[race] &&
+			root.RaceSpecificBuffs[race].hasOwnProperty(unitType));
+	};
+
+	root.buffDescription = function (race, unitType) {
+		return (
+			root.RaceSpecificBuffs[race] &&
+			root.RaceSpecificBuffs[race][unitType] &&
+			root.RaceSpecificBuffs[race][unitType].buffDescription);
 	};
 
 	root.damageable = function (race, unitType, upgraded) {

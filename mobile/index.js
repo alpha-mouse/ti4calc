@@ -400,6 +400,48 @@
 		'	<side-option :option-name="option ? optionName : pair.defender.key" :option="option || pair.defender.option" :options="options" side="defender"></side-option>' +
 		'</div>',
 	});
+	Vue.component('upgrade-buff', {
+		props: ['units', 'options', 'unitType'],
+		computed: {
+			upgradeable: function() {
+				return !this.buffable && upgradeable(this.options.race, this.unitType);
+			},
+			buffable: function() {
+				return buffable(this.options.race, this.unitType);
+			},
+			cls: function() {
+				return {
+					'btn': true,
+					'btn-secondary': true,
+					'rounded-0': true,
+					'upgrade': true,
+					'c-button--brand': this.units[this.unitType].upgraded,
+					'c-button--ghost-brand': !this.units[this.unitType].upgraded,
+					hidden: !this.upgradeable && !this.buffable,
+				}
+			},
+			title: function() {
+				if (this.upgradeable) {
+					return this.units[this.unitType].upgraded ? 'Un-upgrade' : 'Upgrade'
+				} else if (this.buffable) {
+					return (this.units[this.unitType].upgraded ? 'Applied: ' : '') + buffDescription(this.options.race, this.unitType)
+				}
+				return ''
+			},
+			content: function() {
+				if (this.upgradeable) {
+					return this.units[this.unitType].upgraded ? '\u25B2' : '\u25b3'
+				} else if (this.buffable) {
+					return this.units[this.unitType].upgraded ? '\u2795' : '\u002b'
+				}
+				return ''
+			}
+		},
+		template:
+		'<button type="button" :class="cls" v-bind:title="title" @click="units[unitType].upgraded = !units[unitType].upgraded">' +
+		'	{{ content }}' +
+		'</button>',
+	});
 	Vue.component('help-mark', {
 		props: ['option', 'col'],
 		template:
@@ -423,7 +465,7 @@
 		return function (newRace, oldRace) {
 			for (var unitType in UnitType) {
 				var counter = this[SideUnits[battleSide]][unitType];
-				if (!upgradeable(newRace, unitType)) {
+				if (!upgradeable(newRace, unitType) && !buffable(newRace, unitType)) {
 					counter.upgraded = false;
 				}
 				if (!damageable(newRace, unitType, counter.upgraded)) {
