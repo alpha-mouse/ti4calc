@@ -678,8 +678,8 @@
 							var attackerTransitions = computeSelectedUnitsTransitions(problem.attacker, game.ThrowType.Barrage, hasBarrage);
 							var defenderTransitions = computeSelectedUnitsTransitions(problem.defender, game.ThrowType.Barrage, hasBarrage);
 
-							var attackerVulnerable = getVulnerableUnitsRange(problem.attacker, unitIs(game.UnitType.Fighter));
-							var defenderVulnerable = getVulnerableUnitsRange(problem.defender, unitIs(game.UnitType.Fighter));
+							var attackerVulnerable = getVulnerableUnitsRange(problem.attacker, vulnerableToBarrage(options.defender));
+							var defenderVulnerable = getVulnerableUnitsRange(problem.defender, vulnerableToBarrage(options.attacker));
 
 							var distribution = problem.distribution;
 							for (var a = 0; a < distribution.rows; a++) {
@@ -697,14 +697,20 @@
 									}
 								}
 							}
-
+							// Yin flagship?
 							result.push.apply(result, ensemble.getSubproblems());
 						});
-
+					
 						return result;
 
 						function hasBarrage(unit) {
 							return unit.barrageDice !== 0;
+						}
+						
+						function vulnerableToBarrage(sideOptions) {
+							return function (unit) {
+								return sideOptions.waylay || unitIs(game.UnitType.Fighter)(unit);
+							};
 						}
 
 						function getVulnerableUnitsRange(fleet, predicate) {

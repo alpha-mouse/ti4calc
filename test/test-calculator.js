@@ -2233,6 +2233,18 @@ exports.yinFlagshipGravitonLaser = function (test) {
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
 
+exports.yinFlagshipWaylay = function (test) {
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Flagship] = { count: 1 };
+
+	defender[game.UnitType.Destroyer] = { count: 1 };
+
+	var options = { attacker: { race: game.Race.Yin }, defender: { waylay: true } };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
 exports.jolNarFlagship = function (test) {
 	var attacker = {};
 	var defender = {};
