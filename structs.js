@@ -138,20 +138,6 @@
 		var defender = splice(this.parentProblem.defender, defenderVictims.ranges);
 		return new root.Problem(distribution, attacker, defender);
 
-		function rangesLength(ranges) {
-			var result = 0;
-			for (var i = 0; i < ranges.length / 2; ++i)
-				result += rangeLength(ranges, i);
-			return result;
-
-			function rangeLength(ranges, rangeIndex) {
-				var rangeStart = rangeIndex * 2;
-				if (isNaN(ranges[rangeStart]))
-					return 0;
-				return isNaN(ranges[rangeStart + 1]) ? 1 : ranges[rangeStart + 1] - ranges[rangeStart];
-			}
-		}
-
 		function splice(fleet, ranges) {
 			var allRangesNull = true;
 			for (var i = 0; i < ranges.length / 2; ++i) {

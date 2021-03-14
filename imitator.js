@@ -516,10 +516,7 @@
 						if (options.attacker.x89Omega && attackerInflicted > 0) {
 							defender.splice(0);
 						} else {
-							for (var i = defender.length - 1; 0 <= i && 0 < attackerInflicted; i--) {
-								defender.splice(i, 1);
-								attackerInflicted--;
-							}
+							applyDamage(defender, attackerInflicted, options.defender)
 						}
 
 						function hasBombardment(unit) {

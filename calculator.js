@@ -116,7 +116,7 @@
 
 			if (battleType === game.BattleType.Ground && options.defender.magenDefenseOmega && (options.defender.hasDock || defenderFull.some(unitIs(game.UnitType.PDS)))) {
 				// Naalu Fighters are considered to be vulnerable to Magen Omega.
-				// Also, I don't try to be clever with which Naalu unit will be killed, GF of a Fighter, even though it's defencers choice
+				// Also, I don't try to be clever with which Naalu unit will be killed, GF of a Fighter, even though it's defender's choice
 				var attackerTransitions = scale([1], problem.attacker.length + 1); // attacker does not fire
 				var defenderTransitions = scale([0, 1], problem.defender.length); // defender inflicts one hit if there is anyone present
 				defenderTransitions.unshift([1]); // otherwise there is no Ground Comband and hence no Magen Defence Grid Ω
@@ -201,6 +201,10 @@
 				findLastIndex(problem.defender, unitIs(game.UnitType.Flagship)) + 1
 				: 0;
 
+			var valkyrieRelevant = battleType === game.BattleType.Ground && (options.attacker.valkyrieParticleWeave || options.defender.valkyrieParticleWeave);
+			var nonEuclideanRelevant = options.attacker.nonEuclidean || options.defender.nonEuclidean;
+			var adjustmentsRelevant = valkyrieRelevant || nonEuclideanRelevant || harrowTransitions;
+
 			//do propagation
 			for (var a = distr.rows - 1; 0 < a; a--) {
 				for (var d = distr.columns - 1; 0 < d; d--) {
@@ -213,14 +217,16 @@
 							defenderTransitions = computeFleetTransitions(problem.defender, game.ThrowType.Battle, boost(battleType, options.defender, options.attacker, problem.defender, false));
 						}
 					}
-					var attackerTransitionsVector = adjustForNonEuclidean(attackerTransitions[a], problem.defender, d - 1, options.defender);
-					var defenderTransitionsVector = adjustForNonEuclidean(defenderTransitions[d], problem.attacker, a - 1, options.attacker);
-					var transitionMatrix = orthogonalMultiply(attackerTransitionsVector, defenderTransitionsVector, d + 1, a + 1);
-					if (battleType === game.BattleType.Ground)
-						transitionMatrix = adjustForValkyrieParticleWeave(transitionMatrix, options, d + 1, a + 1);
 
+					var transitionMatrix = (adjustmentsRelevant ? unconstrainedOrthogonalMultiply : orthogonalMultiply)(attackerTransitions[a], defenderTransitions[d], d + 1, a + 1);
+					if (valkyrieRelevant)
+						transitionMatrix = adjustForValkyrieParticleWeave(transitionMatrix, options);
 					if (harrowTransitions)
-						transitionMatrix = harrowMultiply(transitionMatrix, harrowTransitions, d + 1, a + 1); // no Sustain Damage assumption
+						transitionMatrix = harrowMultiply(transitionMatrix, harrowTransitions);
+					if (nonEuclideanRelevant)
+						transitionMatrix = adjustForNonEuclidean(transitionMatrix, problem, a - 1, d - 1, options);
+					if (adjustmentsRelevant)
+						transitionMatrix = constrainTransitionMatrix(transitionMatrix, d + 1, a + 1);
 
 					var k;
 					if (distr[a][d] === 0)
@@ -365,7 +371,7 @@
 			if (!postroundAttackerTransitions || postroundAttackerTransitions.length === 1)
 				return transitionMatrix;
 
-			return constrainTransitionMatrix({
+			return {
 				rows: transitionMatrix.rows + postroundAttackerTransitions.length - 1,
 				columns: transitionMatrix.columns,
 				at: function (i1, i2) {
@@ -378,7 +384,7 @@
 					}
 					return result;
 				},
-			}, rows, columns);
+			};
 		}
 
 		/** Apply transition vectors to the distribution matrix just once
@@ -390,6 +396,7 @@
 			if (effectsFlags && !(effectsFlags.winnuFlagship && options.defender.race === game.Race.Winnu))
 				defenderTransitions = defenderTransitions();
 			effectsFlags = effectsFlags || {};
+			var nonEuclideanRelevant = options.attacker.nonEuclidean || options.defender.nonEuclidean;
 
 			for (var a = 0; a < distribution.rows; a++) {
 				for (var d = 0; d < distribution.columns; d++) {
@@ -408,11 +415,16 @@
 							computedDefenderTransitions = defenderTransitions();
 						}
 					}
-					var attackerTransitionsVector = adjustForNonEuclidean(computedAttackerTransitions[a], problem.defender, d - 1, options.defender);
-					var defenderTransitionsVector = adjustForNonEuclidean(computedDefenderTransitions[d], problem.attacker, a - 1, options.attacker);
-					var transitionMatrix = orthogonalMultiply(attackerTransitionsVector, defenderTransitionsVector, d + 1, a + 1);
-					if (effectsFlags.valkyrieParticleWeave)
-						transitionMatrix = adjustForValkyrieParticleWeave(transitionMatrix, options, d + 1, a + 1); // no Sustain Damage assumption. Otherwise Valkyrie should be taken into account before Non-Euclidean Shielding somehow
+
+					var valkyrieRelevant = effectsFlags.valkyrieParticleWeave && (options.attacker.valkyrieParticleWeave || options.defender.valkyrieParticleWeave) && (a !== 0 && d !== 0);
+					var adjustmentsRelevant = valkyrieRelevant || nonEuclideanRelevant;
+					var transitionMatrix = (adjustmentsRelevant ? unconstrainedOrthogonalMultiply : orthogonalMultiply)(computedAttackerTransitions[a], computedDefenderTransitions[d], d + 1, a + 1);
+					if (valkyrieRelevant)
+						transitionMatrix = adjustForValkyrieParticleWeave(transitionMatrix, options);
+					if (nonEuclideanRelevant)
+						transitionMatrix = adjustForNonEuclidean(transitionMatrix, problem, a - 1, d - 1, options);
+					if (adjustmentsRelevant)
+						transitionMatrix = constrainTransitionMatrix(transitionMatrix, d + 1, a + 1);
 
 					for (var attackerInflicted = 0; attackerInflicted < transitionMatrix.rows; attackerInflicted++) {
 						for (var defenderInflicted = 0; defenderInflicted < transitionMatrix.columns; defenderInflicted++) {
@@ -928,28 +940,10 @@
 			return fleetInflicted;
 		}
 
-		function adjustForNonEuclidean(fleetTransitionsVector, opposingFleet, opposingIndex, opposingSideOptions) {
-			if (opposingSideOptions.nonEuclidean && fleetTransitionsVector.length > 2) {
-				var result = fleetTransitionsVector.slice();
-				// as it is implemented, if the fleet is [D, d, C], and two hits are produced against it, then both
-				// the Cruiser will be killed and the Dreadnought damaged. Though it suffices to only damage the Dreadnought,
-				// because non-euclidean will absorb both hits.
-				for (var dmg = 1; dmg < result.length && 0 < opposingIndex; dmg++) {
-					if (opposingFleet[opposingIndex].isDamageGhost) {
-						cancelHits(result, 1, dmg);
-					}
-					opposingIndex--;
-				}
-				return result;
-			} else {
-				return fleetTransitionsVector;
-			}
-		}
-
-		function adjustForValkyrieParticleWeave(transitionMatrix, options, rows, columns) {
+		function adjustForValkyrieParticleWeave(transitionMatrix, options) {
 			if (!options.attacker.valkyrieParticleWeave && !options.defender.valkyrieParticleWeave)
 				return transitionMatrix;
-			return constrainTransitionMatrix({
+			return {
 				rows: transitionMatrix.rows + (options.attacker.valkyrieParticleWeave ? 1 : 0 ),
 				columns: transitionMatrix.columns + (options.defender.valkyrieParticleWeave ? 1 : 0 ),
 				at: function (i1, i2) {
@@ -969,7 +963,62 @@
 					var columnShift = options.defender.valkyrieParticleWeave && !(options.attacker.valkyrieParticleWeave && i1 === 1) ? 1 : 0;
 					return transitionMatrix.at(i1 - rowShift, i2 - columnShift);
 				}
-			}, rows, columns);
+			};
+		}
+
+		function adjustForNonEuclidean(transitionMatrix, problem, attackerIndex, defenderIndex, options) {
+			// as it is implemented, if the fleet is [D, d, C], and two hits are produced against it, then both
+			// the Cruiser will be killed and the Dreadnought damaged. Though it suffices to only damage the Dreadnought,
+			// because non-euclidean will absorb both hits.
+
+			if (!(options.attacker.nonEuclidean || options.defender.nonEuclidean)) return transitionMatrix;
+
+			var reifiedMatrix = reify(transitionMatrix);
+			var rows = transitionMatrix.rows;
+			var columns = transitionMatrix.columns;
+			if (options.defender.nonEuclidean) {
+				for (var dmg = 1; (dmg < rows - 1) && (0 <= defenderIndex); dmg++) {
+					if (problem.defender[defenderIndex].isDamageGhost) {
+						for (var j = 0; j < columns; ++j)
+							reifiedMatrix[dmg][j] += reifiedMatrix[dmg+1][j];
+						reifiedMatrix.splice(dmg + 1, 1);
+						rows--;
+					}
+					defenderIndex--;
+				}
+			}
+
+			if (options.attacker.nonEuclidean) {
+				for (var dmg = 1; (dmg < columns - 1) && (0 <= attackerIndex); dmg++) {
+					if (problem.attacker[attackerIndex].isDamageGhost) {
+						for (var i = 0; i < rows; ++i) {
+							reifiedMatrix[i][dmg] += reifiedMatrix[i][dmg+1];
+							reifiedMatrix[i].splice(dmg + 1, 1);
+						}
+						columns--;
+					}
+					attackerIndex--;
+				}
+			}
+
+			return {
+				rows: rows,
+				columns: columns,
+				at: function(i1, i2) {
+					return reifiedMatrix[i1][i2];
+				}
+			};
+
+			function reify(transitionMatrix) {
+				var result = [];
+				for (var i = 0; i < transitionMatrix.rows; i++) {
+					var row = [];
+					result.push(row);
+					for (var j = 0; j < transitionMatrix.columns; j++)
+						row.push(transitionMatrix.at(i, j));
+				}
+				return result;
+			}
 		}
 
 		function constrainTransitionMatrix(transitionMatrix, rows, columns) {

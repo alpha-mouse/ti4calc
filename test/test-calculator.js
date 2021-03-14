@@ -104,7 +104,7 @@ function testExpansion(test, actual, expected) {
 	} while (false);
 
 	if (!result) {
-		console.log(actual && actual.map(function (unit) {return unit.shortType;}).join());
+		console.log(actual && actual.map(function (unit) { return unit.shortType; }).join());
 	}
 	test.ok(result, message);
 	test.done();
@@ -167,22 +167,22 @@ exports.expansionRiskDirectHit = function (test) {
 
 	var u = game.UnitType;
 	var expected = [game.StandardUnits[u.Dreadnought],
-		game.StandardUnits[u.Dreadnought],
-		game.StandardUnits[u.Dreadnought],
-		game.StandardUnits[u.Dreadnought],
-		game.StandardUnits[u.Cruiser],
-		game.StandardUnits[u.Cruiser],
-		game.StandardUnits[u.Cruiser],
-		game.StandardUnits[u.Mech],
-		game.StandardUnits[u.Mech],
-		game.StandardUnits[u.PDS],
-		game.StandardUnits[u.PDS],
-		game.StandardUnits[u.Dreadnought].toDamageGhost(),
-		game.StandardUnits[u.Dreadnought].toDamageGhost(),
-		game.StandardUnits[u.Dreadnought].toDamageGhost(),
-		game.StandardUnits[u.Dreadnought].toDamageGhost(),
-		game.StandardUnits[u.Mech].toDamageGhost(),
-		game.StandardUnits[u.Mech].toDamageGhost()];
+	game.StandardUnits[u.Dreadnought],
+	game.StandardUnits[u.Dreadnought],
+	game.StandardUnits[u.Dreadnought],
+	game.StandardUnits[u.Cruiser],
+	game.StandardUnits[u.Cruiser],
+	game.StandardUnits[u.Cruiser],
+	game.StandardUnits[u.Mech],
+	game.StandardUnits[u.Mech],
+	game.StandardUnits[u.PDS],
+	game.StandardUnits[u.PDS],
+	game.StandardUnits[u.Dreadnought].toDamageGhost(),
+	game.StandardUnits[u.Dreadnought].toDamageGhost(),
+	game.StandardUnits[u.Dreadnought].toDamageGhost(),
+	game.StandardUnits[u.Dreadnought].toDamageGhost(),
+	game.StandardUnits[u.Mech].toDamageGhost(),
+	game.StandardUnits[u.Mech].toDamageGhost()];
 
 	testExpansion(test, expansion, expected);
 };
@@ -1640,7 +1640,7 @@ exports.duraniumArmorPds = function (test) {
 
 	var options = {
 		attacker: { duraniumArmor: true },
-		defender: { },
+		defender: {},
 	};
 
 	var distribution = im.estimateProbabilities(new Input(attacker, defender, game.BattleType.Space, options)).distribution;
@@ -2258,7 +2258,7 @@ exports.jolNarFlagshipSanityCheck = function (test) {
 
 	var distr = calc.computeProbabilities(input).distribution;
 
-	var flagshipProbability = distr.at(-1)+ distr.at(0);
+	var flagshipProbability = distr.at(-1) + distr.at(0);
 	test.ok(0.36 < flagshipProbability, "Jol-Nar flagship is not strong enough: " + flagshipProbability);
 
 	test.done();
@@ -2695,7 +2695,7 @@ exports.x89Omega = function (test) {
 
 	defender[game.UnitType.Ground] = { count: 4 };
 
-	var options = { attacker: { x89Omega: true }, defender: { } };
+	var options = { attacker: { x89Omega: true }, defender: {} };
 
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
@@ -2709,7 +2709,7 @@ exports.x89OmegaL1z1xRacialHarrow = function (test) {
 
 	defender[game.UnitType.Ground] = { count: 4 };
 
-	var options = { attacker: { race: game.Race.L1Z1X, x89Omega: true }, defender: { } };
+	var options = { attacker: { race: game.Race.L1Z1X, x89Omega: true }, defender: {} };
 
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
@@ -2723,7 +2723,7 @@ exports.magenOmega = function (test) {
 	defender[game.UnitType.Ground] = { count: 3 };
 	defender[game.UnitType.PDS] = { count: 1 };
 
-	var options = { attacker: { }, defender: { magenDefenseOmega: true } };
+	var options = { attacker: {}, defender: { magenDefenseOmega: true } };
 
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
@@ -2736,7 +2736,7 @@ exports.magenOmegaDock = function (test) {
 
 	defender[game.UnitType.Ground] = { count: 2 };
 
-	var options = { attacker: { }, defender: { magenDefenseOmega: true, hasDock: true } };
+	var options = { attacker: {}, defender: { magenDefenseOmega: true, hasDock: true } };
 
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
@@ -2750,7 +2750,7 @@ exports.magenOmegaPdsDock = function (test) {
 	defender[game.UnitType.Ground] = { count: 2 };
 	defender[game.UnitType.PDS] = { count: 1 };
 
-	var options = { attacker: { }, defender: { magenDefenseOmega: true } };
+	var options = { attacker: {}, defender: { magenDefenseOmega: true } };
 
 	var input1 = new Input(attacker, defender, game.BattleType.Ground, options);
 	var got1 = calc.computeProbabilities(input1).distribution;
@@ -2780,7 +2780,7 @@ exports.magenOmegaWarsun = function (test) {
 	defender[game.UnitType.Ground] = { count: 5 };
 	defender[game.UnitType.PDS] = { count: 1 };
 
-	var options = { attacker: { }, defender: { } };
+	var options = { attacker: {}, defender: {} };
 
 	var input1 = new Input(attacker, defender, game.BattleType.Ground, options);
 	var got1 = calc.computeProbabilities(input1).distribution;
@@ -2837,7 +2837,7 @@ exports.groundMech = function (test) {
 	defender[game.UnitType.Mech] = { count: 1 };
 	defender[game.UnitType.PDS] = { count: 1 };
 
-	var options = { attacker: { }, defender: { } };
+	var options = { attacker: {}, defender: {} };
 
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
@@ -2852,7 +2852,7 @@ exports.groundMechNRA = function (test) {
 	defender[game.UnitType.Ground] = { count: 2 };
 	defender[game.UnitType.Mech] = { count: 1 };
 
-	var options = { attacker: { }, defender: { race: game.Race.NRA } };
+	var options = { attacker: {}, defender: { race: game.Race.NRA } };
 
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
@@ -2868,7 +2868,7 @@ exports.groundMechBombard = function (test) {
 	defender[game.UnitType.Ground] = { count: 2 };
 	defender[game.UnitType.Mech] = { count: 1 };
 
-	var options = { attacker: { }, defender: {  } };
+	var options = { attacker: {}, defender: {} };
 
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
@@ -2884,7 +2884,7 @@ exports.groundMechBombardArborec = function (test) {
 	defender[game.UnitType.Ground] = { count: 2 };
 	defender[game.UnitType.Mech] = { count: 1 };
 
-	var options = { attacker: { }, defender: { race: game.Race.Arborec } };
+	var options = { attacker: {}, defender: { race: game.Race.Arborec } };
 
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
@@ -2900,7 +2900,60 @@ exports.groundMechBombardArborecWarsun = function (test) {
 	defender[game.UnitType.Ground] = { count: 2 };
 	defender[game.UnitType.Mech] = { count: 1 };
 
-	var options = { attacker: { }, defender: { race: game.Race.Arborec } };
+	var options = { attacker: {}, defender: { race: game.Race.Arborec } };
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
+exports.groundMechBombardNonEuclidean = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.WarSun] = { count: 1 };
+	attacker[game.UnitType.Ground] = { count: 1 };
+
+	defender[game.UnitType.Mech] = { count: 1 };
+
+	var options = { attacker: {}, defender: { nonEuclidean: true, } };
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
+exports.groundMechValkyrieParticleWeaveNonEuclidean = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Ground] = { count: 1 };
+	defender[game.UnitType.Mech] = { count: 2, damaged: 1 };
+
+	var options = {
+		attacker: {
+			race: game.Race.Sardakk,
+			valkyrieParticleWeave: true,
+		},
+		defender: {
+			race: game.Race.Letnev,
+			nonEuclidean: true,
+		}
+	};
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
+exports.groundValkyrieParticleWeaveBombardment = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Dreadnought] = { count: 1 };
+	attacker[game.UnitType.Ground] = { count: 1 };
+	defender[game.UnitType.Ground] = { count: 1 };
+
+	var options = {
+		defender: {
+			tekklarLegion: true,
+			valkyrieParticleWeave: true
+		},
+	};
 
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
