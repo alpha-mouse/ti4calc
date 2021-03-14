@@ -690,8 +690,8 @@
 							var attackerTransitions = computeSelectedUnitsTransitions(problem.attacker, game.ThrowType.Barrage, hasBarrage);
 							var defenderTransitions = computeSelectedUnitsTransitions(problem.defender, game.ThrowType.Barrage, hasBarrage);
 
-							var attackerVulnerable = getVulnerableUnitsRange(problem.attacker, unitIs(game.UnitType.Fighter));
-							var defenderVulnerable = getVulnerableUnitsRange(problem.defender, unitIs(game.UnitType.Fighter));
+							var attackerVulnerable = getVulnerableUnitsRange(problem.attacker, vulnerableToBarrage(options.defender));
+							var defenderVulnerable = getVulnerableUnitsRange(problem.defender, vulnerableToBarrage(options.attacker));
 
 							var distribution = problem.distribution;
 							for (var a = 0; a < distribution.rows; a++) {
@@ -709,14 +709,23 @@
 									}
 								}
 							}
-
-							result.push.apply(result, ensemble.getSubproblems());
+							var subproblems = ensemble.getSubproblems();
+							subproblems.forEach(function (subproblem) {
+								collapseYinFlagship(subproblem, options, problem);
+							});
+							result.push.apply(result, subproblems);
 						});
-
+					
 						return result;
 
 						function hasBarrage(unit) {
 							return unit.barrageDice !== 0;
+						}
+						
+						function vulnerableToBarrage(sideOptions) {
+							return function (unit) {
+								return sideOptions.waylay || unitIs(game.UnitType.Fighter)(unit);
+							};
 						}
 
 						function getVulnerableUnitsRange(fleet, predicate) {
@@ -743,7 +752,8 @@
 								return structs.Victim.Null;
 
 							var result = new structs.Victim();
-							result.addRange(fleetVulnerable.from, Math.min(index, fleetVulnerable.from + hits, fleetVulnerable.to));
+							var killed = Math.min(hits, fleetVulnerable.to - fleetVulnerable.from, index - fleetVulnerable.from);
+							result.addRange(fleetVulnerable.to - killed, fleetVulnerable.to);
 							return result;
 						}
 					},

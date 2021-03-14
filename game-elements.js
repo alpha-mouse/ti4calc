@@ -121,6 +121,7 @@
 	};
 
 	root.ActionCards = {
+		waylay: new Option('Waylay', 'Hits from your Anti-Fighter Barrage are produced against all ships'),
 		moraleBoost: new Option('Morale Boost 1st round', '+1 dice modifier to all units during the first battle round'),
 		fireTeam: new Option('Fire Team 1st round', 'Reroll dice after first round of invasion combat'),
 		fighterPrototype: new Option('Fighter Prototype', '+2 dice modifier to Fighters during the first battle round'),
