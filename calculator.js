@@ -697,8 +697,11 @@
 									}
 								}
 							}
-							// Yin flagship?
-							result.push.apply(result, ensemble.getSubproblems());
+							var subproblems = ensemble.getSubproblems();
+							subproblems.forEach(function (subproblem) {
+								collapseYinFlagship(subproblem, options, problem);
+							});
+							result.push.apply(result, subproblems);
 						});
 					
 						return result;
@@ -737,7 +740,8 @@
 								return structs.Victim.Null;
 
 							var result = new structs.Victim();
-							result.addRange(fleetVulnerable.from, Math.min(index, fleetVulnerable.from + hits, fleetVulnerable.to));
+							var killed = Math.min(hits, fleetVulnerable.to - fleetVulnerable.from, index - fleetVulnerable.from);
+							result.addRange(fleetVulnerable.to - killed, fleetVulnerable.to);
 							return result;
 						}
 					},

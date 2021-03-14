@@ -489,15 +489,18 @@
 						var defenderBarrageUnits = defender.filter(hasBarrage);
 						var attackerInflicted = rollDice(attackerBarrageUnits, game.ThrowType.Barrage);
 						var defenderInflicted = rollDice(defenderBarrageUnits, game.ThrowType.Barrage);
-						
+
 						var attackerYinFlagshipDied = applyDamage(attacker, defenderInflicted, options.attacker, vulnerableToBarrage(options.defender));
 						var defenderYinFlagshipDied = applyDamage(defender, attackerInflicted, options.defender, vulnerableToBarrage(options.attacker));
-						// // Yin flagship?
+						if (attackerYinFlagshipDied || defenderYinFlagshipDied) {
+							attacker.splice(0);
+							defender.splice(0);
+						}
 						
 						function hasBarrage(unit) {
 							return unit.barrageDice !== 0;
 						}
-						
+
 						function vulnerableToBarrage(sideOptions) {
 							return function (unit) {
 								return sideOptions.waylay || unitIs(game.UnitType.Fighter)(unit);

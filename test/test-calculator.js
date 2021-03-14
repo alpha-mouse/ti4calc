@@ -2917,6 +2917,59 @@ exports.groundMechBombardArborecWarsun = function (test) {
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
 
+exports.waylaySimple = function (test) {
+  var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Cruiser] = { count: 1 };
+	attacker[game.UnitType.Fighter] = { count: 1 };
+
+	defender[game.UnitType.Destroyer] = { count: 1 };
+
+	var options = { attacker: { }, defender: { waylay: true } };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.waylayDamageable = function (test) {
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Dreadnought] = { count: 2 };
+  attacker[game.UnitType.Fighter] = { count: 2 };
+
+	defender[game.UnitType.Destroyer] = { count: 2 };
+
+	var options = { attacker: { }, defender: { waylay: true } };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.waylayNoFighters = function (test) {
+  var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Cruiser] = { count: 2 };
+	attacker[game.UnitType.Destroyer] = { count: 2 };
+
+	defender[game.UnitType.Destroyer] = { count: 2 };
+
+	var options = { attacker: { waylay: true }, defender: { waylay: true } };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.waylaySpaceCannon = function (test) {
+  var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Cruiser] = { count: 2 };
+	attacker[game.UnitType.Fighter] = { count: 2 };
+  attacker[game.UnitType.PDS] = { count: 2};
+
+	defender[game.UnitType.Destroyer] = { count: 4 };
+
+	var options = { attacker: { waylay: true }, defender: { waylay: true } };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
 var chaoticProfile = {
 	Flagship: { count: 1, zeroBias: 1 },
 	WarSun: { count: 2, zeroBias: 2 },
@@ -3113,4 +3166,5 @@ if (useGrouping) {
 	exports.x89Omega = group(exports, 'x89Omega');
 	exports.magenOmega = group(exports, 'magenOmega');
 	exports.groundMech = group(exports, 'groundMech');
+	exports.waylay = group(exports, 'waylay');
 }
