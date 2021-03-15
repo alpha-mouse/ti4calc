@@ -702,8 +702,8 @@
 
 									for (var attackerInflicted = 0; attackerInflicted < transitionMatrix.rows; attackerInflicted++) {
 										for (var defenderInflicted = 0; defenderInflicted < transitionMatrix.columns; defenderInflicted++) {
-											var attackerVictims = barrageVictims(attackerVulnerable, a, defenderInflicted);
-											var defenderVictims = barrageVictims(defenderVulnerable, d, attackerInflicted);
+											var attackerVictims = barrageVictims(problem.attacker, attackerVulnerable, a, defenderInflicted, options.attacker);
+											var defenderVictims = barrageVictims(problem.defender, defenderVulnerable, d, attackerInflicted, options.defender);
 											ensemble.increment(attackerVictims, defenderVictims, a, d, transitionMatrix.at(attackerInflicted, defenderInflicted) * distribution[a][d]);
 										}
 									}
@@ -747,13 +747,24 @@
 							return { from: from, to: i };
 						}
 
-						function barrageVictims(fleetVulnerable, index, hits) {
+						function barrageVictims(fleet, fleetVulnerable, index, hits, sideOptions) {
 							if (hits === 0 || index < fleetVulnerable.from)
 								return structs.Victim.Null;
 
 							var result = new structs.Victim();
-							var killed = Math.min(hits, fleetVulnerable.to - fleetVulnerable.from, index - fleetVulnerable.from);
-							result.addRange(fleetVulnerable.to - killed, fleetVulnerable.to);
+							var toDie = hits;
+							var upperBound = Math.min(fleetVulnerable.to, index);
+							if (sideOptions.nonEuclidean) {
+								for (var i = upperBound - 1; fleetVulnerable.from <= i && 1 < hits; --i) {
+									if (fleet[i].isDamageGhost) {
+										toDie--;
+										hits--;
+									}
+									hits--;
+								}
+							}
+							var killed = Math.min(toDie, upperBound - fleetVulnerable.from);
+							result.addRange(upperBound - killed, upperBound);
 							return result;
 						}
 					},

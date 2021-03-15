@@ -2971,7 +2971,7 @@ exports.groundValkyrieParticleWeaveBombardment = function (test) {
 };
 
 exports.waylaySimple = function (test) {
-  var attacker = {};
+	var attacker = {};
 	var defender = {};
 	attacker[game.UnitType.Cruiser] = { count: 1 };
 	attacker[game.UnitType.Fighter] = { count: 1 };
@@ -2987,7 +2987,7 @@ exports.waylayDamageable = function (test) {
 	var attacker = {};
 	var defender = {};
 	attacker[game.UnitType.Dreadnought] = { count: 2 };
-  attacker[game.UnitType.Fighter] = { count: 2 };
+	attacker[game.UnitType.Fighter] = { count: 2 };
 
 	defender[game.UnitType.Destroyer] = { count: 2 };
 
@@ -2997,7 +2997,7 @@ exports.waylayDamageable = function (test) {
 };
 
 exports.waylayNoFighters = function (test) {
-  var attacker = {};
+	var attacker = {};
 	var defender = {};
 	attacker[game.UnitType.Cruiser] = { count: 2 };
 	attacker[game.UnitType.Destroyer] = { count: 2 };
@@ -3010,15 +3010,28 @@ exports.waylayNoFighters = function (test) {
 };
 
 exports.waylaySpaceCannon = function (test) {
-  var attacker = {};
+	var attacker = {};
 	var defender = {};
 	attacker[game.UnitType.Cruiser] = { count: 2 };
 	attacker[game.UnitType.Fighter] = { count: 2 };
-  attacker[game.UnitType.PDS] = { count: 2};
+	attacker[game.UnitType.PDS] = { count: 2};
 
 	defender[game.UnitType.Destroyer] = { count: 4 };
 
 	var options = { attacker: { waylay: true }, defender: { waylay: true } };
+
+	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.waylayNonEuclidean = function (test) {
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Destroyer] = { count: 1, upgraded: true, };
+	attacker[game.UnitType.PDS] = { count: 1 };
+
+	defender[game.UnitType.Dreadnought] = { count: 2, damaged: 1, };
+
+	var options = { attacker: { waylay: true }, defender: { riskDirectHit: false, nonEuclidean: true, } };
 
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
 };
