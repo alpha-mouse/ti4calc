@@ -3014,7 +3014,7 @@ exports.waylaySpaceCannon = function (test) {
 	var defender = {};
 	attacker[game.UnitType.Cruiser] = { count: 2 };
 	attacker[game.UnitType.Fighter] = { count: 2 };
-	attacker[game.UnitType.PDS] = { count: 2};
+	attacker[game.UnitType.PDS] = { count: 2 };
 
 	defender[game.UnitType.Destroyer] = { count: 4 };
 
@@ -3034,6 +3034,33 @@ exports.waylayNonEuclidean = function (test) {
 	var options = { attacker: { waylay: true }, defender: { riskDirectHit: false, nonEuclidean: true, } };
 
 	testBattle(test, attacker, defender, game.BattleType.Space, options);
+};
+
+exports.harrowGroundMechNonEuclidean = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.WarSun] = { count: 1 };
+	attacker[game.UnitType.Ground] = { count: 1 };
+
+	defender[game.UnitType.Mech] = { count: 1 };
+	defender[game.UnitType.Ground] = { count: 1 };
+
+	var options = { attacker: { race: game.Race.L1Z1X, }, defender: { nonEuclidean: true, } };
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
+exports.harrowGroundMechNonEuclidean2 = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.WarSun] = { count: 1 };
+	attacker[game.UnitType.Ground] = { count: 1 };
+
+	defender[game.UnitType.Mech] = { count: 2 };
+
+	var options = { attacker: { race: game.Race.L1Z1X, }, defender: { nonEuclidean: true, } };
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
 
 var chaoticProfile = {

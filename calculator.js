@@ -183,13 +183,19 @@
 			// evaluate probabilities of transitions for each fleet
 			var attackerTransitions = computeFleetTransitions(problem.attacker, game.ThrowType.Battle, boost(battleType, options.attacker, options.defender, problem.attacker, false));
 			var defenderTransitions = computeFleetTransitions(problem.defender, game.ThrowType.Battle, boost(battleType, options.defender, options.attacker, problem.defender, false));
+			var harrowTransitions = undefined;
 			if (options.attacker.race === game.Race.L1Z1X && battleType === game.BattleType.Ground) {
-				var harrowTransitions = bombardmentTransitionsVector(attackerFull, defenderFull, options);
-				if (harrowTransitions.length === 1) //means no bombardment
-					harrowTransitions = undefined;
+				var idealHarrowTransitions = bombardmentTransitionsVector(attackerFull, defenderFull, options);
+				if (idealHarrowTransitions.length !== 1) { //means there is at least some bombardment
+					harrowTransitions = scale(idealHarrowTransitions, problem.defender.length)
+					if (options.defender.nonEuclidean) {
+						for (var d = 0; d < problem.defender.length; d++) {
+							harrowTransitions[d] = adjustVectorForNonEuclidean(harrowTransitions[d], problem.defender, d);
+						}
+					}
+				}
 			}
-			else
-				var harrowTransitions = undefined;
+
 			var winnuFlagshipRelevant = battleType === game.BattleType.Space &&
 				(options.attacker.race === game.Race.Winnu && problem.attacker.some(unitIs(game.UnitType.Flagship)) ||
 					options.defender.race === game.Race.Winnu && problem.defender.some(unitIs(game.UnitType.Flagship)));
@@ -221,10 +227,11 @@
 					var transitionMatrix = (adjustmentsRelevant ? unconstrainedOrthogonalMultiply : orthogonalMultiply)(attackerTransitions[a], defenderTransitions[d], d + 1, a + 1);
 					if (valkyrieRelevant)
 						transitionMatrix = adjustForValkyrieParticleWeave(transitionMatrix, options);
-					if (harrowTransitions)
-						transitionMatrix = harrowMultiply(transitionMatrix, harrowTransitions);
 					if (nonEuclideanRelevant)
 						transitionMatrix = adjustForNonEuclidean(transitionMatrix, problem, a - 1, d - 1, options);
+					if (harrowTransitions) {
+						transitionMatrix = harrowMultiply(transitionMatrix, harrowTransitions, d - 1);
+					}
 					if (adjustmentsRelevant)
 						transitionMatrix = constrainTransitionMatrix(transitionMatrix, d + 1, a + 1);
 
@@ -367,19 +374,19 @@
 		}
 
 		/** Similar in purpose and result to orthogonalMultiply, but takes pre-round firing into account */
-		function harrowMultiply(transitionMatrix, postroundAttackerTransitions, rows, columns) {
-			if (!postroundAttackerTransitions || postroundAttackerTransitions.length === 1)
+		function harrowMultiply(transitionMatrix, postroundAttackerTransitions, defenderIndex) {
+			if (!postroundAttackerTransitions)
 				return transitionMatrix;
 
 			return {
-				rows: transitionMatrix.rows + postroundAttackerTransitions.length - 1,
+				rows: transitionMatrix.rows + postroundAttackerTransitions[0].length - 1,
 				columns: transitionMatrix.columns,
 				at: function (i1, i2) {
 					var result = 0;
-					for (var i = 0; i <= i1 && i < postroundAttackerTransitions.length; ++i) {
-						if (i1 - i < transitionMatrix.rows) {
-							var postRound = postroundAttackerTransitions[i];
-							result += postRound * transitionMatrix.at(i1 - i, i2);
+					for (var mainRoundInflicted = 0, postRoundInflicted = i1; mainRoundInflicted <= i1; ++mainRoundInflicted, --postRoundInflicted) {
+						var postRoundVector = postroundAttackerTransitions[defenderIndex - mainRoundInflicted] || [1]
+						if (mainRoundInflicted < transitionMatrix.rows && postRoundInflicted < postRoundVector.length) {
+							result += postRoundVector[postRoundInflicted] * transitionMatrix.at(mainRoundInflicted, i2);
 						}
 					}
 					return result;
@@ -985,6 +992,24 @@
 					return transitionMatrix.at(i1 - rowShift, i2 - columnShift);
 				}
 			};
+		}
+
+		function adjustVectorForNonEuclidean(fleetTransitionsVector, opposingFleet, opposingIndex) {
+			if (fleetTransitionsVector.length > 2) {
+				var result = fleetTransitionsVector.slice();
+				// as it is implemented, if the fleet is [D, d, C], and two hits are produced against it, then both
+				// the Cruiser will be killed and the Dreadnought damaged. Though it suffices to only damage the Dreadnought,
+				// because non-euclidean will absorb both hits.
+				for (var dmg = 1; dmg < result.length && 0 < opposingIndex; dmg++) {
+					if (opposingFleet[opposingIndex].isDamageGhost) {
+						cancelHits(result, 1, dmg);
+					}
+					opposingIndex--;
+				}
+				return result;
+			} else {
+				return fleetTransitionsVector;
+			}
 		}
 
 		function adjustForNonEuclidean(transitionMatrix, problem, attackerIndex, defenderIndex, options) {
