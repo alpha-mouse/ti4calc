@@ -38,7 +38,6 @@
 			},
 			displayName: function (unitType) {
 				if (unitType === UnitType.WarSun) return 'War Sun';
-				else if (unitType === UnitType.Ground) return 'Ground Force';
 				else return unitType;
 			},
 			clear: function (side) {
@@ -206,7 +205,7 @@
 					case UnitType.Fighter:
 						return this.battleType === BattleType.Space ||
 							battleSide === BattleSide.attacker && this.options.attacker.race === Race.Naalu && this.attackerUnits.Flagship.count !== 0;
-					case UnitType.Ground:
+					case UnitType.Infantry:
 						return this.battleType === BattleType.Ground ||
 							this.options[battleSide].race === Race.Virus && this[SideUnits[battleSide]].Flagship.count !== 0;
 					case UnitType.PDS:

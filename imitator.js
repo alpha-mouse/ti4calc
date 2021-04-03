@@ -176,8 +176,8 @@
 					defenderInflictedToEverything += defenderAdditional;
 				}
 
-				var attackerYinFlagshipDied = applyDamage(attacker, defenderInflictedToNonFighters, options.attacker, null, notFighter) || applyDamage(attacker, defenderInflictedToEverything, options.attacker);
-				var defenderYinFlagshipDied = applyDamage(defender, attackerInflictedToNonFighters, options.defender, null, notFighter) || applyDamage(defender, attackerInflictedToEverything, options.defender);
+				var attackerYinFlagshipDied = applyDamage(attacker, defenderInflictedToNonFighters, options.attacker, null, null, notFighter) || applyDamage(attacker, defenderInflictedToEverything, options.attacker);
+				var defenderYinFlagshipDied = applyDamage(defender, attackerInflictedToNonFighters, options.defender, null, null, notFighter) || applyDamage(defender, attackerInflictedToEverything, options.defender);
 				if (attackerYinFlagshipDied || defenderYinFlagshipDied) {
 					attacker.splice(0);
 					defender.splice(0);
@@ -284,27 +284,29 @@
 		}
 
 		/** returns true if Yin flagship was killed */
-		function applyDamage(fleet, hits, sideOptions, hardPredicate, softPredicate) {
+		function applyDamage(fleet, hits, sideOptions, anyKilledPredicate, hardPredicate, softPredicate) {
+			anyKilledPredicate = anyKilledPredicate || function(unit) {
+				return sideOptions.race === game.Race.Yin && unitIs(game.UnitType.Flagship)(unit);
+			}
+			var anyKilled = false;
 			hardPredicate = hardPredicate || function (unit) {
 				return true;
 			};
 			for (var i = fleet.length - 1; 0 <= i && 0 < hits; i--) {
 				if (hardPredicate(fleet[i]) && (!softPredicate || softPredicate(fleet[i]))) {
 					var killed = hit(i);
-					if (sideOptions.race === game.Race.Yin && unitIs(game.UnitType.Flagship)(killed))
-						return true;
+					anyKilled |= anyKilledPredicate(killed)
 				}
 			}
 			if (softPredicate) {
 				for (var i = fleet.length - 1; 0 <= i && 0 < hits; i--) {
 					if (hardPredicate(fleet[i])) {
 						var killed = hit(i);
-						if (sideOptions.race === game.Race.Yin && unitIs(game.UnitType.Flagship)(killed))
-							return true;
+						anyKilled |= anyKilledPredicate(killed)
 					}
 				}
 			}
-			return false;
+			return anyKilled;
 
 			function hit(i) {
 				var killed = fleet.splice(i, 1)[0];
@@ -377,8 +379,8 @@
 						if (options.defender.maneuveringJets && attackerInflicted > 0)
 							attackerInflicted--;
 
-						var defenderYinFlagshipDied = applyDamage(defender, attackerInflicted, options.defender, notGroundForce, gravitonLaserUnitHittable(options.attacker));
-						var attackerYinFlagshipDied = applyDamage(attacker, defenderInflicted, options.attacker, notGroundForce, gravitonLaserUnitHittable(options.defender));
+						var defenderYinFlagshipDied = applyDamage(defender, attackerInflicted, options.defender, null, notGroundForce, gravitonLaserUnitHittable(options.attacker));
+						var attackerYinFlagshipDied = applyDamage(attacker, defenderInflicted, options.attacker, null, notGroundForce, gravitonLaserUnitHittable(options.defender));
 						if (attackerYinFlagshipDied || defenderYinFlagshipDied) {
 							attacker.splice(0);
 							defender.splice(0);
@@ -400,7 +402,7 @@
 						}
 
 						function notGroundForce(unit) {
-							return /*because Virus Flagship*/ unit.type !== game.UnitType.Ground;
+							return /*because Virus Flagship*/ unit.type !== game.UnitType.Infantry && unit.type !== game.UnitType.Mech;
 						}
 
 						function markDamagedNotThisRound(fleet) {
@@ -490,8 +492,8 @@
 						var attackerInflicted = rollDice(attackerBarrageUnits, game.ThrowType.Barrage);
 						var defenderInflicted = rollDice(defenderBarrageUnits, game.ThrowType.Barrage);
 
-						var attackerYinFlagshipDied = applyDamage(attacker, defenderInflicted, options.attacker, vulnerableToBarrage(options.defender));
-						var defenderYinFlagshipDied = applyDamage(defender, attackerInflicted, options.defender, vulnerableToBarrage(options.attacker));
+						var attackerYinFlagshipDied = applyDamage(attacker, defenderInflicted, options.attacker, null, vulnerableToBarrage(options.defender));
+						var defenderYinFlagshipDied = applyDamage(defender, attackerInflicted, options.defender, null, vulnerableToBarrage(options.attacker));
 						if (attackerYinFlagshipDied || defenderYinFlagshipDied) {
 							attacker.splice(0);
 							defender.splice(0);
@@ -524,10 +526,13 @@
 							attackerInflicted += fromPlasmaScoring(attackerFull, game.ThrowType.Bombardment, attackerModifier);
 						}
 
-						if (options.attacker.x89Omega && attackerInflicted > 0) {
-							defender.splice(0);
-						} else {
-							applyDamage(defender, attackerInflicted, options.defender)
+						var infantryKilled = applyDamage(defender, attackerInflicted, options.defender, unitIs(game.UnitType.Infantry));
+						if (options.attacker.x89Omega && infantryKilled) {
+							for (var i = defender.length - 1; 0 <= i; i--) {
+								if (unitIs(game.UnitType.Infantry)(defender[i])) {
+									defender.splice(i, 1)
+								}
+							}
 						}
 
 						function hasBombardment(unit) {
@@ -687,7 +692,7 @@
 		}
 
 		function notFighterNorGroundForceShip(unit) {
-			return unit.type !== game.UnitType.Fighter && unit.type !== game.UnitType.Ground && !unit.isDamageGhost;
+			return unit.type !== game.UnitType.Fighter && unit.type !== game.UnitType.Infantry && unit.type !== game.UnitType.Mech && !unit.isDamageGhost;
 		}
 
 		function sum(a, b) {

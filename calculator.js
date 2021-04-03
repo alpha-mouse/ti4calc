@@ -119,7 +119,7 @@
 				// Also, I don't try to be clever with which Naalu unit will be killed, GF of a Fighter, even though it's defender's choice
 				var attackerTransitions = scale([1], problem.attacker.length + 1); // attacker does not fire
 				var defenderTransitions = scale([0, 1], problem.defender.length); // defender inflicts one hit if there is anyone present
-				defenderTransitions.unshift([1]); // otherwise there is no Ground Comband and hence no Magen Defence Grid Ω
+				defenderTransitions.unshift([1]); // otherwise there is no Ground Combat and hence no Magen Defence Grid Ω
 				applyTransitions(problem, attackerTransitions, defenderTransitions, options);
 			}
 
@@ -187,11 +187,9 @@
 			if (options.attacker.race === game.Race.L1Z1X && battleType === game.BattleType.Ground) {
 				var idealHarrowTransitions = bombardmentTransitionsVector(attackerFull, defenderFull, options);
 				if (idealHarrowTransitions.length !== 1) { //means there is at least some bombardment
-					harrowTransitions = scale(idealHarrowTransitions, problem.defender.length)
-					if (options.defender.nonEuclidean) {
-						for (var d = 0; d < problem.defender.length; d++) {
-							harrowTransitions[d] = adjustVectorForNonEuclidean(harrowTransitions[d], problem.defender, d);
-						}
+					harrowTransitions = new Array(problem.defender.length);
+					for (var d = 0; d < problem.defender.length; d++) {
+						harrowTransitions[d] = adjustBombardmentVector(idealHarrowTransitions, problem.defender, d, options);
 					}
 				}
 			}
@@ -378,8 +376,10 @@
 			if (!postroundAttackerTransitions)
 				return transitionMatrix;
 
+			var maxPostroundDamage = Math.max(...postroundAttackerTransitions.map(v => v.length));
+
 			return {
-				rows: transitionMatrix.rows + postroundAttackerTransitions[0].length - 1,
+				rows: transitionMatrix.rows + maxPostroundDamage - 1,
 				columns: transitionMatrix.columns,
 				at: function (i1, i2) {
 					var result = 0;
@@ -453,9 +453,9 @@
 					execute: function (problemArray, attackerFull, defenderFull, options) {
 						var result = [];
 						var attackerVirusFlagship = options.attacker.race === game.Race.Virus &&
-							attackerFull.some(unitIs(game.UnitType.Flagship)) && attackerFull.some(unitIs(game.UnitType.Ground));
+							attackerFull.some(unitIs(game.UnitType.Flagship)) && attackerFull.some(unit => unitIs(game.UnitType.Infantry)(unit) || unitIs(game.UnitType.Mech)(unit));
 						var defenderVirusFlagship = options.defender.race === game.Race.Virus &&
-							defenderFull.some(unitIs(game.UnitType.Flagship)) && defenderFull.some(unitIs(game.UnitType.Ground));
+							defenderFull.some(unitIs(game.UnitType.Flagship)) && defenderFull.some(unit => unitIs(game.UnitType.Infantry)(unit) || unitIs(game.UnitType.Mech)(unit));
 
 						problemArray.forEach(function (problem) {
 							var attackerTransitionsVector = getSpaceCannonTransitionsVector(attackerFull, options.attacker, options.defender);
@@ -517,7 +517,7 @@
 						function gravitonLaserVictims(fleet, index, hits, thisSideOptions, opposingSideOptions) {
 							if (hits === 0 || index === 0)
 								return structs.Victim.Null;
-							if (!opposingSideOptions.gravitonLaser && !thisSideOptions.nonEuclidean && !fleet.some(unitIs(game.UnitType.Ground))) {
+							if (!opposingSideOptions.gravitonLaser && !thisSideOptions.nonEuclidean && !fleet.some(unit => unitIs(game.UnitType.Infantry)(unit) || unitIs(game.UnitType.Mech)(unit))) {
 								var result = new structs.Victim();
 								result._dead = Math.min(hits, fleet.map(absorbsHits).reduce(sum));
 								return result;
@@ -530,7 +530,7 @@
 								var unit = fleet[i];
 								if (unit.type === game.UnitType.Fighter && opposingSideOptions.gravitonLaser) {
 									currentRange = null;
-								} else if (unit.type === game.UnitType.Ground) {
+								} else if (unit.type === game.UnitType.Infantry || unit.type === game.UnitType.Mech) {
 									currentRange = null;
 								} else {
 									if (currentRange === null) {
@@ -780,11 +780,24 @@
 					name: 'Bombardment',
 					appliesTo: game.BattleType.Ground,
 					execute: function (problemArray, attackerFull, defenderFull, options) {
+
+						var attackerTransitionsVector = bombardmentTransitionsVector(attackerFull, defenderFull, options);
+						if (attackerTransitionsVector.length === 1) return problemArray;
+
 						problemArray.forEach(function (problem) {
-							var attackerTransitionsVector = bombardmentTransitionsVector(attackerFull, defenderFull, options);
-							var attackerTransitions = scale(attackerTransitionsVector, problem.attacker.length + 1);
-							var defenderTransitions = scale([1], problem.defender.length + 1);
-							applyTransitions(problem, attackerTransitions, defenderTransitions, options);
+
+							var distribution = problem.distribution;
+							for (var d = 1; d < distribution.columns; d++) {
+								var particularAttackerTransitions = adjustBombardmentVector(attackerTransitionsVector, problem.defender, d - 1, options);
+								for (var a = 0; a < distribution.rows; a++) {
+									if (distribution[a][d] === 0) continue;
+									var transitionMatrix = orthogonalMultiply(particularAttackerTransitions, [1], d + 1, a + 1);
+									for (var attackerInflicted = 1; attackerInflicted < transitionMatrix.rows; attackerInflicted++) {
+										distribution[a][d - attackerInflicted] += transitionMatrix.at(attackerInflicted, 0) * distribution[a][d];
+									}
+									distribution[a][d] *= transitionMatrix.at(0, 0);
+								}
+							}
 						});
 						return problemArray;
 					},
@@ -941,14 +954,6 @@
 				fleetTransitionsVectorWithPlasmaScoring(bombardmentAttacker, game.ThrowType.Bombardment, attackerModifier) :
 				fleetTransitionsVector(bombardmentAttacker, game.ThrowType.Bombardment, attackerModifier);
 
-			if (options.attacker.x89Omega) {
-				var x89TransitionsVector = new Array(defenderFull.length + 1);
-				x89TransitionsVector.fill(0);
-				x89TransitionsVector[0] = resultTransitionsVector[0];
-				x89TransitionsVector[x89TransitionsVector.length - 1] = resultTransitionsVector.reduce(function(a, b) { return a + b }) - resultTransitionsVector[0]
-				resultTransitionsVector = x89TransitionsVector;
-			}
-
 			return resultTransitionsVector;
 
 			function hasBombardment(unit) {
@@ -994,21 +999,43 @@
 			};
 		}
 
-		function adjustVectorForNonEuclidean(fleetTransitionsVector, opposingFleet, opposingIndex) {
-			if (fleetTransitionsVector.length > 2) {
-				var result = fleetTransitionsVector.slice();
-				// as it is implemented, if the fleet is [D, d, C], and two hits are produced against it, then both
-				// the Cruiser will be killed and the Dreadnought damaged. Though it suffices to only damage the Dreadnought,
-				// because non-euclidean will absorb both hits.
-				for (var dmg = 1; dmg < result.length && 0 < opposingIndex; dmg++) {
-					if (opposingFleet[opposingIndex].isDamageGhost) {
-						cancelHits(result, 1, dmg);
+		function adjustBombardmentVector(bombardmentVector, defender, defenderIndex, options) {
+			if (bombardmentVector.length > 1 && (options.attacker.x89Omega || options.defender.nonEuclidean)) {
+				var result = bombardmentVector.slice();
+
+				if (options.defender.nonEuclidean) {
+					var d = defenderIndex;
+					// as it is implemented, if the fleet is [D, d, C], and two hits are produced against it, then both
+					// the Cruiser will be killed and the Dreadnought damaged. Though it suffices to only damage the Dreadnought,
+					// because non-euclidean will absorb both hits.
+					for (var dmg = 1; dmg < result.length && 0 < d; dmg++) {
+						if (defender[d].isDamageGhost) {
+							cancelHits(result, 1, dmg);
+						}
+						d--;
 					}
-					opposingIndex--;
 				}
+
+				var firstInfantryIndex = defender.findIndex(unitIs(game.UnitType.Infantry));
+				var lastInfantryIndex = findLastIndex(defender, unitIs(game.UnitType.Infantry));
+				if (options.attacker.x89Omega && firstInfantryIndex !== -1 && firstInfantryIndex < defenderIndex) {
+					var x89adjusted = new Array(Math.max(result.length, defenderIndex - firstInfantryIndex + 2));
+					for (var i = 0; i < result.length; i++)
+						x89adjusted[i] = result[i];
+					for (var i = result.length; i < x89adjusted.length; i++)
+						x89adjusted[i] = 0;
+
+					var inflictedTillPastFirstInfantry = defenderIndex - firstInfantryIndex + 1;
+					for (var attackerInflicted = Math.max(1, defenderIndex - lastInfantryIndex + 1); attackerInflicted < inflictedTillPastFirstInfantry; ++attackerInflicted) {
+						x89adjusted[inflictedTillPastFirstInfantry] += x89adjusted[attackerInflicted];
+						x89adjusted[attackerInflicted] = 0;
+					}
+					result = x89adjusted;
+				}
+
 				return result;
 			} else {
-				return fleetTransitionsVector;
+				return bombardmentVector;
 			}
 		}
 
@@ -1174,7 +1201,14 @@
 		}
 
 		function notFighterNorGroundForceShip(unit) {
-			return unit.type !== game.UnitType.Fighter && unit.type !== game.UnitType.Ground && !unit.isDamageGhost;
+			return unit.type !== game.UnitType.Fighter && unit.type !== game.UnitType.Infantry && unit.type !== game.UnitType.Mech && !unit.isDamageGhost;
+		}
+
+		function findLastIndex(arr, predicate) {
+			for (var i = arr.length - 1; 0 <= i; --i)
+				if (predicate(arr[i], i, arr))
+					return i;
+			return -1;
 		}
 
 		function findLastIndex(array, predicate) {

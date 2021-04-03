@@ -37,7 +37,7 @@
 		Destroyer: 'Destroyer',
 		Fighter: 'Fighter',
 		Mech: 'Mech',
-		Ground: 'Ground',
+		Infantry: 'Infantry',
 		PDS: 'PDS',
 	};
 
@@ -51,7 +51,7 @@
 		Destroyer: '+',
 		Carrier: 'V',
 		Fighter: 'F',
-		Ground: 'G',
+		Infantry: 'I',
 		PDS: 'P',
 		Mech: 'M',
 	};
@@ -136,7 +136,7 @@
 		gravitonLaser: new Option('Graviton Laser System', 'Space Cannon hits should be applied to non-fighters if possible'),
 		plasmaScoring: new Option('Plasma Scoring', 'One additional die for one unit during Space Cannon or Bombardment'),
 		magenDefense: new Option('Magen Defense Grid', 'Opponent doesn\'t throw dice for one round if you have Planetary Shield', 'defender'),
-		x89Omega: new Option('X-89 Bacterial Weapon Ω', 'Destroy all by bombardment if at least one destroyed', 'attacker'),
+		x89Omega: new Option('X-89 Bacterial Weapon Ω', 'Destroy all Infantry by bombardment if at least one destroyed', 'attacker'),
 		magenDefenseOmega: new Option('Magen Defense Grid Ω', '1 hit at the start of ground combat when having structures', 'defender'),
 		hasDock: new Option('Has Dock', 'Defender has a dock for Magen Defence Grid Ω', 'defender'), // not a technology itself, but it's nice to show it close to Magen Defence Grid Ω
 		duraniumArmor: new Option('Duranium Armor', 'After each round repair 1 unit that wasn\'t damaged this round'),
@@ -281,7 +281,7 @@
 			spaceCannonDice: 1,
 			planetaryShield: true,
 		}),
-		Ground: new root.UnitInfo(UnitType.Ground, {
+		Infantry: new root.UnitInfo(UnitType.Infantry, {
 			battleValue: 8,
 			cost: 0.5,
 		}),
@@ -368,7 +368,7 @@
 				race: root.Race.Sol,
 				cost: 8,
 			}),
-			Ground: new root.UnitInfo(UnitType.Ground, {
+			Infantry: new root.UnitInfo(UnitType.Infantry, {
 				battleValue: 7,
 				cost: 0.5,
 			}),
@@ -595,7 +595,7 @@
 			spaceCannonDice: 1,
 			planetaryShield: true,
 		}),
-		Ground: new root.UnitInfo(UnitType.Ground, {
+		Infantry: new root.UnitInfo(UnitType.Infantry, {
 			battleValue: 7,
 			cost: 0.5,
 		}),
@@ -608,7 +608,7 @@
 				battleValue: 9,
 				cost: 3,
 			}),
-			Ground: new root.UnitInfo(UnitType.Ground, {
+			Infantry: new root.UnitInfo(UnitType.Infantry, {
 				battleValue: 6,
 				cost: 0.5,
 			}),
@@ -748,16 +748,16 @@
 
 		var unitOrder = createUnitOrder(virusFlagship);
 		var naaluGoundUnitOrder = {};
-		naaluGoundUnitOrder[UnitType.Ground] = 1;
+		naaluGoundUnitOrder[UnitType.Infantry] = 1;
 		naaluGoundUnitOrder[UnitType.Fighter] = 2;
 		var comparer;
-		var vipGround;
+		var vipInfantry;
 		if (naaluFlagship) {
-			// in case Fighters are stronger than Ground Forces, I'd like Ground Forces to die first, then sacrifice the
-			// Fighters. But, Fighters cannot take control of the planet, so I'd like to save one Ground Force
-			vipGround = (thisSideCounters[UnitType.Fighter] || {}).upgraded &&
-				!(thisSideCounters[UnitType.Ground] || {}).upgraded &&
-				result.find(function (unit) { return unit.type === UnitType.Ground; });
+			// in case Fighters are stronger than Infantry, I'd like Infantry to die first, then sacrifice the
+			// Fighters. But, Fighters cannot take control of the planet, so I'd like to save one Infantry
+			vipInfantry = (thisSideCounters[UnitType.Fighter] || {}).upgraded &&
+				!(thisSideCounters[UnitType.Infantry] || {}).upgraded &&
+				result.find(function (unit) { return unit.type === UnitType.Infantry; });
 			comparer = naaluComparer;
 		} else if ((thisSideCounters[UnitType.Dreadnought] || {}).upgraded)
 			comparer = upgradedDreadnoughtsComparer;
@@ -783,14 +783,23 @@
 		}
 
 		function createUnitOrder(virus) {
-			var result = [];
-			var i = 0;
-			for (var unitType in UnitType) {
-				result[unitType] = i++;
-			}
+			var result = {
+				Flagship: 0,
+				WarSun: 1,
+				Dreadnought: 2,
+				Cruiser: 3,
+				Carrier: 4,
+				Destroyer: 5,
+
+				Mech: 6,
+				Fighter: 7,
+
+				Infantry: 8,
+				PDS: 9,
+			};
 			if (virus) {
-				var tmp = result[UnitType.Ground]; // Virus will need Grounds to die after Fighters, as they are stronger
-				result[UnitType.Ground] = result[UnitType.Fighter];
+				var tmp = result[UnitType.Infantry]; // Virus will need Infantry to die after Fighters, as they are stronger
+				result[UnitType.Infantry] = result[UnitType.Fighter];
 				result[UnitType.Fighter] = tmp;
 			}
 			return result;
@@ -838,11 +847,11 @@
 
 		function naaluComparer(unit1, unit2) {
 			var typeOrder = naaluGoundUnitOrder[unit1.type] - naaluGoundUnitOrder[unit2.type];
-			if (vipGround) {
-				// Fighters are stronger than Ground
-				if (unit1 === vipGround)
+			if (vipInfantry) {
+				// Fighters are stronger than Infantry
+				if (unit1 === vipInfantry)
 					return -1;
-				else if (unit2 === vipGround)
+				else if (unit2 === vipInfantry)
 					return 1;
 				else
 					return -typeOrder;
@@ -854,10 +863,10 @@
 		function filterFleet() {
 			var result = this.filter(function (unit) {
 				if (battleType === root.BattleType.Space)
-					return ships.indexOf(unit.type) >= 0 || virusFlagship && unit.type === root.UnitType.Ground;
+					return ships.indexOf(unit.type) >= 0 || virusFlagship && (unit.type === root.UnitType.Infantry || unit.type === root.UnitType.Mech);
 				else //battleType === root.BattleType.Ground
-					return unit.type === UnitType.Ground || unit.type === UnitType.Mech || naaluFlagship && unit.type === root.UnitType.Fighter
-						|| titanUlPDS && unit.type === root.UnitType.PDS; // Ul PDS are also ground force
+					return unit.type === UnitType.Infantry || unit.type === UnitType.Mech || naaluFlagship && unit.type === root.UnitType.Fighter
+						|| titanUlPDS && unit.type === root.UnitType.PDS; // Ul PDS are also Infantry
 			});
 			result.comparer = this.comparer;
 			return result;
