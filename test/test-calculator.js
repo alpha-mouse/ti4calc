@@ -3022,6 +3022,44 @@ exports.groundMechValkyrieParticleWeaveNonEuclidean = function (test) {
 	testBattle(test, attacker, defender, game.BattleType.Ground, options);
 };
 
+exports.groundMechSardakk = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Infantry] = { count: 2 };
+	defender[game.UnitType.Mech] = { count: 2 };
+
+	var options = {
+		attacker: {
+		},
+		defender: {
+			race: game.Race.Sardakk,
+		}
+	};
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
+exports.groundMechSardakkL1z1xRacialHarrow = function (test) {
+
+	var attacker = {};
+	var defender = {};
+	attacker[game.UnitType.Dreadnought] = { count: 1 };
+	attacker[game.UnitType.Infantry] = { count: 2 };
+	defender[game.UnitType.Mech] = { count: 2 };
+
+	var options = {
+		attacker: {
+			race: game.Race.L1Z1X,
+		},
+		defender: {
+			race: game.Race.Sardakk,
+		}
+	};
+
+	testBattle(test, attacker, defender, game.BattleType.Ground, options);
+};
+
 exports.groundValkyrieParticleWeaveBombardment = function (test) {
 
 	var attacker = {};
@@ -3250,32 +3288,14 @@ function chaoticTest(test) {
 
 /** If chaotic test fails, this test is convenient to reproduce the problem */
 exports.chaoticReproduce = function (test) {
-	var battleType = game.BattleType.Ground;
-	var attacker = {
-		"Dreadnought": {
-			"count": 1,
-		},
-		"Ground": {
-			"count": 1,
-		},
-	};
-	var defender = {
-		"Mech": {
-			"count": 1,
-		},
-	};
-	var options = {
-		"attacker": {
-			"x89Omega": true,
-		},
-		"defender": {
-			"nonEuclidean": true,
-		}
-	};
+	var battleType = game.BattleType.Space;
+	var attacker = {"Flagship":{"count":0,"damaged":0},"WarSun":{"count":0,"damaged":0},"Dreadnought":{"count":5,"upgraded":false,"damaged":4},"Cruiser":{"count":0,"upgraded":false,"damaged":0},"Carrier":{"count":2,"damaged":2},"Destroyer":{"count":3,"upgraded":false,"damaged":0},"Fighter":{"count":1,"upgraded":false,"damaged":1},"Mech":{"count":0,"damaged":0},"Infantry":{"count":0,"upgraded":true,"damaged":0},"PDS":{"count":0,"upgraded":false,"damaged":0}};
+	var defender = {"Flagship":{"count":1,"damaged":1},"WarSun":{"count":1,"damaged":0},"Dreadnought":{"count":4,"upgraded":false,"damaged":3},"Cruiser":{"count":5,"upgraded":false,"damaged":0},"Carrier":{"count":0,"damaged":0},"Destroyer":{"count":3,"upgraded":false,"damaged":0},"Fighter":{"count":3,"upgraded":true,"damaged":2},"Mech":{"count":3,"damaged":0},"Infantry":{"count":0,"upgraded":false,"damaged":0},"PDS":{"count":4,"upgraded":true,"damaged":2}};
+	var options = {"attacker":{"race":"JolNar","antimassDeflectors":true,"gravitonLaser":false,"plasmaScoring":false,"magenDefense":false,"x89Omega":false,"magenDefenseOmega":false,"hasDock":false,"duraniumArmor":false,"assaultCannon":true,"waylay":true,"moraleBoost":false,"fireTeam":true,"fighterPrototype":false,"bunker":true,"experimentalBattlestation":false,"maneuveringJets":false,"riskDirectHit":false,"publicizeSchematics":true,"conventionsOfWar":false,"prophecyOfIxth":false,"letnevMunitionsFunding":false,"tekklarLegion":true,"nonEuclidean":false,"l4Disruptors":false,"valkyrieParticleWeave":false},"defender":{"race":"Virus","antimassDeflectors":false,"gravitonLaser":false,"plasmaScoring":false,"magenDefense":false,"x89Omega":false,"magenDefenseOmega":true,"hasDock":false,"duraniumArmor":false,"assaultCannon":false,"waylay":true,"moraleBoost":false,"fireTeam":true,"fighterPrototype":false,"bunker":false,"experimentalBattlestation":false,"maneuveringJets":true,"riskDirectHit":false,"publicizeSchematics":false,"conventionsOfWar":false,"prophecyOfIxth":true,"letnevMunitionsFunding":false,"tekklarLegion":false,"nonEuclidean":false,"l4Disruptors":false,"valkyrieParticleWeave":false}};
 	testBattle(test, attacker, defender, battleType, options);
 };
 
-//exports.chaoticMonkey = new Array(10).fill(chaoticTest);
+//exports.chaoticMonkey = new Array(1000).fill(chaoticTest);
 
 function Input(attacker, defender, battleType, options) {
 	this.attackerUnits = attacker;

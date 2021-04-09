@@ -206,8 +206,11 @@
 				: 0;
 
 			var valkyrieRelevant = battleType === game.BattleType.Ground && (options.attacker.valkyrieParticleWeave || options.defender.valkyrieParticleWeave);
+			var sardakkMechRelevant = battleType === game.BattleType.Ground &&
+			 (options.attacker.race === game.Race.Sardakk && problem.attacker.some(unitIs(game.UnitType.Mech))
+			  || options.defender.race === game.Race.Sardakk && problem.defender.some(unitIs(game.UnitType.Mech)));
 			var nonEuclideanRelevant = options.attacker.nonEuclidean || options.defender.nonEuclidean;
-			var adjustmentsRelevant = valkyrieRelevant || nonEuclideanRelevant || harrowTransitions;
+			var adjustmentsRelevant = valkyrieRelevant || nonEuclideanRelevant || harrowTransitions || sardakkMechRelevant;
 
 			//do propagation
 			for (var a = distr.rows - 1; 0 < a; a--) {
@@ -227,6 +230,8 @@
 						transitionMatrix = adjustForValkyrieParticleWeave(transitionMatrix, options);
 					if (nonEuclideanRelevant)
 						transitionMatrix = adjustForNonEuclidean(transitionMatrix, problem, a - 1, d - 1, options);
+					if (sardakkMechRelevant)
+						transitionMatrix = adjustForSardakkMech(transitionMatrix, options, problem, a - 1, d - 1);
 					if (harrowTransitions) {
 						transitionMatrix = harrowMultiply(transitionMatrix, harrowTransitions, d - 1);
 					}
@@ -999,6 +1004,133 @@
 			};
 		}
 
+		function adjustForSardakkMech(transitionMatrix, options, problem, attackerIndex, defenderIndex) {
+			var attackerSardakk = options.attacker.race === game.Race.Sardakk;
+			var defenderSardakk = options.defender.race === game.Race.Sardakk;
+			if (!attackerSardakk && !defenderSardakk)
+				return transitionMatrix;
+
+			if (attackerSardakk ^ defenderSardakk) {
+				// only one Sardakk, no weird Sardakk vs Sardakk mech damaging chain lightning
+				var rows = transitionMatrix.rows + (attackerSardakk ? 1 : 0);
+				var columns = transitionMatrix.columns + (defenderSardakk ? 1 : 0);
+				var reifiedMatrix = reify(transitionMatrix, rows, columns);
+				if (attackerSardakk) {
+					for (var dmg = 1; (dmg < columns) && (0 <= attackerIndex); dmg++, attackerIndex--) {
+						if (isDamageGhost(game.UnitType.Mech)(problem.attacker[attackerIndex])) {
+							for (var a = rows; 0 < a; --a) {
+								for (var d = columns; dmg < d; --d)
+									reifiedMatrix[a][d] = reifiedMatrix[a - 1][d];
+							}
+							for (var d = columns; dmg < d; --d)
+									reifiedMatrix[0][d] = 0;
+							break;
+						}
+					}
+				}
+			}
+			else {
+				// Sardakk vs Sardakk, one mech damaging might cause another mech damaging
+			}
+
+			var rows = transitionMatrix.rows + (attackerSardakk ? problem.attacker.slice(0, attackerIndex + 1).filter(isDamageGhost(game.UnitType.Mech)).length : 0);
+			var columns = transitionMatrix.columns + (defenderSardakk ? problem.defender.slice(0, defenderIndex + 1).filter(isDamageGhost(game.UnitType.Mech)).length : 0);
+			var result = [];
+			for (var i = 0; i < rows; i++) {
+				var row = [];
+				result.push(row);
+				for (var j = 0; j < columns; j++)
+					row.push(0);
+			}
+
+			for (var attackerInflicted = 0; attackerInflicted < transitionMatrix.length; )
+
+			if (attackerSardakk) {
+				reifiedMatrix.push([]);
+				for (var i = 0; i < columns; ++ i)
+					reifiedMatrix[rows - 1][i] = 0;
+				for (var dmg = 1; (dmg < columns) && (0 <= attackerIndex); dmg++, attackerIndex--) {
+					if (isDamageGhost(game.UnitType.Mech)(problem.attacker[attackerIndex])) {
+						for (var a = rows; 0 < a; ++a) {
+
+						}
+						columns++;
+						break;
+					}
+				}
+			}
+			if (defenderSardakk) {
+				for (var dmg = 1; (dmg < rows) && (0 <= defenderIndex); dmg++, defenderIndex--) {
+					if (isDamageGhost(game.UnitType.Mech)(problem.defender[defenderIndex])) {
+						for (var a = 0; a < row; ++a) {
+
+						}
+						columns++;
+						break;
+					}
+				}
+			}
+
+			if (options.attacker.nonEuclidean) {
+				for (var dmg = 1; (dmg < columns - 1) && (0 <= attackerIndex); dmg++) {
+					if (problem.attacker[attackerIndex].isDamageGhost) {
+						for (var i = 0; i < rows; ++i) {
+							reifiedMatrix[i][dmg] += reifiedMatrix[i][dmg+1];
+							reifiedMatrix[i].splice(dmg + 1, 1);
+						}
+						columns--;
+					}
+					attackerIndex--;
+				}
+			}
+
+			return {
+				rows: rows,
+				columns: columns,
+				at: function(i1, i2) {
+					return reifiedMatrix[i1][i2];
+				}
+			};
+
+
+			return {
+				rows: Math.max(transitionMatrix.rows, defenderIndex),
+				columns: Math.max(transitionMatrix.columns, attackerIndex),
+				at: function (i1, i2) {
+					if (i1 === 0 && i2 === 0)
+						return transitionMatrix.at(0, 0);
+					var attackerSardakkMechSustainedBefore = false;
+					var defenderSardakkMechSustainedBefore = false;
+					if (attackerSardakk)
+						for (var i = 0; i < i2; ++i) {
+							if (isDamageGhost(game.UnitType.Mech)(problem.attacker[attackerIndex - i]))
+								attackerSardakkMechSustainedBefore = true;
+						}
+					if (defenderSardakk)
+						for (var i = 0; i < i1; ++i) {
+							if (isDamageGhost(game.UnitType.Mech)(problem.defender[defenderIndex - i]))
+								defenderSardakkMechSustainedBefore = true;
+						}
+					if (!attackerSardakkMechSustainedBefore && !(attackerSardakk && atta))
+					
+
+					if (i1 === 0)
+						return options.attacker.valkyrieParticleWeave || i2 === transitionMatrix.columns ? 0 : transitionMatrix.at(i1, i2);
+					if (i2 === 0)
+						return options.defender.valkyrieParticleWeave || i1 === transitionMatrix.rows ? 0 : transitionMatrix.at(i1, i2);
+					if (i1 === 1 && i2 === 1 && options.attacker.valkyrieParticleWeave && options.defender.valkyrieParticleWeave)
+						return (transitionMatrix.columns === 1 ? 0 : transitionMatrix.at(0, 1)) + (transitionMatrix.rows === 1 ? 0 : transitionMatrix.at(1, 0));
+					if (options.attacker.valkyrieParticleWeave && options.defender.valkyrieParticleWeave &&
+						( i1 === transitionMatrix.rows && i2 === 1 ||
+							i1 === 1 && i2 === transitionMatrix.columns))
+						return 0;
+					var rowShift = options.attacker.valkyrieParticleWeave && !(options.defender.valkyrieParticleWeave && i2 === 1) ? 1 : 0;
+					var columnShift = options.defender.valkyrieParticleWeave && !(options.attacker.valkyrieParticleWeave && i1 === 1) ? 1 : 0;
+					return transitionMatrix.at(i1 - rowShift, i2 - columnShift);
+				}
+			};
+		}
+
 		function adjustBombardmentVector(bombardmentVector, defender, defenderIndex, options) {
 			if (bombardmentVector.length > 1 && (options.attacker.x89Omega || options.defender.nonEuclidean)) {
 				var result = bombardmentVector.slice();
@@ -1081,17 +1213,19 @@
 					return reifiedMatrix[i1][i2];
 				}
 			};
+		}
 
-			function reify(transitionMatrix) {
-				var result = [];
-				for (var i = 0; i < transitionMatrix.rows; i++) {
-					var row = [];
-					result.push(row);
-					for (var j = 0; j < transitionMatrix.columns; j++)
-						row.push(transitionMatrix.at(i, j));
-				}
-				return result;
+		function reify(transitionMatrix, rows, columns) {
+			rows = Math.max(rows, rows || transitionMatrix.rows);
+			columns = Math.max(columns, columns || transitionMatrix.columns);
+			var result = [];
+			for (var i = 0; i < rows; i++) {
+				var row = [];
+				result.push(row);
+				for (var j = 0; j < columns; j++)
+					row.push(i < transitionMatrix.rows && j < transitionMatrix.columns ? transitionMatrix.at(i, j) : 0);
 			}
+			return result;
 		}
 
 		function constrainTransitionMatrix(transitionMatrix, rows, columns) {
@@ -1187,6 +1321,12 @@
 		function unitIs(unitType) {
 			return function (unit) {
 				return unit.type === unitType && !unit.isDamageGhost;
+			};
+		}
+
+		function isDamageGhost(unitType) {
+			return function (unit) {
+				return unit.type === unitType && unit.isDamageGhost;
 			};
 		}
 

@@ -176,11 +176,17 @@
 					defenderInflictedToEverything += defenderAdditional;
 				}
 
-				var attackerYinFlagshipDied = applyDamage(attacker, defenderInflictedToNonFighters, options.attacker, null, null, notFighter) || applyDamage(attacker, defenderInflictedToEverything, options.attacker);
-				var defenderYinFlagshipDied = applyDamage(defender, attackerInflictedToNonFighters, options.defender, null, null, notFighter) || applyDamage(defender, attackerInflictedToEverything, options.defender);
-				if (attackerYinFlagshipDied || defenderYinFlagshipDied) {
-					attacker.splice(0);
-					defender.splice(0);
+				if (battleType === game.BattleType.Space) {
+					var attackerYinFlagshipDied = applyDamage(attacker, defenderInflictedToNonFighters, options.attacker, null, null, notFighter) || applyDamage(attacker, defenderInflictedToEverything, options.attacker);
+					var defenderYinFlagshipDied = applyDamage(defender, attackerInflictedToNonFighters, options.defender, null, null, notFighter) || applyDamage(defender, attackerInflictedToEverything, options.defender);
+					if (attackerYinFlagshipDied || defenderYinFlagshipDied) {
+						attacker.splice(0);
+						defender.splice(0);
+					}
+				} else { // battleType === game.BattleType.Ground
+					var attackerMechSustained = applyDamage(attacker, defenderInflictedToEverything, options.attacker, damageGhostIs(game.UnitType.Mech));
+					var defenderMechSustained = applyDamage(defender, attackerInflictedToEverything, options.defender, damageGhostIs(game.UnitType.Mech));
+					sardakkMechRetaliation(attacker, defender, options, options.attacker.race === game.Race.Sardakk ? attackerMechSustained : 0, options.defender.race === game.Race.Sardakk ? defenderMechSustained : 0);
 				}
 
 				if (options.attacker.duraniumArmor)
@@ -193,7 +199,7 @@
 					// https://boardgamegeek.com/thread/2286628/does-ground-combat-still-occur-if-invading-ground
 					actions.find(function (a) {
 						return a.name === 'Bombardment';
-					}).execute(attacker, defender, attackerFull, defenderFull, options);
+					}).execute(attacker, defender, attackerFull, defenderFull, options, { harrow: true });
 				}
 
 				// https://boardgamegeek.com/thread/1904694/how-do-you-resolve-endless-battles
@@ -284,29 +290,29 @@
 		}
 
 		/** returns true if Yin flagship was killed */
-		function applyDamage(fleet, hits, sideOptions, anyKilledPredicate, hardPredicate, softPredicate) {
-			anyKilledPredicate = anyKilledPredicate || function(unit) {
+		function applyDamage(fleet, hits, sideOptions, interestingKilledPredicate, hardPredicate, softPredicate) {
+			interestingKilledPredicate = interestingKilledPredicate || function(unit) {
 				return sideOptions.race === game.Race.Yin && unitIs(game.UnitType.Flagship)(unit);
 			}
-			var anyKilled = false;
+			var interestingKilled = 0;
 			hardPredicate = hardPredicate || function (unit) {
 				return true;
 			};
 			for (var i = fleet.length - 1; 0 <= i && 0 < hits; i--) {
 				if (hardPredicate(fleet[i]) && (!softPredicate || softPredicate(fleet[i]))) {
 					var killed = hit(i);
-					anyKilled |= anyKilledPredicate(killed)
+					interestingKilled += interestingKilledPredicate(killed) ? 1 : 0;
 				}
 			}
 			if (softPredicate) {
 				for (var i = fleet.length - 1; 0 <= i && 0 < hits; i--) {
 					if (hardPredicate(fleet[i])) {
 						var killed = hit(i);
-						anyKilled |= anyKilledPredicate(killed)
+						interestingKilled += interestingKilledPredicate(killed) ? 1 : 0;
 					}
 				}
 			}
-			return anyKilled;
+			return interestingKilled;
 
 			function hit(i) {
 				var killed = fleet.splice(i, 1)[0];
@@ -513,7 +519,8 @@
 				{
 					name: 'Bombardment',
 					appliesTo: game.BattleType.Ground,
-					execute: function (attacker, defender, attackerFull, defenderFull, options) {
+					execute: function (attacker, defender, attackerFull, defenderFull, options, flags) {
+						flags = flags || { harrow: false }
 						var bombardmentPossible = !options.defender.conventionsOfWar && (
 							!defenderFull.some(unitHas(game.UnitFeatures.PlanetaryShield))
 							|| attackerFull.some(unitHas(game.UnitFeatures.NegatePlanetaryShield))
@@ -526,13 +533,22 @@
 							attackerInflicted += fromPlasmaScoring(attackerFull, game.ThrowType.Bombardment, attackerModifier);
 						}
 
-						var infantryKilled = applyDamage(defender, attackerInflicted, options.defender, unitIs(game.UnitType.Infantry));
+						var infantryKilled = false;
+						var mechSustained = 0;
+						applyDamage(defender, attackerInflicted, options.defender, function(unit) {
+							infantryKilled |= unitIs(game.UnitType.Infantry)(unit);
+							if (damageGhostIs(game.UnitType.Mech)(unit))
+								mechSustained += 1 ;
+						});
 						if (options.attacker.x89Omega && infantryKilled) {
 							for (var i = defender.length - 1; 0 <= i; i--) {
 								if (unitIs(game.UnitType.Infantry)(defender[i])) {
 									defender.splice(i, 1)
 								}
 							}
+						}
+						if (flags.harrow && options.defender.race === game.Race.Sardakk && mechSustained) {
+							sardakkMechRetaliation(attacker, defender, options, 0, mechSustained);
 						}
 
 						function hasBombardment(unit) {
@@ -675,6 +691,15 @@
 			];
 		}
 
+		function sardakkMechRetaliation(attacker, defender, options, attackerRetaliating, defenderRetaliating) {
+			while (attackerRetaliating || defenderRetaliating) {
+				var attackerRetaliatingTmp = applyDamage(attacker, defenderRetaliating, options.attacker, damageGhostIs(game.UnitType.Mech));
+				var defenderRetaliatingTmp = applyDamage(defender, attackerRetaliating, options.defender, damageGhostIs(game.UnitType.Mech));
+				attackerRetaliating = options.attacker.race === game.Race.Sardakk && attackerRetaliatingTmp;
+				defenderRetaliating = options.defender.race === game.Race.Sardakk && defenderRetaliatingTmp;
+			}
+		}
+
 		function unitHas(feature) {
 			return function (unit) {
 				return !!unit[feature] && !unit.isDamageGhost;
@@ -684,6 +709,12 @@
 		function unitIs(unitType) {
 			return function (unit) {
 				return unit.type === unitType && !unit.isDamageGhost;
+			};
+		}
+
+		function damageGhostIs(unitType) {
+			return function (unit) {
+				return unit.type === unitType && unit.isDamageGhost;
 			};
 		}
 
